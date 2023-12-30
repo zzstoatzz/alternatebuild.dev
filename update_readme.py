@@ -71,15 +71,16 @@ def update_and_merge_readme(
     run_command(f"gh pr create --title '{pr_title}' --body '{pr_body}' --base main --head {branch_name}")
     run_command(f"gh pr merge {branch_name} --auto --squash")
 
-update_and_merge_readme.from_source(
-    source="https://github.com/zzstoatzz/alternatebuild.dev.git",
-    entrypoint="update_readme.py:update_and_merge_readme",
-).deploy(
-    name="Update and Merge README for `zzstoatzz/alternatebuild.dev`",
-    work_pool_name="managed",
-    job_variables={
-        "env": {
-            "GITHUB_TOKEN": "{{ prefect.blocks.secret.github-token }}"
+if __name__ == "__main__":
+    update_and_merge_readme.from_source(
+        source="https://github.com/zzstoatzz/alternatebuild.dev.git",
+        entrypoint="update_readme.py:update_and_merge_readme",
+    ).deploy(
+        name="Update and Merge README for `zzstoatzz/alternatebuild.dev`",
+        work_pool_name="managed",
+        job_variables={
+            "env": {
+                "GITHUB_TOKEN": "{{ prefect.blocks.secret.github-token }}"
+            }
         }
-    }
-)
+    )
