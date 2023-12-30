@@ -43,7 +43,6 @@ def update_readme(new_content: str, readme_path: str = 'README.md', archive_dir_
 
     readme.write_text('\n'.join(readme_lines) + '\n', encoding='utf-8')
 
-def configure_git_user(user_name: str, user_email: str):
 
 @task(task_run_name="Run command: `{command}`")
 def run_command(command: str):
@@ -86,7 +85,7 @@ if __name__ == "__main__":
         source="https://github.com/zzstoatzz/alternatebuild.dev.git",
         entrypoint="update_readme.py:update_and_merge_readme",
     ).deploy(
-        name="Update and Merge README for `zzstoatzz/alternatebuild.dev`",
+        name="Update and Merge README",
         work_pool_name="managed",
         job_variables={
             "env": {
