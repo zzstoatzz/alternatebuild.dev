@@ -1,3 +1,4 @@
+import os
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -42,6 +43,8 @@ def update_readme(new_content: str, readme_path: str = 'README.md', archive_dir_
 
     readme.write_text('\n'.join(readme_lines) + '\n', encoding='utf-8')
 
+def configure_git_user(user_name: str, user_email: str):
+
 @task(task_run_name="Run command: `{command}`")
 def run_command(command: str):
     process = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -64,6 +67,9 @@ def update_and_merge_readme(
     
     branch_name = f"content-update-{datetime.now().strftime('%Y%m%d%H%M%S')}"
     
+    run_command(f"git config --global user.name {os.getenv('GH_USER_NAME')!r}")
+    run_command(f"git config --global user.email {os.getenv('GH_USER_EMAIL')!r}")
+    
     run_command(f"git checkout -b {branch_name}")
     run_command(f"git add {readme_path} {archive_dir_name}")
     run_command("git commit -m 'Update README with new content'")
@@ -84,7 +90,9 @@ if __name__ == "__main__":
         work_pool_name="managed",
         job_variables={
             "env": {
-                "GITHUB_TOKEN": "{{ prefect.blocks.secret.github-token }}"
+                "GITHUB_TOKEN": "{{ prefect.blocks.secret.github-token }}",
+                "GH_USER_NAME": "zzstoatzz",
+                "GH_USER_EMAIL": "thrast36@gmail.com",
             }
         }
     )
