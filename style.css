@@ -1,46 +1,84 @@
+/* Import Fira Code font */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+
 body {
-    font-family: sans-serif;
+    font-family: 'Fira Code', monospace; /* Use Fira Code as the font */
     margin: 0;
     padding: 2rem;
     color: #333;
-  }
-  
-  .container {
+    background-color: #f4f4f4; /* Soft background color */
+}
+
+#readme {
+  text-align: left; /* Align text to the left */
+  overflow: hidden; /* Hide overflow */
+  white-space: pre-wrap; /* Wrap whitespace */
+  word-wrap: break-word; /* Break long words */
+  overflow-wrap: break-word; /* Ensure overflow is wrapped */
+}
+
+/* Specifically for code blocks if they don't wrap */
+code {
+  white-space: pre-wrap;
+}
+
+.container {
     max-width: 800px;
     margin: 0 auto;
     padding: 1rem;
     border-radius: 5px;
-    background-color: #bea9a9;
+    background-color: #fff8f0; /* Light pastel background */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
-  }
-  
-  h1, h2 {
-    font-weight: bold;
+}
+
+h1, h2 {
+    font-weight: 500; /* Fira Code's medium weight */
     margin-bottom: 1rem;
-  }
-  
-  img {
+    color: #6a5d7b; /* Soft purple for headings */
+}
+
+img {
     width: 100%;
     height: auto;
     object-fit: cover;
     filter: blur(2px);
     margin-bottom: 1rem;
-  }
-  
-  p {
+    border-radius: 5px; /* Rounded corners for images */
+}
+
+p, li {
     line-height: 1.5;
-  }
-  
-  ul {
+    font-size: 16px; /* Readable text size */
+}
+
+ul {
     list-style: none;
     padding: 0;
     margin: 1rem 0;
-  }
-  
-  li {
+}
+
+li {
     margin-bottom: 0.5rem;
     text-align: left;
     list-style: decimal;
-  }
-  
+}
+
+/* Responsive design for smaller devices */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem; /* Smaller padding on mobile */
+    }
+
+    .container {
+        padding: 0.5rem;
+    }
+
+    h1, h2 {
+        font-size: 1.5em; /* Larger font size for headings on small screens */
+    }
+
+    p, li {
+        font-size: 14px; /* Smaller text on mobile */
+    }
+}
