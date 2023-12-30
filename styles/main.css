@@ -1,35 +1,29 @@
-/* Import Fira Code font */
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
 
 body {
-    font-family: 'Fira Code', monospace; /* Use Fira Code as the font */
-    margin: 0;
-    padding: 2rem;
-    color: #333;
-    background-color: #f4f4f4; /* Soft background color */
+  font-family: 'Fira Code', monospace;
+  margin: 0;
+  padding: 2rem;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 #readme {
-  text-align: left; /* Align text to the left */
-  overflow: hidden; /* Hide overflow */
-  white-space: pre-wrap; /* Wrap whitespace */
-  word-wrap: break-word; /* Break long words */
-  overflow-wrap: break-word; /* Ensure overflow is wrapped */
-}
-
-/* Specifically for code blocks if they don't wrap */
-code {
-  white-space: pre-wrap;
+    text-align: left; /* Align text to the left */
+    overflow: hidden; /* Hide overflow */
+    white-space: pre-wrap; /* Wrap whitespace */
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Ensure overflow is wrapped */
 }
 
 .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1rem;
-    border-radius: 5px;
-    background-color: #fff8f0; /* Light pastel background */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+  border-radius: 5px;
+  background-color: var(--container-bg);
+  box-shadow: var(--box-shadow);
+  text-align: center;
 }
 
 h1, h2 {

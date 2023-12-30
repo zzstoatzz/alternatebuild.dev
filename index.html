@@ -4,48 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mostly Harmless: Under Construction</title>
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/prefecthq/marvin/main/docs/img/logos/askmarvin_mascot.jpeg">
-  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="assets/sockpuppet.jpeg">
+  <link rel="stylesheet" href="styles/main.css">
+  <link id="theme-style" rel="stylesheet" href="styles/themes/light-theme.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/github.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
 </head>
 <body>
-  <div class="container">
+  <header class="container header">
     <img src="https://random-d.uk/api/randomimg" alt="quack">
     <h2>...or at least under heavy construction.</h2>
-    <div id="readme">
-        <p>This website currently does not work.</p>
-        <p>There's a non-zero chance that it will work in the future.</p>
-        <p>Meanwhile, you can:</p>
-        <ul>
-            <li>Panic (with appropriate tea).</li>
-            <li>Consult your will.</li>
-            <li>Continue quibbling.</li>
-        </ul>
-    </div>
-  </div>
+  </header>
+  <main class="container" id="readme">
+  </main>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', (event) => {
-        async function fetchFromGitHub() {
-            const url = 'https://raw.githubusercontent.com/zzstoatzz/alternatebuild.dev/main/README.md';
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok.');
-                }
-                const text = await response.text();
-                document.getElementById('readme').innerHTML = marked.parse(text);
-                document.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
-            } catch (error) {
-                console.error('Error fetching file:', error);
-            }
-        }
-        fetchFromGitHub();
-    });
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+  <script src="scripts/github-fetch.js"></script>
 </body>
 </html>

@@ -1,0 +1,9 @@
+/* light-theme.css */
+:root {
+    --bg-color: #f4f4f4;
+    --text-color: #333;
+    --container-bg: #fff8f0;
+    --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* ... other theming variables ... */
+  }
+  
