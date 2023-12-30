@@ -11,7 +11,16 @@
   <div class="container">
     <img src="https://random-d.uk/api/randomimg" alt="quack">
     <h2>...or at least under heavy construction.</h2>
-    <div hx-get="https://github.com/zzstoatzz/alternatebuild.dev/message.html" hx-trigger="load" id="message-container"></div>
+    <div hx-get="/api/message" hx-trigger="load" id="message-container">
+        <p>This website currently does not work.</p>
+        <p>There's a non-zero chance that it will work in the future.</p>
+        <p>Meanwhile, you can:</p>
+        <ul>
+            <li>Panic (with appropriate tea).</li>
+            <li>Consult your will.</li>
+            <li>Continue quibbling.</li>
+        </ul>
+    </div>
   </div>
 </body>
 </html>
