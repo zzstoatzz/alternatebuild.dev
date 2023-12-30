@@ -51,7 +51,7 @@ def run_command(command: str):
     return process.stdout.decode().strip()
 
 
-@flow
+@flow(log_prints=True)
 def update_and_merge_readme(
     new_content: str,
     readme_path: str = 'README.md',
