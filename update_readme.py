@@ -68,6 +68,7 @@ def update_and_merge_readme(
     
     run_command(f"git config --global user.name {os.getenv('GH_USER_NAME')!r}")
     run_command(f"git config --global user.email {os.getenv('GH_USER_EMAIL')!r}")
+    run_command(f"git config --global user.password {os.getenv('GITHUB_TOKEN')!r}")
     
     run_command(f"git checkout -b {branch_name}")
     run_command(f"git add {readme_path} {archive_dir_name}")
