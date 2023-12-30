@@ -1,4 +1,3 @@
-import os
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -66,9 +65,6 @@ def update_and_merge_readme(
     
     branch_name = f"content-update-{datetime.now().strftime('%Y%m%d%H%M%S')}"
     
-    run_command(f"git config --global user.name {os.getenv('GH_USER_NAME')!r}")
-    run_command(f"git config --global user.email {os.getenv('GH_USER_EMAIL')!r}")
-    
     run_command(f"git checkout -b {branch_name}")
     run_command(f"git add {readme_path} {archive_dir_name}")
     run_command("git commit -m 'Update README with new content'")
@@ -84,14 +80,14 @@ if __name__ == "__main__":
     update_and_merge_readme.from_source(
         source="https://github.com/zzstoatzz/alternatebuild.dev.git",
         entrypoint="update_readme.py:update_and_merge_readme",
-    ).deploy(
+    ).serve(
         name="Update and Merge README",
-        work_pool_name="managed",
-        job_variables={
-            "env": {
-                "GITHUB_TOKEN": "{{ prefect.blocks.secret.alternatebuild-gh-token }}",
-                "GH_USER_NAME": "zzstoatzz",
-                "GH_USER_EMAIL": "thrast36@gmail.com",
-            }
-        }
+        # work_pool_name="managed",
+        # job_variables={
+        #     "env": {
+        #         "GITHUB_TOKEN": "{{ prefect.blocks.secret.alternatebuild-gh-token }}",
+        #         "GH_USER_NAME": "zzstoatzz",
+        #         "GH_USER_EMAIL": "thrast36@gmail.com",
+        #     }
+        # }
     )
