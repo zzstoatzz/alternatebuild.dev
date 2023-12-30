@@ -1,12 +1,8 @@
 # Today's Content
 
-```python
-from marvin import ai_fn
+# New section for 2023-12-30
 
-@ai_fn
-def stereotypical_X_person_say(name: str, qualities: str) -> str:
-    """give dry / funny sterotypical quotes from {{ name }} given qualities {{ qualities }}"""
+Some new content here...
 
-stereotypical_X_person_say("Nate", "gen Z, Pisces, hipster")
-# => "Hey, it's Nate. Just chilling, listening to some lo-fi beats and drinking my oat milk latte. Thinking about the universe and stuff, you know? Pisces vibes."
-```
+# Archive
+- [2023-12-30_15-57-39](archive/2023-12-30_15-57-39.md)
