@@ -80,14 +80,4 @@ if __name__ == "__main__":
     update_and_merge_readme.from_source(
         source="https://github.com/zzstoatzz/alternatebuild.dev.git",
         entrypoint="update_readme.py:update_and_merge_readme",
-    ).serve(
-        name="Update and Merge README",
-        # work_pool_name="managed",
-        # job_variables={
-        #     "env": {
-        #         "GITHUB_TOKEN": "{{ prefect.blocks.secret.alternatebuild-gh-token }}",
-        #         "GH_USER_NAME": "zzstoatzz",
-        #         "GH_USER_EMAIL": "thrast36@gmail.com",
-        #     }
-        # }
-    )
+    ).serve(name="Update and Merge README")
