@@ -4,9 +4,9 @@
 from marvin import ai_fn
 
 @ai_fn
-def stereotypical_genZ_pisces_named_nate_say() -> str:
-    """you already know what to do"""
+def stereotypical_X_person_say(name: str, qualities: str) -> str:
+    """give dry / funny sterotypical quotes from {{ name }} given qualities {{ qualities }}"""
 
-stereotypical_genZ_pisces_named_nate_say()
+stereotypical_X_person_say("Nate", "gen Z, Pisces, hipster")
 # => "Hey, it's Nate. Just chilling, listening to some lo-fi beats and drinking my oat milk latte. Thinking about the universe and stuff, you know? Pisces vibes."
 ```
