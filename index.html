@@ -5,13 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mostly Harmless: Under Construction</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/htmx.org@1.9.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    async function fetchFromGitHub() {
+        const url = 'https://raw.githubusercontent.com/zzstoatzz/alternatebuild.dev/main/README.md';
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            const text = await response.text();
+            document.getElementById('readme').innerHTML = marked(text);
+        } catch (error) {
+            console.error('Error fetching file:', error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', fetchFromGitHub);
+  </script>
 </head>
 <body>
   <div class="container">
     <img src="https://random-d.uk/api/randomimg" alt="quack">
     <h2>...or at least under heavy construction.</h2>
-    <div hx-get="/api/message" hx-trigger="load" id="message-container">
+    <div id="readme">
         <p>This website currently does not work.</p>
         <p>There's a non-zero chance that it will work in the future.</p>
         <p>Meanwhile, you can:</p>
