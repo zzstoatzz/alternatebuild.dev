@@ -44,8 +44,12 @@ def update_readme(new_content: str, readme_path: str = 'README.md', archive_dir_
 
 @task(task_run_name="Run command: `{command}`")
 def run_command(command: str):
-    process = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if process.returncode != 0:
+        print(f"Error executing '{command}': {process.stderr.decode().strip()}")
+        exit(process.returncode)
     return process.stdout.decode().strip()
+
 
 @flow
 def update_and_merge_readme(
