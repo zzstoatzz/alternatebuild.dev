@@ -3,21 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mostly Harmless: Under Construction</title>
+  <title>Mostly Harmless</title>
   <link rel="icon" type="image/png" href="assets/sockpuppet.jpeg">
   <link rel="stylesheet" href="styles/main.css">
   <link id="theme-style" rel="stylesheet" href="styles/themes/light-theme.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/github.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+<script src="/scripts/loadHeader.js"></script>
 </head>
 <body>
   <header class="container header">
+    <nav>
+      <ul>
+        <ul><a href="/about.html">About</a></li>
+      </ul>
+    </nav>
     <img src="https://random-d.uk/api/randomimg" alt="quack">
     <h2>...or at least under heavy construction.</h2>
   </header>
-  <main class="container" id="readme">
+  <main class="container">
+    <div id="blog-posts"></div>
   </main>
+  <footer class="container footer">
+    <p>&copy; 2024 zzstoatzz</p>
+  </footer>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-  <script src="scripts/github-fetch.js"></script>
+  <script src="scripts/fetch-posts.js"></script>
 </body>
 </html>
