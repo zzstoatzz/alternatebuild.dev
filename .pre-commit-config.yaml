@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: build-posts
+        name: Build Posts
+        entry: python scripts/build_posts.py
+        language: system
+        files: '^posts/.*\.md$'
+        stages: [pre-commit]
