@@ -1,0 +1,15 @@
+{
+  "name": "alternatebuild.dev",
+  "version": "1.0.0",
+  "description": "![lawd](https://ctl.s6img.com/society6/img/KI3TUMtowSPN0ldQxVDabOxQH2A/w_700/prints/~artwork/s6-original-art-uploads/society6/uploads/misc/e95ad960a7f940369c0aa6f0c0a097fb/~~/oh-lawd-he-comin-meme-prints.jpg)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

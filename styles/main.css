@@ -58,6 +58,22 @@ li {
     list-style: decimal;
 }
 
+.nav-container {
+    display: flex;
+    justify-content: center;
+  }
+  
+  nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
+  
+  nav ul li {
+    margin: 0 10px;
+  }
+
 /* Responsive design for smaller devices */
 @media (max-width: 768px) {
     body {
