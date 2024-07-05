@@ -3,7 +3,7 @@ async function fetchPostContentByTitle(title) {
         const response = await fetch('https://api.github.com/repos/zzstoatzz/alternatebuild.dev/contents/_posts');
         if (!response.ok) throw new Error('Failed to fetch blog posts');
         const posts = await response.json();
-        const post = posts.find(file => decodeURIComponent(file.name.replace('.md', '')) === title);
+        const post = posts.find(file => file.name.replace('.md', '') === title);
         if (!post) throw new Error('Post not found');
         const postContent = await fetch(post.download_url);
         if (!postContent.ok) throw new Error('Failed to fetch post content');
@@ -29,7 +29,7 @@ function parsePostContent(content) {
         if (inFrontMatter) {
             const [key, ...values] = line.split(':');
             if (key && values.length) {
-                frontMatter[key.trim()] = values.join(':').trim();
+                frontMatter[key.trim()] = values.join(':').trim().replace(/^"(.*)"$/, '$1');
             }
         } else {
             bodyContent += line + '\n';

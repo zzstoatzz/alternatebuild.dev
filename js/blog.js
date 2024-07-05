@@ -36,7 +36,7 @@ function parsePostContent(content) {
         if (inFrontMatter) {
             const [key, ...values] = line.split(':');
             if (key && values.length) {
-                frontMatter[key.trim()] = values.join(':').trim();
+                frontMatter[key.trim()] = values.join(':').trim().replace(/^"(.*)"$/, '$1');
             }
         } else {
             bodyContent += line + '\n';
@@ -66,7 +66,7 @@ function renderBlogPosts(posts) {
             <h3>${title}</h3>
             <p><em>${date}</em></p>
             <div class="post-preview">${marked.parse(previewContent)}</div>
-            <a href="post.html?post=${encodeURIComponent(title)}" class="read-more">Read more</a>
+            <a href="post.html?post=${post.name.replace('.md', '')}" class="read-more">Read more</a>
         `;
         blogPostsContainer.appendChild(postElement);
     });
