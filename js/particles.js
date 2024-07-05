@@ -2,7 +2,7 @@ const PARTICLE_COUNT = 500;
 const EXPLOSION_RADIUS = 200;
 const EXPLOSION_FORCE = 1.0;
 const GRAVITY_CONSTANT = 0.001;
-const INTERACTION_RADIUS = 50;
+const INTERACTION_RADIUS = 30;
 
 class Particle {
     constructor(x, y, radius, color) {
@@ -12,7 +12,7 @@ class Particle {
         this.vy = (Math.random() - 0.5) * 0.1;
         this.radius = radius;
         this.color = color;
-        this.mass = radius * 0.5;
+        this.mass = Math.PI * Math.pow(radius, 2);
     }
 
     update(width, height) {
@@ -21,8 +21,8 @@ class Particle {
         this.vx *= 0.999;
         this.vy *= 0.999;
 
-        this.x = (this.x + width) % width;
-        this.y = (this.y + height) % height;
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
     }
 }
 
@@ -60,7 +60,7 @@ class ParticleSystem {
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             const x = Math.random() * this.canvas.width;
             const y = Math.random() * this.canvas.height;
-            const radius = Math.random() * 2 + 1;
+            const radius = Math.random() * 3 + 1;
             const color = earthTones[Math.floor(Math.random() * earthTones.length)];
             this.particles.push(new Particle(x, y, radius, color));
         }
@@ -144,5 +144,4 @@ class ParticleSystem {
     }
 }
 
-// Initialize the particle system when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => new ParticleSystem());

@@ -2,14 +2,11 @@
 title: "Hello World"
 date: "2024-01-01"
 ---
-
-# Hello World
-
 In 2024, we're going to try and write our ideas down more.
 
-## Ideas Early This Year
+### Ideas Early This Year
 
-Clever Assistant retrieval of highly annotated documents that are embedded in vectordbs like Chroma, Redis, and/or Turbopuffer. Assistants can call functions; it's time they use that to make metadata-filtered queries from natural language. Assistants should also have tools to store typed key excerpts from interactions as documents, to make them referenceable in the future.
+Clever `Assistant` retrieval of highly annotated documents that are embedded in vectordbs like Chroma, Redis, and/or Turbopuffer. Assistants can call functions; it's time they use that to make metadata-filtered queries from natural language. Assistants should also have tools to store typed key excerpts from interactions as documents, to make them referenceable in the future.
 
 Application state is just a `type[BaseModel]` on a thing that can patch its own schema with knowledge from the world. See this example.
 

@@ -9,8 +9,6 @@ html {
     background-color: #1a1a1a;
 }
 
-/* enforce that specifically the duck-image class cant get too big */
-
 .duck-image {
     max-width: 50%;
     height: auto;
@@ -41,6 +39,7 @@ html {
 nav {
     width: 100%;
     padding: 20px 0;
+    /* background-color: rgba(0, 0, 0, 0.4); */
 }
 
 nav ul {
@@ -79,6 +78,7 @@ h1 {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 600px;
+    text-align: left;
 }
 
 .contact-content ul {
@@ -118,7 +118,7 @@ h1 {
 }
 
 .post-preview {
-    max-height: 60px;
+    max-height: 10%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -141,7 +141,7 @@ h1 {
     text-align: left;
     max-width: 800px;
     width: 100%;
-    margin: 0 auto;
+    margin: 20px auto;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     padding: 20px;
@@ -181,15 +181,58 @@ h1 {
 footer {
     margin-top: auto;
     padding: 20px 0;
-    font-size: 0.8em;
-    width: 100%;
     text-align: center;
 }
 
+.footer-links {
+    list-style-type: none;
+    padding: 10px;
+    margin: 0 auto;
+    display: flex;
+    border-radius: 10px;
+    justify-content: center;
+    gap: 20px;
+    background-color: sienna;
+    max-width: 300px;
+}
+
+.footer-links li {
+    display: inline-block;
+}
+
+.footer-links a {
+    text-decoration: none;
+}
+
+.footer-links img {
+    width: 40px;
+    height: 40px;
+    transition: transform 0.3s;
+}
+
+.footer-links img:hover {
+    transform: scale(1.1);
+}
+
+footer p {
+    margin-top: 10px;
+    color: #ffffff;
+    font-size: 0.8em;
+}
+
+
+
 #blog-posts {
     width: 100%;
-    max-width: 800px;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
