@@ -1,46 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mostly Harmless</title>
-  <link rel="icon" type="image/png" href="assets/images/sockpuppet.jpeg">
-  <link rel="stylesheet" href="styles/main.css">
-  <link id="theme-style" rel="stylesheet" href="styles/themes/light-theme.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/github.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
-  <script src="/scripts/loadHeader.js"></script>
-</head>
-<body>
-  <nav>
-    <div class="nav-container">
-      <ul>
-        <ol><a href="/">Home</a></ol>
-        <ol><a href="/about.html">About</a></ol>
-        <ol><a href="/contact.html">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
-    <img src="https://random-d.uk/api/randomimg" alt="Random Image">
-    <h1>or at least under heavy construction</h1>
 
-  </header>
-  <main class="container">
-    <section id="featured-posts">
-      <h2>Featured Posts</h2>
-      <!-- Add your featured blog posts here -->
-    </section>
-    <section id="recent-posts">
-      <h2>Recent Posts</h2>
-      <div id="blog-posts"></div>
-    </section>
-  </main>
-  <footer class="container footer">
-    <p>&copy; 2024 zzstoatzz</p>
-  </footer>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-  <script src="scripts/fetch-posts.js"></script>
-  <script src="dist/index.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mostly Harmless</title>
+    <link rel="icon" type="image/png" href="assets/images/stoat.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+    <div id="particle-canvas"></div>
+    <div class="content">
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about.html">About</a></li>
+                <li><a href="/contact.html">Contact</a></li>
+            </ul>
+        </nav>
+        <h1>Mostly Harmless</h1>
+        <p>...or at least under heavy construction</p>
+        <img src="https://random-d.uk/api/randomimg" alt="Random Duck" class="duck-image">
+        <section id="recent-posts">
+            <h2>Recent Posts</h2>
+            <div id="blog-posts"></div>
+        </section>
+        <footer>
+            <p>&copy; 2024 zzstoatzz</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/blog.js"></script>
 </body>
+
 </html>
