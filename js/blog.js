@@ -1,6 +1,6 @@
 async function fetchBlogPosts() {
     try {
-        const response = await fetch('https://api.github.com/repos/zzstoatzz/zzstoatzz.github.io/contents/_posts');
+        const response = await fetch('https://api.github.com/repos/zzstoatzz/alternatebuild.dev/contents/_posts');
         if (!response.ok) throw new Error('Failed to fetch blog posts');
         const posts = await response.json();
         return posts.filter(file => file.name.endsWith('.md'));
@@ -34,8 +34,10 @@ function parsePostContent(content) {
         }
 
         if (inFrontMatter) {
-            const [key, value] = line.split(':').map(part => part.trim());
-            frontMatter[key] = value;
+            const [key, ...values] = line.split(':');
+            if (key && values.length) {
+                frontMatter[key.trim()] = values.join(':').trim();
+            }
         } else {
             bodyContent += line + '\n';
         }
@@ -56,10 +58,15 @@ function renderBlogPosts(posts) {
     posts.forEach(post => {
         const postElement = document.createElement('div');
         postElement.className = 'blog-post';
+        const previewContent = post.bodyContent.split('\n').slice(0, 3).join(' ') + '...';
+        const title = post.frontMatter.title || post.name.replace('.md', '');
+        const date = post.frontMatter.date || 'No date';
+
         postElement.innerHTML = `
-            <h3>${post.frontMatter.title || 'Untitled'}</h3>
-            <p><em>${post.frontMatter.date || 'No date'}</em></p>
-            ${marked(post.bodyContent)}
+            <h3>${title}</h3>
+            <p><em>${date}</em></p>
+            <div class="post-preview">${marked.parse(previewContent)}</div>
+            <a href="post.html?post=${encodeURIComponent(title)}" class="read-more">Read more</a>
         `;
         blogPostsContainer.appendChild(postElement);
     });
@@ -71,7 +78,8 @@ async function loadBlogPosts() {
         const postContents = await Promise.all(posts.map(fetchPostContent));
         const parsedPosts = postContents
             .filter(content => content !== null)
-            .map(parsePostContent);
+            .map(parsePostContent)
+            .map((post, index) => ({ ...post, name: posts[index].name }));
         renderBlogPosts(parsedPosts);
     } catch (error) {
         console.error('Error loading blog posts:', error);

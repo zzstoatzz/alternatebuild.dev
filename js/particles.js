@@ -1,7 +1,7 @@
 const PARTICLE_COUNT = 500;
 const EXPLOSION_RADIUS = 200;
 const EXPLOSION_FORCE = 1.0;
-const GRAVITY_CONSTANT = 0.005;
+const GRAVITY_CONSTANT = 0.001;
 const INTERACTION_RADIUS = 50;
 
 class Particle {
