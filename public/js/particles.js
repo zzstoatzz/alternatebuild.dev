@@ -27,14 +27,14 @@ class Particle {
 }
 
 class ParticleSystem {
-    constructor() {
-        this.canvas = document.createElement('canvas');
+    constructor(canvas) {
+        console.log('ParticleSystem constructor called');
+        this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.particles = [];
         this.mousePosition = { x: 0, y: 0 };
         this.isMouseDown = false;
 
-        document.getElementById('particle-canvas').appendChild(this.canvas);
         this.resizeCanvas();
         this.createParticles();
         this.bindEvents();
@@ -44,6 +44,7 @@ class ParticleSystem {
     resizeCanvas() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
+        console.log('Canvas resized:', this.canvas.width, 'x', this.canvas.height);
     }
 
     createParticles() {
@@ -64,6 +65,7 @@ class ParticleSystem {
             const color = earthTones[Math.floor(Math.random() * earthTones.length)];
             this.particles.push(new Particle(x, y, radius, color));
         }
+        console.log('Particles created:', this.particles.length);
     }
 
     bindEvents() {
@@ -122,6 +124,7 @@ class ParticleSystem {
     }
 
     animate() {
+        console.log('Animation frame');
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.drawConnections();
@@ -144,4 +147,12 @@ class ParticleSystem {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => new ParticleSystem());
+window.particlesInit = function (canvas) {
+    console.log('Initializing particles for canvas:', canvas);
+    if (canvas instanceof HTMLCanvasElement) {
+        console.log('Valid canvas element, dimensions:', canvas.width, 'x', canvas.height);
+        new ParticleSystem(canvas);
+    } else {
+        console.error('Invalid canvas element:', canvas);
+    }
+}
