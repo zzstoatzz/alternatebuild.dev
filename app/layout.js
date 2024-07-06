@@ -10,14 +10,13 @@ const firaCode = Fira_Code({
 });
 
 export default function RootLayout({ children }) {
-    const basePath = process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : '';
 
     return (
         <html lang="en" className={firaCode.variable}>
             <Head>
                 <link
                     rel="preload"
-                    href={`${basePath}/js/particles.js`}
+                    href={`/js/particles.js`}
                     as="script"
                 />
             </Head>
@@ -36,17 +35,17 @@ export default function RootLayout({ children }) {
                         <ul className="footer-links">
                             <li>
                                 <a href="mailto:zzstoatzz@protonmail.com" target="_blank" rel="noopener noreferrer">
-                                    <img src={`${basePath}/assets/images/email-icon.webp`} alt="Email" />
+                                    <img src={`/assets/images/email-icon.webp`} alt="Email" />
                                 </a>
                             </li>
                             <li>
                                 <a href="https://x.com/Nathan_Nowack" target="_blank" rel="noopener noreferrer">
-                                    <img src={`${basePath}/assets/images/x-icon.png`} alt="Twitter" />
+                                    <img src={`/assets/images/x-icon.png`} alt="Twitter" />
                                 </a>
                             </li>
                             <li>
                                 <a href="https://github.com/zzstoatzz" target="_blank" rel="noopener noreferrer">
-                                    <img src={`${basePath}/assets/images/github-icon.png`} alt="GitHub" />
+                                    <img src={`/assets/images/github-icon.png`} alt="GitHub" />
                                 </a>
                             </li>
                         </ul>

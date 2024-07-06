@@ -6,7 +6,6 @@ import Script from 'next/script';
 export function ParticlesContainer() {
     const particlesInitialized = useRef(false);
     const canvasRef = useRef(null);
-    const basePath = process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : '';
 
     useEffect(() => {
         const initParticles = () => {
@@ -43,7 +42,7 @@ export function ParticlesContainer() {
                 }}
             />
             <Script
-                src={`${basePath}/js/particles.js`}
+                src={`/js/particles.js`}
                 strategy="afterInteractive"
                 onLoad={() => {
                     console.log('Particles script loaded');
