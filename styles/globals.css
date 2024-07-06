@@ -227,19 +227,22 @@ footer p {
     font-size: 0.8em;
 }
 
-
-
-#blog-posts {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .post-content img {
     max-width: 100%;
     height: auto;
     border-radius: 10px;
     margin: 20px 0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 400px) {
+    #blog-posts {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .blog-post {
+        margin: 1rem;
+    }
 }
