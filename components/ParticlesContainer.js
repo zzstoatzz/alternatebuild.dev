@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import Script from 'next/script'
+import { useEffect, useRef } from 'react';
+import Script from 'next/script';
 
 export function ParticlesContainer() {
     const particlesInitialized = useRef(false);
     const canvasRef = useRef(null);
+    const basePath = process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : '';
 
     useEffect(() => {
         const initParticles = () => {
@@ -42,7 +43,7 @@ export function ParticlesContainer() {
                 }}
             />
             <Script
-                src={`${process.env.NODE_ENV === 'production' ? '/alternatebuild.dev/js/particles.js' : '/js/particles.js'}`}
+                src={`${basePath}/js/particles.js`}
                 strategy="afterInteractive"
                 onLoad={() => {
                     console.log('Particles script loaded');
@@ -56,5 +57,5 @@ export function ParticlesContainer() {
                 }}
             />
         </>
-    )
+    );
 }
