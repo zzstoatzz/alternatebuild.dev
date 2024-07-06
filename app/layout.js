@@ -1,6 +1,7 @@
 import { Fira_Code } from 'next/font/google';
-import '../styles/globals.css'
-import { ParticlesContainer } from '../components/ParticlesContainer'
+import Head from 'next/head';
+import '../styles/globals.css';
+import { ParticlesContainer } from '../components/ParticlesContainer';
 
 const firaCode = Fira_Code({
     subsets: ['latin'],
@@ -11,6 +12,16 @@ const firaCode = Fira_Code({
 export default function RootLayout({ children }) {
     return (
         <html lang="en" className={firaCode.variable}>
+            <Head>
+                <link
+                    rel="preload"
+                    href="/path/to/font.woff2"
+                    as="font"
+                    type="font/woff2"
+                    crossorigin="anonymous"
+                />
+                <link rel="preload" href="/js/particles.js" as="script" />
+            </Head>
             <body>
                 <ParticlesContainer />
                 <div className="content">
@@ -45,5 +56,5 @@ export default function RootLayout({ children }) {
                 </div>
             </body>
         </html>
-    )
+    );
 }

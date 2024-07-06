@@ -6,4 +6,4 @@ const nextConfig = {
     basePath: process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : '',
 }
 
-module.exports = nextConfig
+module.exports = nextConfig;
