@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
             <Head>
                 <link
                     rel="preload"
-                    href={`${process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : ''}/js/particles.js`}
+                    href={`${process.env.NODE_ENV === 'production' ? '/alternatebuild.dev/js/particles.js' : '/js/particles.js'}`}
                     as="script"
                 />
             </Head>

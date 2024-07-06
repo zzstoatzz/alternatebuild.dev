@@ -4,6 +4,6 @@ const nextConfig = {
     images: { unoptimized: true },
     assetPrefix: process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : '',
     basePath: process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : '',
-}
+};
 
 module.exports = nextConfig;
