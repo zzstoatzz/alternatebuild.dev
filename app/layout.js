@@ -13,7 +13,11 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en" className={firaCode.variable}>
             <Head>
-                <link rel="preload" href="/js/particles.js" as="script" />
+                <link
+                    rel="preload"
+                    href={`${process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : ''}/js/particles.js`}
+                    as="script"
+                />
             </Head>
             <body>
                 <ParticlesContainer />

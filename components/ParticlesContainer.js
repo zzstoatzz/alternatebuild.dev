@@ -42,7 +42,7 @@ export function ParticlesContainer() {
                 }}
             />
             <Script
-                src="/js/particles.js"
+                src={`${process.env.NODE_ENV === 'production' ? '/alternatebuild.dev' : ''}/js/particles.js`}
                 strategy="afterInteractive"
                 onLoad={() => {
                     console.log('Particles script loaded');
