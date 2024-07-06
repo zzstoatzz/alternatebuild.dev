@@ -8,7 +8,7 @@ export default function Contact() {
             <h1>Contact Me</h1>
 
             <div className={styles.contactContent}>
-                <p>You can reach me at:</p>
+                <p>You can reach me via:</p>
                 <ul>
                     <li>Email: <a href="mailto:zzstoatzz@protonmail.com">zzstoatzz@protonmail.com</a></li>
                     <li>Twitter: <a href="https://twitter.com/Nathan_Nowack" target="_blank" rel="noopener noreferrer">@Nathan_Nowack</a></li>

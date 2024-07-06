@@ -14,6 +14,8 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en" className={firaCode.variable}>
             <Head>
+                <title>n8</title>
+                <link rel="icon" href="/assets/images/stoat.png" />
                 <link
                     rel="preload"
                     href={`/js/particles.js`}
