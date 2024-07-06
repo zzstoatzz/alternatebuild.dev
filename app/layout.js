@@ -13,13 +13,6 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en" className={firaCode.variable}>
             <Head>
-                <link
-                    rel="preload"
-                    href="/path/to/font.woff2"
-                    as="font"
-                    type="font/woff2"
-                    crossorigin="anonymous"
-                />
                 <link rel="preload" href="/js/particles.js" as="script" />
             </Head>
             <body>
