@@ -1,16 +1,30 @@
 import { getPostBySlug, getAllPosts } from '../../../lib/posts'
 import { marked } from 'marked'
+import styles from '../../posts/Post.module.css'
 
 export default function Post({ params }) {
     const post = getPostBySlug(params.slug)
 
+    marked.setOptions({
+        highlight: function (code, lang) {
+            const hljs = require('highlight.js');
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        },
+    });
+
     return (
-        <article className="post-content">
-            <h2>{post.title}</h2>
-            <p className="post-meta">
-                <time dateTime={post.date}>{new Date(post.date).toLocaleDateString()}</time>
-            </p>
-            <div className="post-body" dangerouslySetInnerHTML={{ __html: marked(post.content) }} />
+        <article className={styles.postContent}>
+            <header className={styles.postHeader}>
+                <h1>{post.title}</h1>
+                <p className={styles.postMeta}>
+                    <time dateTime={post.date}>{new Date(post.date).toLocaleDateString()}</time>
+                </p>
+            </header>
+            <div
+                className={styles.postBody}
+                dangerouslySetInnerHTML={{ __html: marked(post.content) }}
+            />
         </article>
     )
 }

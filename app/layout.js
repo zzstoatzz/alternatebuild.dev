@@ -1,12 +1,16 @@
+import { Fira_Code } from 'next/font/google';
 import '../styles/globals.css'
 import { ParticlesContainer } from '../components/ParticlesContainer'
 
+const firaCode = Fira_Code({
+    subsets: ['latin'],
+    weight: ['300', '400', '500'],
+    variable: '--font-fira-code',
+});
+
 export default function RootLayout({ children }) {
     return (
-        <html lang="en">
-            <head>
-                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet" />
-            </head>
+        <html lang="en" className={firaCode.variable}>
             <body>
                 <ParticlesContainer />
                 <div className="content">
