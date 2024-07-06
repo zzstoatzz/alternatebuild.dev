@@ -4,8 +4,8 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-    // basePath: '/alternatebuild.dev',
-    // assetPrefix: '/alternatebuild.dev/',
+    basePath: '/alternatebuild.dev',
+    assetPrefix: '/alternatebuild.dev/',
     trailingSlash: true,
 }
 
