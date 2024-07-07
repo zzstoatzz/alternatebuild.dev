@@ -3,7 +3,10 @@ import '../styles/globals.css';
 import { ParticlesContainer } from './components/ParticlesContainer';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
+import dynamic from 'next/dynamic';
 import styles from './components/Layout.module.css';
+
+const GithubInfo = dynamic(() => import('./components/GithubInfo'), { ssr: false });
 
 const firaCode = Fira_Code({
     subsets: ['latin'],
@@ -25,6 +28,7 @@ export default function RootLayout({ children }) {
                 <ParticlesContainer />
                 <div className={styles.mainContent}>
                     <Nav />
+                    <GithubInfo />
                     <main className={styles.pageContent}>
                         {children}
                     </main>
