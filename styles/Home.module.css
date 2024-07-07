@@ -5,16 +5,29 @@
     align-items: center;
     position: relative;
     z-index: 1;
-    /* Lower z-index to allow particles to be visible */
+}
+
+.imageContainer {
+    width: 100%;
+    max-width: 800px;
+    /* Adjust this value as needed */
+    height: 50vh;
+    /* This sets the container to 50% of the viewport height */
+    max-height: 500px;
+    /* This sets a maximum height */
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
 .duckImage {
     max-width: 100%;
-    height: auto;
-    margin-bottom: 20px;
+    max-height: 100%;
+    object-fit: contain;
     position: relative;
     z-index: 1;
-    /* Same z-index as .main to allow particles to be visible behind */
 }
 
 .title {
@@ -23,12 +36,10 @@
     text-align: center;
     position: relative;
     z-index: 2;
-    /* Higher z-index to ensure text is above particles */
 }
 
 .blogPosts {
     width: 100%;
     position: relative;
     z-index: 2;
-    /* Higher z-index to ensure blog posts are above particles */
 }

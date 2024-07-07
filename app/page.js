@@ -8,7 +8,9 @@ export default function Home() {
 
     return (
         <main className={styles.main}>
-            <img src="https://random-d.uk/api/randomimg" alt="Random Duck" className={styles.duckImage} />
+            <div className={styles.imageContainer}>
+                <img src="https://random-d.uk/api/randomimg" alt="Random Duck" className={styles.duckImage} />
+            </div>
             <h1 className={styles.title}>Recent Posts</h1>
             <section className={styles.blogPosts}>
                 {posts.map((post) => (
