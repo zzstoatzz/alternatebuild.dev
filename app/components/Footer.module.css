@@ -1,0 +1,44 @@
+.footer {
+    width: 100%;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.footerLinks {
+    list-style-type: none;
+    padding: 10px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    background-color: sienna;
+    max-width: 300px;
+    border-radius: 10px;
+}
+
+.footerItem {
+    display: inline-block;
+}
+
+.footerLink {
+    display: block;
+    text-decoration: none;
+    transition: transform 0.3s;
+}
+
+.footerIcon {
+    width: 30px;
+    /* Reduced from 40px for better mobile view */
+    height: 30px;
+    /* Reduced from 40px for better mobile view */
+}
+
+.footerLink:hover {
+    transform: scale(1.1);
+}
+
+.footerCopyright {
+    margin-top: 10px;
+    color: #ffffff;
+    font-size: 0.8em;
+}
