@@ -1,6 +1,11 @@
 .nav {
     width: 100%;
     padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(26, 26, 26, 0.8);
+    z-index: 1000;
 }
 
 .navList {

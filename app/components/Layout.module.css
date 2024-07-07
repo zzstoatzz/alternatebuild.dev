@@ -1,12 +1,16 @@
 .mainContent {
-    display: grid;
-    grid-template-columns: minmax(1rem, 1fr) minmax(auto, 90ch) minmax(1rem, 1fr);
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
+    padding-top: 60px;
+    padding-bottom: 100px;
 }
 
 .pageContent {
-    grid-column: 2;
+    flex-grow: 1;
     width: 100%;
+    max-width: 90ch;
+    margin: 0 auto;
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -14,7 +18,7 @@
 }
 
 @media (max-width: 768px) {
-    .mainContent {
-        grid-template-columns: minmax(0.5rem, 1fr) minmax(auto, 95%) minmax(0.5rem, 1fr);
+    .pageContent {
+        width: 95%;
     }
 }

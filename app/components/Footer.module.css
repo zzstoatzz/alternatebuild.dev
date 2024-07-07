@@ -2,6 +2,11 @@
     width: 100%;
     padding: 20px 0;
     text-align: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(26, 26, 26, 0.8);
+    z-index: 1000;
 }
 
 .footerLinks {
@@ -28,9 +33,7 @@
 
 .footerIcon {
     width: 30px;
-    /* Reduced from 40px for better mobile view */
     height: 30px;
-    /* Reduced from 40px for better mobile view */
 }
 
 .footerLink:hover {
