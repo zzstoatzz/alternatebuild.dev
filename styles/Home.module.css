@@ -3,20 +3,32 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 1;
+    /* Lower z-index to allow particles to be visible */
 }
 
 .duckImage {
     max-width: 100%;
     height: auto;
     margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    /* Same z-index as .main to allow particles to be visible behind */
 }
 
 .title {
     font-size: 2em;
     margin-bottom: 20px;
     text-align: center;
+    position: relative;
+    z-index: 2;
+    /* Higher z-index to ensure text is above particles */
 }
 
 .blogPosts {
     width: 100%;
+    position: relative;
+    z-index: 2;
+    /* Higher z-index to ensure blog posts are above particles */
 }

@@ -3,7 +3,12 @@
     flex-direction: column;
     min-height: 100vh;
     padding-top: 60px;
+    /* Adjust based on your nav height */
     padding-bottom: 100px;
+    /* Adjust based on your footer height */
+    position: relative;
+    z-index: 1;
+    /* Ensure this is above the particles */
 }
 
 .pageContent {
@@ -15,6 +20,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 1;
+    /* Same as mainContent to allow particles to show through */
 }
 
 @media (max-width: 768px) {
