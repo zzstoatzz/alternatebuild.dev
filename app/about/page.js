@@ -25,8 +25,11 @@ export default function About() {
         <main className={styles.content}>
             <h1>About Me</h1>
             <p>
-                Hello! I'm Nate - software engineer and ChE grad from the University of Michigan.
+                Hello! I'm Nate - software engineer and ChE grad from the University of Michigan. I grew up in the Upper Peninsula of Michigan and currently live in Logan Square, Chicago.
             </p>
+
+            <p>I am a physicist at heart and love graph theory. I want to build an evolutionary, ant-colony-ish network of LLMs that I can defer my most annoying tasks to.</p>
+
             <p>
                 Feel free to <a href="/contact">get in touch</a> if you have an idea for a project or just want to chat!
             </p>

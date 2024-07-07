@@ -1,42 +1,40 @@
-.projectCard {
+.blogPost {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 20px;
-    transition: transform 0.3s, box-shadow 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
 }
 
-.projectCard:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.projectTitle {
+.blogPostTitle {
     font-size: 1.5em;
+    margin-top: 0;
     margin-bottom: 10px;
-    font-weight: 500;
 }
 
-.projectDescription {
+.postPreview {
+    font-size: 0.9em;
+    line-height: 1.5;
     margin-bottom: 15px;
 }
 
-.projectLink {
+.readMore {
     display: inline-block;
+    margin-top: 10px;
     color: #00bfff;
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s;
 }
 
-.projectLinkText {
+.readMoreText {
     position: relative;
 }
 
-.projectLinkText::after {
+.readMoreText::after {
     content: '';
     position: absolute;
     width: 100%;
@@ -49,11 +47,11 @@
     transition: all 0.3s ease-in-out;
 }
 
-.projectLink:hover .projectLinkText::after {
+.readMore:hover .readMoreText::after {
     visibility: visible;
     transform: scaleX(1);
 }
 
-.projectLink:hover {
+.readMore:hover {
     color: #ffd700;
 }

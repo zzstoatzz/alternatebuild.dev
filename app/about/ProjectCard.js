@@ -4,9 +4,11 @@ import styles from './About.module.css';
 const ProjectCard = ({ title, description, link }) => {
     return (
         <div className={styles.projectCard}>
-            <h3>{title}</h3>
-            <p>{description}</p>
-            <a href={link} target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <h3 className={styles.projectTitle}>{title}</h3>
+            <p className={styles.projectDescription}>{description}</p>
+            <a href={link} className={styles.projectLink} target="_blank" rel="noopener noreferrer">
+                <span className={styles.projectLinkText}>View on GitHub</span>
+            </a>
         </div>
     );
 };

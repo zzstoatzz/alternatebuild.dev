@@ -1,4 +1,4 @@
-import { getPostBySlug, getAllPosts } from '../../../lib/posts'
+import { getPostBySlug, getAllPosts } from '../utils'
 import { marked } from 'marked'
 import styles from '../../posts/Post.module.css'
 
