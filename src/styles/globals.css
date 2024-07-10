@@ -6,8 +6,7 @@
     body {
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&display=swap');
         font-family: 'Fira Code', monospace;
-        background-color: #0a192f;
-        /* Slightly blueish dark background */
+        background-color: #1a1a1a;
         color: #d8dee5;
     }
 }

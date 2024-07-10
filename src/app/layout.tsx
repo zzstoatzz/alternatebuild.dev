@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" className={`${firaCode.variable} font-sans`}>
-            <body className="bg-black text-white">
+            <body className="bg-[#0B0B03] text-white">
                 <ParticlesContainer />
                 <div className="relative z-10 min-h-screen flex flex-col">
                     <Nav />

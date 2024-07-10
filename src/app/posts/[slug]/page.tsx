@@ -19,10 +19,7 @@ export default function Post({ params }: { params: { slug: string } }) {
     return (
         <article className="max-w-4xl mx-auto px-4 py-8">
             <header className="mb-8">
-                <h1 className="text-4xl font-bold text-cyan-300 mb-2">{post.title}</h1>
-                <p className="text-gray-400">
-                    <time dateTime={post.date}>{new Date(post.date).toLocaleDateString()}</time>
-                </p>
+                <h1 className="text-4xl font-bold text-cyan-300 mb-2">{post.slug}</h1>
             </header>
             <div
                 className="prose prose-invert prose-cyan max-w-none prose-headings:text-cyan-300 prose-a:text-cyan-400 prose-strong:text-cyan-200 prose-code:text-cyan-300 prose-pre:bg-gray-900 prose-pre:border prose-pre:border-cyan-900"
