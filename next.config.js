@@ -1,9 +1,7 @@
-const path = require('path');
-
-module.exports = {
-  webpack: (config, { isServer }) => {
-    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
-    return config;
-  },
-  // Other Next.js configuration
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    output: 'export',
+    images: { unoptimized: true },
 };
+
+module.exports = nextConfig;

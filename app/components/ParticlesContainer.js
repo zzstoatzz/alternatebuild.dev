@@ -5,20 +5,16 @@ import Script from 'next/script';
 
 export function ParticlesContainer() {
     const particlesInitialized = useRef(false);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const canvasRef = useRef(null);
 
     useEffect(() => {
         const initParticles = () => {
-            if (
-                canvasRef.current &&
-                typeof (window as any).particlesInit === 'function' &&
-                !particlesInitialized.current
-            ) {
+            if (canvasRef.current && typeof window.particlesInit === 'function' && !particlesInitialized.current) {
                 console.log('Initializing particles');
                 const canvas = canvasRef.current;
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
-                (window as any).particlesInit(canvas);
+                window.particlesInit(canvas);
                 particlesInitialized.current = true;
             }
         };
@@ -36,18 +32,26 @@ export function ParticlesContainer() {
             <canvas
                 id="particle-canvas"
                 ref={canvasRef}
-                className="fixed inset-0 w-full h-full pointer-events-none z-0"
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    zIndex: 0,  // Set to 0 to be behind all content
+                    pointerEvents: 'none',
+                }}
             />
             <Script
-                src="/js/particles.js"
+                src={`/js/particles.js`}
                 strategy="afterInteractive"
                 onLoad={() => {
                     console.log('Particles script loaded');
-                    if (canvasRef.current && typeof (window as any).particlesInit === 'function' && !particlesInitialized.current) {
+                    if (canvasRef.current && typeof window.particlesInit === 'function' && !particlesInitialized.current) {
                         const canvas = canvasRef.current;
                         canvas.width = window.innerWidth;
                         canvas.height = window.innerHeight;
-                        (window as any).particlesInit(canvas);
+                        window.particlesInit(canvas);
                         particlesInitialized.current = true;
                     }
                 }}
