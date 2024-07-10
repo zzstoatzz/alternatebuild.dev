@@ -3,7 +3,7 @@ import Image from 'next/image';
 export default function Footer() {
     return (
         <footer className="footer">
-            <ul className="flex justify-center space-x-4">
+            <ul className="footer-icons">
                 <li>
                     <a href="mailto:zzstoatzz@protonmail.com" target="_blank" rel="noopener noreferrer">
                         <Image src="/assets/images/email-icon.webp" alt="Email" width={24} height={24} className="footer-icon" />
