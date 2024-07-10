@@ -34,7 +34,7 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
-      - name: Build
+      - name: Build and Export
         run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

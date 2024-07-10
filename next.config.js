@@ -1,7 +1,10 @@
 const path = require('path');
 
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -14,3 +17,5 @@ module.exports = {
     return config;
   }
 };
+
+module.exports = nextConfig;
