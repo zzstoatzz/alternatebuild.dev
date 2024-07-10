@@ -2,9 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 
-const postsDirectory = path.join(process.cwd(), 'app/posts')
+const postsDirectory = path.join(process.cwd(), 'src/app/posts')
 
-export function getPosts() {
+export const getPosts = () => {
     const fileNames = fs.readdirSync(postsDirectory)
     const allPostsData = fileNames
         .filter(fileName => fileName.endsWith('.md'))
@@ -24,7 +24,19 @@ export function getPosts() {
     return allPostsData.sort((a, b) => (a.date < b.date ? 1 : -1))
 }
 
-export function getPostBySlug(slug) {
+
+export const getAllPosts = () => {
+    const fileNames = fs.readdirSync(postsDirectory)
+    return fileNames
+        .filter(fileName => fileName.endsWith('.md'))
+        .map(fileName => ({
+            params: {
+                slug: fileName.replace(/\.md$/, ''),
+            },
+        }))
+}
+
+export const getPostBySlug = (slug) => {
     const fullPath = path.join(postsDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
@@ -34,15 +46,4 @@ export function getPostBySlug(slug) {
         content,
         ...data,
     }
-}
-
-export function getAllPosts() {
-    const fileNames = fs.readdirSync(postsDirectory)
-    return fileNames
-        .filter(fileName => fileName.endsWith('.md'))
-        .map(fileName => ({
-            params: {
-                slug: fileName.replace(/\.md$/, ''),
-            },
-        }))
 }
