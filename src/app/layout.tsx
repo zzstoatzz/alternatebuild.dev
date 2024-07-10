@@ -4,7 +4,8 @@ import { ParticlesContainer } from './components/ParticlesContainer';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
+
 
 const GithubInfo = dynamic(() => import('./components/GithubInfo'), { ssr: false });
 

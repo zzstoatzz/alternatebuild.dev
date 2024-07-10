@@ -38,9 +38,123 @@
         margin-right: auto;
     }
 
+    .about-container {
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    .about-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #22d3ee;
+        margin-bottom: 1.5rem;
+    }
+
+    .about-text {
+        color: #d1d5db;
+        margin-bottom: 2rem;
+    }
+
+    .about-link {
+        color: #22d3ee;
+        transition: color 0.3s;
+    }
+
+    .about-link:hover {
+        color: #bae6fd;
+    }
+
+    .project-section-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #22d3ee;
+        margin-bottom: 1.5rem;
+    }
+
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .project-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .project-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    .contact-container {
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+
+    }
+
+    .contact-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #22d3ee;
+        margin-bottom: 2rem;
+    }
+
+    .contact-card {
+        background-color: #1f2937;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .contact-text {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .contact-list {
+        margin-bottom: 1.5rem;
+
+        >*+* {
+            margin-top: 1rem;
+        }
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .contact-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-right: 0.75rem;
+        color: #22d3ee;
+    }
+
+    .contact-link {
+        color: #22d3ee;
+        transition: color 0.3s;
+    }
+
+    .contact-link:hover {
+        color: #bae6fd;
+    }
+
+    .contact-footer {
+        color: #d1d5db;
+    }
+
     .post-card {
         background-color: rgba(30, 41, 59, 0.8);
-        /* Slightly transparent */
         border-radius: 0.5rem;
         padding: 1.5rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -56,7 +170,6 @@
         font-size: 1.5rem;
         font-weight: 700;
         color: #64ffda;
-        /* Light greenish cyan */
         margin-bottom: 0.5rem;
     }
 

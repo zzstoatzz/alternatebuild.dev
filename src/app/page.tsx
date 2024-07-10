@@ -8,7 +8,7 @@ export default function Home() {
     return (
         <main className="main-content">
             <div className="flex justify-center mb-8">
-                <img
+                <Image
                     src="https://random-d.uk/api/randomimg"
                     alt="Random Duck"
                     width={300}
