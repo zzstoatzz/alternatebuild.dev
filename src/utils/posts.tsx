@@ -2,8 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 
-const postsDirectory = path.join(process.cwd(), 'src/app/posts')
-
+const postsDirectory = path.join(process.cwd(), 'posts')
 export interface Post {
     slug: string;
     title: string;
@@ -46,3 +45,10 @@ export const getPostBySlug = (slug: string): Post => {
     }
     return post;
 }
+
+export const generateStaticParams = async () => {
+    const posts = getPosts();
+    return posts.map((post) => ({
+        slug: post.slug,
+    }));
+};
