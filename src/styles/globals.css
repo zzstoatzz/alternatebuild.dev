@@ -313,3 +313,37 @@
     max-width: 100%;
     height: auto;
 }
+
+.content-container {
+    background-color: rgba(175, 181, 240, 0.005);
+    backdrop-filter: blur(3px);
+    /* Adjust the pixel value for more or less blur */
+    padding: 10px;
+    border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding-top: 3rem;
+        padding-bottom: 2rem;
+    }
+
+    .about-container,
+    .contact-container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .project-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .post-card {
+        padding: 1rem;
+    }
+
+    .footer-icons {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+}

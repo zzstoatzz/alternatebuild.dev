@@ -1,6 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getPosts } from '@/utils/posts';
+import ReactMarkdown from 'react-markdown';
+
+function truncateExcerpt(excerpt: string, maxLength: number = 150) {
+    if (excerpt.length <= maxLength) return excerpt;
+    return excerpt.slice(0, excerpt.lastIndexOf(' ', maxLength)) + '...';
+}
 
 export default function Home() {
     const posts = getPosts();
@@ -16,14 +22,16 @@ export default function Home() {
                     className="rounded-lg"
                 />
             </div>
-            <h1 className="text-3xl font-bold mb-6 text-center">Recent Posts</h1>
+            <h1 className="text-4xl font-bold mb-6 text-center text-cyan-300">Recent Posts</h1>
             <section className="space-y-6">
                 {posts.map((post) => (
-                    <div key={post.slug} className="post-card">
-                        <h3 className="post-title">{post.title}</h3>
+                    <div key={post.slug} className="post-card group">
+                        <h3 className="post-title group-hover:text-cyan-400 transition-colors">{post.title}</h3>
                         <p className="post-date">{post.date}</p>
-                        <div className="post-excerpt">{post.excerpt}</div>
-                        <Link href={`/posts/${post.slug}`} className="read-more">
+                        <div className="post-excerpt">
+                            <ReactMarkdown>{truncateExcerpt(post.excerpt)}</ReactMarkdown>
+                        </div>
+                        <Link href={`/posts/${post.slug}`} className="read-more group-hover:underline">
                             Read more
                         </Link>
                     </div>

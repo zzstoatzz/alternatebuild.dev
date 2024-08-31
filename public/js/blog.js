@@ -1,3 +1,6 @@
+import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+
 async function fetchBlogPosts() {
     try {
         const response = await fetch('https://api.github.com/repos/zzstoatzz/alternatebuild.dev/contents/_posts');
@@ -46,45 +49,60 @@ function parsePostContent(content) {
     return { frontMatter, bodyContent };
 }
 
-function renderBlogPosts(posts) {
-    const blogPostsContainer = document.getElementById('blog-posts');
-    blogPostsContainer.innerHTML = '';
+function PostElement({ post }) {
+    const previewContent = post.bodyContent.split('\n').slice(0, 3).join(' ') + '...';
+    const title = post.frontMatter.title || post.name.replace('.md', '');
+    const date = post.frontMatter.date || 'No date';
 
-    if (posts.length === 0) {
-        blogPostsContainer.innerHTML = '<p>No blog posts found.</p>';
-        return;
-    }
-
-    posts.forEach(post => {
-        const postElement = document.createElement('div');
-        postElement.className = 'blog-post';
-        const previewContent = post.bodyContent.split('\n').slice(0, 3).join(' ') + '...';
-        const title = post.frontMatter.title || post.name.replace('.md', '');
-        const date = post.frontMatter.date || 'No date';
-
-        postElement.innerHTML = `
-            <h3>${title}</h3>
-            <p><em>${date}</em></p>
-            <div class="post-preview">${marked.parse(previewContent)}</div>
-            <a href="post.html?post=${post.name.replace('.md', '')}" class="read-more">Read more</a>
-        `;
-        blogPostsContainer.appendChild(postElement);
-    });
+    return (
+        <div className="blog-post">
+            <h3>{title}</h3>
+            <p><em>{date}</em></p>
+            <div className="post-preview">
+                <ReactMarkdown>{previewContent}</ReactMarkdown>
+            </div>
+            <a href={`post.html?post=${post.name.replace('.md', '')}`} className="read-more">Read more</a>
+        </div>
+    );
 }
 
-async function loadBlogPosts() {
-    try {
-        const posts = await fetchBlogPosts();
-        const postContents = await Promise.all(posts.map(fetchPostContent));
-        const parsedPosts = postContents
-            .filter(content => content !== null)
-            .map(parsePostContent)
-            .map((post, index) => ({ ...post, name: posts[index].name }));
-        renderBlogPosts(parsedPosts);
-    } catch (error) {
-        console.error('Error loading blog posts:', error);
-        document.getElementById('blog-posts').innerHTML = '<center><p>Failed to load blog posts.</p></center>';
-    }
+function BlogPosts() {
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        async function loadBlogPosts() {
+            try {
+                const fetchedPosts = await fetchBlogPosts();
+                const postContents = await Promise.all(fetchedPosts.map(fetchPostContent));
+                const parsedPosts = postContents
+                    .filter(content => content !== null)
+                    .map(parsePostContent)
+                    .map((post, index) => ({ ...post, name: fetchedPosts[index].name }));
+                setPosts(parsedPosts);
+            } catch (error) {
+                console.error('Error loading blog posts:', error);
+                setError('Failed to load blog posts.');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadBlogPosts();
+    }, []);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div><center><p>{error}</p></center></div>;
+    if (posts.length === 0) return <div><p>No blog posts found.</p></div>;
+
+    return (
+        <div id="blog-posts">
+            {posts.map((post, index) => (
+                <PostElement key={index} post={post} />
+            ))}
+        </div>
+    );
 }
 
-document.addEventListener('DOMContentLoaded', loadBlogPosts);
+export default BlogPosts;

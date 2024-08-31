@@ -33,7 +33,8 @@
   },
   "include": [
     "src",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/app/posts"
   ],
   "exclude": [
     "node_modules"

@@ -39,8 +39,8 @@ export default function PostPage({ params }: PostPageProps) {
     marked.use({ renderer });
 
     return (
-        <article className="max-w-4xl mx-auto px-4 py-8">
-            <header className="mb-8">
+        <article className="max-w-4xl mx-auto px-4 py-8 content-container">
+            <header className="mb-8 text-center">
                 <h1 className="text-4xl font-bold text-cyan-300 mb-2">{post.title}</h1>
                 <p className="text-gray-400">{post.date}</p>
             </header>

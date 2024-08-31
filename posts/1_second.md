@@ -13,23 +13,21 @@ in a certain kind of SaaS setting, its pretty easy to use redis to track this. h
 <br>
 
 ```python
+TaskKey: TypeAlias = str
+WorkerId: TypeAlias = str
+
 class InMemoryTaskWorkerTracker:
-    def __init__(
-        self, maxsize: int = 1000,
-        ttl: float = PREFECT_TASK_WORKER_RETENTION_PERIOD.value()
-    ):
-        self.workers: TTLCache[WorkerId, Set[TaskKey]] = TTLCache(
-            maxsize=maxsize, ttl=ttl
-        )
-        self.task_keys: Dict[TaskKey, Set[WorkerId]] = defaultdict(set)
-        self.worker_timestamps: Dict[WorkerId, float] = {}
+    def __init__(self):
+        self.workers = {}
+        self.task_keys = defaultdict(set)
+        self.worker_timestamps = {}
 ```
 
 This tracker observes workers as they subscribed to task keys and ping the server:
 
 ```python
 async def observe_worker(
-    self, task_keys: List[TaskKey], worker_id: WorkerId
+    self, task_keys: list[TaskKey], worker_id: WorkerId
 ) -> None:
     self.workers[worker_id] = self.workers.get(worker_id, set()) | set(task_keys)
     self.worker_timestamps[worker_id] = time.monotonic()
@@ -53,6 +51,22 @@ async def forget_worker(self, worker_id: WorkerId) -> None:
 Now, we can use this to filter task workers by task keys:
 
 ```python
+async def get_workers_for_task_keys(
+    self,
+    task_keys: list[TaskKey],
+) -> List[TaskWorkerResponse]:
+    if not task_keys:
+        return await self.get_all_workers()
+    active_workers = set().union(
+        *(self.task_keys[key] for key in task_keys)
+    )
+    return [self._create_worker_response(worker_id) for worker_id in active_workers]
+```
+
+and then expose an endpoint to allow clients to do this:
+
+
+```python
 @router.post("/filter")
 async def read_task_workers(
     task_worker_filter: Optional[TaskWorkerFilter] = Body(None)
@@ -64,3 +78,5 @@ async def read_task_workers(
     else:
         return await models.task_workers.get_all_workers()
 ```
+
+<br>

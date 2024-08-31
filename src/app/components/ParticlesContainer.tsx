@@ -30,10 +30,18 @@ export function ParticlesContainer() {
         };
 
         window.addEventListener('resize', initParticles);
-        initParticles();
+
+        // Wait for particlesInit to be defined
+        const checkParticlesInit = setInterval(() => {
+            if (typeof window.particlesInit === 'function') {
+                clearInterval(checkParticlesInit);
+                initParticles();
+            }
+        }, 100);
 
         return () => {
             window.removeEventListener('resize', initParticles);
+            clearInterval(checkParticlesInit);
         };
     }, []);
 
