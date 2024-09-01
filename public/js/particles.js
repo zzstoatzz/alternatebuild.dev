@@ -62,10 +62,10 @@ class ParticleSystem {
             <div id="controls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 2vmin;">
                 <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit;">particle settings</button>
                 <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; margin-top: 1vmin;">
-                    <label>Particle Count: <input type="range" id="particleCount" min="100" max="2000" value="${PARTICLE_COUNT}"></label><br>
-                    <label>Explosion Radius: <input type="range" id="explosionRadius" min="50" max="400" value="${EXPLOSION_RADIUS}"></label><br>
-                    <label>Gravity Constant: <input type="range" id="gravityConstant" min="0" max="0.01" step="0.0001" value="${GRAVITY_CONSTANT}"></label><br>
-                    <label>Interaction Radius: <input type="range" id="interactionRadius" min="10" max="100" value="${INTERACTION_RADIUS}"></label>
+                    <label>particle count: <input type="range" id="particleCount" min="100" max="2000" value="${PARTICLE_COUNT}"> <span id="particleCountValue">${PARTICLE_COUNT}</span></label><br>
+                    <label>mouse force: <input type="range" id="explosionRadius" min="50" max="400" value="${EXPLOSION_RADIUS}"> <span id="explosionRadiusValue">${EXPLOSION_RADIUS}</span></label><br>
+                    <label>gravity: <input type="range" id="gravityConstant" min="-10" max="10" step="0.001" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue">${GRAVITY_CONSTANT}</span></label><br>
+                    <label>interaction radius: <input type="range" id="interactionRadius" min="10" max="100" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue">${INTERACTION_RADIUS}</span></label>
                 </div>
             </div>
         `);
@@ -155,8 +155,16 @@ class ParticleSystem {
                 this.updateConstants();
                 this.particles = [];
                 this.createParticles();
+                this.updateSliderValues();
             });
         });
+    }
+
+    updateSliderValues() {
+        document.getElementById('particleCountValue').textContent = PARTICLE_COUNT;
+        document.getElementById('explosionRadiusValue').textContent = EXPLOSION_RADIUS;
+        document.getElementById('gravityConstantValue').textContent = GRAVITY_CONSTANT.toFixed(3);
+        document.getElementById('interactionRadiusValue').textContent = INTERACTION_RADIUS;
     }
 
     drawConnections() {
@@ -183,17 +191,15 @@ class ParticleSystem {
         const distSq = dx * dx + dy * dy;
 
         if (distSq > MIN_GRAVITY_DISTANCE && distSq < INTERACTION_RADIUS * INTERACTION_RADIUS) {
-            const mass1 = p1.clusterMass || p1.mass;
-            const mass2 = p2.clusterMass || p2.mass;
-            const force = GRAVITY_CONSTANT * (mass1 * mass2) / distSq;
-            const angle = Math.atan2(dy, dx);
-            const forcex = Math.cos(angle) * force;
-            const forcey = Math.sin(angle) * force;
+            const distance = Math.sqrt(distSq);
+            const force = GRAVITY_CONSTANT * (p1.mass * p2.mass) / distSq;
+            const forceX = force * dx / distance;
+            const forceY = force * dy / distance;
 
-            p1.velocity.x += forcex / mass1;
-            p1.velocity.y += forcey / mass1;
-            p2.velocity.x -= forcex / mass2;
-            p2.velocity.y -= forcey / mass2;
+            p1.velocity.x += forceX / p1.mass;
+            p1.velocity.y += forceY / p1.mass;
+            p2.velocity.x -= forceX / p2.mass;
+            p2.velocity.y -= forceY / p2.mass;
         }
     }
 
