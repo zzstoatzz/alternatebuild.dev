@@ -59,9 +59,9 @@ class ParticleSystem {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.canvas.insertAdjacentHTML('beforebegin', `
-            <div id="controls" style="position: fixed; top: 10px; left: 10px; z-index: 1000;">
-                <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">particle settings</button>
-                <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; margin-top: 5px;">
+            <div id="controls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 2vmin;">
+                <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit;">particle settings</button>
+                <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; margin-top: 1vmin;">
                     <label>Particle Count: <input type="range" id="particleCount" min="100" max="2000" value="${PARTICLE_COUNT}"></label><br>
                     <label>Explosion Radius: <input type="range" id="explosionRadius" min="50" max="400" value="${EXPLOSION_RADIUS}"></label><br>
                     <label>Gravity Constant: <input type="range" id="gravityConstant" min="0" max="0.01" step="0.0001" value="${GRAVITY_CONSTANT}"></label><br>
@@ -69,6 +69,29 @@ class ParticleSystem {
                 </div>
             </div>
         `);
+
+        // Add this after the insertAdjacentHTML call
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            @media (max-width: 768px) {
+                #controls {
+                    top: auto !important;
+                    bottom: 2vh !important;
+                    right: 2vw !important;
+                    left: 2vw !important;
+                }
+                #controlsContent {
+                    position: fixed;
+                    bottom: calc(2vh + 6vmin);
+                    right: 2vw;
+                    left: 2vw;
+                    max-height: 70vh;
+                    overflow-y: auto;
+                }
+            }
+        `;
+        document.head.appendChild(styleElement);
+
         document.getElementById('configToggle').addEventListener('click', () => {
             const content = document.getElementById('controlsContent');
             content.style.display = content.style.display === 'none' ? 'block' : 'none';
