@@ -58,19 +58,19 @@ class ParticleSystem {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
+        const maxParticleCount = window.innerWidth < 768 ? 1000 : 2000;
         this.canvas.insertAdjacentHTML('beforebegin', `
-            <div id="controls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 2vmin;">
+            <div id="controls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 1.5vmin;">
                 <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit;">particle settings</button>
-                <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; margin-top: 1vmin;">
-                    <label>particle count: <input type="range" id="particleCount" min="100" max="2000" value="${PARTICLE_COUNT}"> <span id="particleCountValue">${PARTICLE_COUNT}</span></label><br>
-                    <label>mouse force: <input type="range" id="explosionRadius" min="50" max="400" value="${EXPLOSION_RADIUS}"> <span id="explosionRadiusValue">${EXPLOSION_RADIUS}</span></label><br>
-                    <label>gravity: <input type="range" id="gravityConstant" min="-10" max="10" step="0.001" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue">${GRAVITY_CONSTANT}</span></label><br>
-                    <label>interaction radius: <input type="range" id="interactionRadius" min="10" max="100" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue">${INTERACTION_RADIUS}</span></label>
+                <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; margin-top: 1vmin; position: absolute; top: 100%; right: 0; font-size: 1vmin;">
+                    <label style="display: flex; justify-content: space-between; align-items: center;">particle count: <input type="range" id="particleCount" min="100" max="${maxParticleCount}" value="${PARTICLE_COUNT}" style="margin-left: 1vmin;"> <span id="particleCountValue" style="margin-left: 1vmin;">${PARTICLE_COUNT}</span></label><br>
+                    <label style="display: flex; justify-content: space-between; align-items: center;">mouse force: <input type="range" id="explosionRadius" min="50" max="400" value="${EXPLOSION_RADIUS}""> <span id="explosionRadiusValue" style="margin-left: 1vmin;">${EXPLOSION_RADIUS}</span></label><br>
+                    <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravityConstant" min="-10" max="10" step="0.001" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue" style="margin-left: 1vmin;">${GRAVITY_CONSTANT}</span></label><br>
+                    <label style="display: flex; justify-content: space-between; align-items: center;">interaction radius: <input type="range" id="interactionRadius" min="10" max="100" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue" style="margin-left: 1vmin;">${INTERACTION_RADIUS}</span></label>
                 </div>
             </div>
         `);
 
-        // Add this after the insertAdjacentHTML call
         const styleElement = document.createElement('style');
         styleElement.textContent = `
             @media (max-width: 768px) {
@@ -92,7 +92,8 @@ class ParticleSystem {
         `;
         document.head.appendChild(styleElement);
 
-        document.getElementById('configToggle').addEventListener('click', () => {
+        document.getElementById('configToggle').addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent click from propagating to the document
             const content = document.getElementById('controlsContent');
             content.style.display = content.style.display === 'none' ? 'block' : 'none';
         });
