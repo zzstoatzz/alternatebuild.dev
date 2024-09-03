@@ -9,7 +9,7 @@ date: "2024-09-02"
 
 grug hear internet have many cat facts - want cat facts fast, grug brain go purrrrr.
 
-grug scratch head, then idea come. grug try three way to get 100 cat facts:
+grug scratch head, then idea come. grug try three way to get 23 cat facts:
 
 <br>
 
@@ -35,9 +35,10 @@ MAX_CAT_FACT_LENGTH = 500
 
 def get_cat_fact(max_length: int) -> str:
     response = httpx.get(f"https://catfact.ninja/fact?max_length={max_length}")
+    response.raise_for_status()
     return response.json()["fact"]
 
-def grug_way(n: int = 100):
+def grug_way(n: int = 23):
     start_time = time.time()
     cat_facts = []
     for _ in range(n):
@@ -45,15 +46,16 @@ def grug_way(n: int = 100):
     end_time = time.time()
     return cat_facts, end_time - start_time
 
-facts, grug_time = grug_way()
-print(f"grug time: {grug_time:.2f} seconds")
-print(f"grug first fact: {facts[0]}")
+if __name__ == "__main__":
+    facts, grug_time = grug_way()
+    print(f"grug time: {grug_time:.2f} seconds")
+    print(f"grug first fact: {facts[0]}")
 ```
 
 grug run code, see result:
 
 ```
-grug time: 13.64 seconds
+grug time: 3.41 seconds
 grug first fact: Cats have over 20 muscles that control their ears.
 ```
 
@@ -68,7 +70,6 @@ young grug tell grug about `asyncio`. grug suspicious. `asyncio` sound like comp
 ```python
 import asyncio
 import httpx
-from prefect import flow, task
 import time
 
 MAX_CAT_FACT_LENGTH = 500
@@ -76,16 +77,17 @@ MAX_CAT_FACT_LENGTH = 500
 async def get_cat_fact(max_length: int) -> str:
     async with httpx.AsyncClient() as client:
         response = await client.get(f"https://catfact.ninja/fact?max_length={max_length}")
+        response.raise_for_status()
         return response.json()["fact"]
 
-async def fancy_way(n: int = 100):
+async def fancy_gather_way(n: int = 23):
     start_time = time.time()
     tasks = [get_cat_fact(MAX_CAT_FACT_LENGTH) for _ in range(n)]
     cat_facts = await asyncio.gather(*tasks)
     end_time = time.time()
     return cat_facts, end_time - start_time
 
-facts, fancy_time = asyncio.run(fancy_way())
+facts, fancy_time = asyncio.run(fancy_gather_way())
 print(f"fancy time: {fancy_time:.2f} seconds")
 print(f"fancy first fact: {facts[0]}")
 ```
@@ -93,7 +95,7 @@ print(f"fancy first fact: {facts[0]}")
 grug run fancy code, see result:
 
 ```
-fancy time: 2.42 seconds
+fancy time: 0.61 seconds
 fancy first fact: A cat called Dusty has the known record for the most kittens. She had more than 420 kittens in her lifetime.
 ```
 
@@ -148,40 +150,39 @@ MAX_CAT_FACT_LENGTH = 500
 @task
 def get_cat_fact(max_length: int) -> str:
     response = httpx.get(f"https://catfact.ninja/fact?max_length={max_length}")
-    if response.status_code != 200:
-        raise ValueError(f"Failed to get cat fact: {response.text}")
+    response.raise_for_status()
     return response.json()["fact"]
 
 @flow
-def magic_stone_way(n: int = 100):
+def magic_stone_way(n: int = 23):
     start_time = time.time()
     cat_facts = get_cat_fact.map([MAX_CAT_FACT_LENGTH] * n).result()
     end_time = time.time()
     return cat_facts, end_time - start_time
 
 facts, magic_time = magic_stone_way()
-print(f"magic stone time: {magic_time:.2f} seconds")
-print(f"magic stone first fact: {facts[0]}")
+print(f"magic 🗿 time: {magic_time:.2f} seconds")
+print(f"magic 🗿 first fact: {facts[0]}")
 ```
 
 grug run magic stone code, see result:
 
 ```
-magic stone time: 2.81 seconds
+magic stone time: 0.74 seconds
 magic stone first fact: Cat bites are more likely to become infected than dog bites.
 ```
 
-grug very happy. magic stone fast like fancy way, but simple like grug way. grug think found treasure.
+grug happy. magic stone fast like fancy way, but simple like grug way. grug can stalk task in UI.
 
 <br>
 
-grug open http://localhost:4200 to see prefect UI, see many task happen at same time:
+when grug open http://localhost:4200, see many task happen at same time:
 
 ![grug cat](../assets/grug-run.png)
 
 <br>
 
-grug see many cat facts, all at same time. grug feel like grug king, rule over cat facts.
+grug see many cat facts, all at same time. grug feel is grug king, rule over cat facts.
 
 <br>
 
@@ -194,15 +195,15 @@ grug see many cat facts, all at same time. grug feel like grug king, rule over c
 
 <br>
 
--- fancy way fast but smell like complexity demon. many new words make grug head hurt. like trying catch mouse with complicated trap, maybe catch grug finger instead.
+-- fancy way fast but many new words make grug head hurt. like trying catch mouse with complicated trap, catch grug finger instead.
 
 <br>
 
--- magic stone way (`.map`) fast and simple. grug like magic stone. like smart cat that catch mouse for grug.
+-- magic 🗿 way (`.map`) fast and simple. grug likes magic 🗿 - like smart cat that catch mouse for grug.
 
 <br>
 
-grug say: when need do same thing many times, try magic `.map` stone. magic `.map` stone turn simple code into fast code, no complexity demon smell.
+grug say: when need do same thing many times, try magic `.map` 🗿. magic `.map` 🗿 turn simple code into fast code, no complexity demon smell.
 
 
 <br>

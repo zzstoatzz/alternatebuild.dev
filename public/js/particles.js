@@ -62,7 +62,7 @@ class ParticleSystem {
         this.canvas.insertAdjacentHTML('beforebegin', `
             <div id="controls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 1.5vmin;">
                 <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit;">particle settings</button>
-                <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; margin-top: 1vmin; position: absolute; top: 100%; right: 0; font-size: 1vmin;">
+                <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; position: fixed; z-index: 1001; font-size: 1vmin;">
                     <label style="display: flex; justify-content: space-between; align-items: center;">particle count: <input type="range" id="particleCount" min="100" max="${maxParticleCount}" value="${PARTICLE_COUNT}" style="margin-left: 1vmin;"> <span id="particleCountValue" style="margin-left: 1vmin;">${PARTICLE_COUNT}</span></label><br>
                     <label style="display: flex; justify-content: space-between; align-items: center;">mouse force: <input type="range" id="explosionRadius" min="50" max="400" value="${EXPLOSION_RADIUS}""> <span id="explosionRadiusValue" style="margin-left: 1vmin;">${EXPLOSION_RADIUS}</span></label><br>
                     <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravityConstant" min="-10" max="10" step="0.001" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue" style="margin-left: 1vmin;">${GRAVITY_CONSTANT}</span></label><br>
@@ -82,9 +82,6 @@ class ParticleSystem {
                 }
                 #controlsContent {
                     position: fixed;
-                    bottom: calc(2vh + 6vmin);
-                    right: 2vw;
-                    left: 2vw;
                     max-height: 70vh;
                     overflow-y: auto;
                 }
@@ -93,9 +90,41 @@ class ParticleSystem {
         document.head.appendChild(styleElement);
 
         document.getElementById('configToggle').addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent click from propagating to the document
+            event.stopPropagation();
             const content = document.getElementById('controlsContent');
-            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            const button = event.currentTarget;
+            const buttonRect = button.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const windowWidth = window.innerWidth;
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+
+                // Calculate available space
+                const spaceAbove = buttonRect.top;
+                const spaceBelow = windowHeight - buttonRect.bottom;
+                const spaceLeft = buttonRect.left;
+                const spaceRight = windowWidth - buttonRect.right;
+
+                // Position the content based on available space
+                if (spaceBelow >= spaceAbove) {
+                    content.style.top = `${buttonRect.bottom}px`;
+                    content.style.bottom = 'auto';
+                } else {
+                    content.style.bottom = `${windowHeight - buttonRect.top}px`;
+                    content.style.top = 'auto';
+                }
+
+                if (spaceRight >= spaceLeft) {
+                    content.style.left = `${buttonRect.left}px`;
+                    content.style.right = 'auto';
+                } else {
+                    content.style.right = `${windowWidth - buttonRect.right}px`;
+                    content.style.left = 'auto';
+                }
+            } else {
+                content.style.display = 'none';
+            }
         });
         this.particles = [];
         this.mousePosition = { x: 0, y: 0 };
@@ -148,6 +177,13 @@ class ParticleSystem {
         });
         window.addEventListener('mousedown', () => this.isMouseDown = true);
         window.addEventListener('mouseup', () => this.isMouseDown = false);
+        window.addEventListener('resize', () => {
+            const content = document.getElementById('controlsContent');
+            if (content.style.display !== 'none') {
+                document.getElementById('configToggle').click();
+                document.getElementById('configToggle').click();
+            }
+        });
     }
 
     bindSliderEvents() {
