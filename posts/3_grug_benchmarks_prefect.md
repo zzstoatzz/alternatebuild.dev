@@ -9,7 +9,7 @@ date: "2024-09-02"
 
 grug hear internet have many cat facts - want cat facts fast, grug brain go purrrrr.
 
-grug scratch head, then idea come. grug try three way:
+grug scratch head, then idea come. grug try three way to get 100 cat facts:
 
 <br>
 
@@ -31,15 +31,17 @@ grug start simple. grug know `for` loop. `for` loop like caveman tool, always wo
 import httpx
 import time
 
+MAX_CAT_FACT_LENGTH = 500
+
 def get_cat_fact(max_length: int) -> str:
     response = httpx.get(f"https://catfact.ninja/fact?max_length={max_length}")
     return response.json()["fact"]
 
-def grug_way():
+def grug_way(n: int = 100):
     start_time = time.time()
     cat_facts = []
-    for _ in range(10):
-        cat_facts.append(get_cat_fact(100))
+    for _ in range(n):
+        cat_facts.append(get_cat_fact(MAX_CAT_FACT_LENGTH))
     end_time = time.time()
     return cat_facts, end_time - start_time
 
@@ -51,7 +53,7 @@ print(f"grug first fact: {facts[0]}")
 grug run code, see result:
 
 ```
-grug time: 1.40 seconds
+grug time: 13.64 seconds
 grug first fact: Cats have over 20 muscles that control their ears.
 ```
 
@@ -69,14 +71,16 @@ import httpx
 from prefect import flow, task
 import time
 
+MAX_CAT_FACT_LENGTH = 500
+
 async def get_cat_fact(max_length: int) -> str:
     async with httpx.AsyncClient() as client:
         response = await client.get(f"https://catfact.ninja/fact?max_length={max_length}")
         return response.json()["fact"]
 
-async def fancy_way():
+async def fancy_way(n: int = 100):
     start_time = time.time()
-    tasks = [get_cat_fact(100) for _ in range(10)]
+    tasks = [get_cat_fact(MAX_CAT_FACT_LENGTH) for _ in range(n)]
     cat_facts = await asyncio.gather(*tasks)
     end_time = time.time()
     return cat_facts, end_time - start_time
@@ -89,7 +93,7 @@ print(f"fancy first fact: {facts[0]}")
 grug run fancy code, see result:
 
 ```
-fancy time: 0.33 seconds
+fancy time: 2.42 seconds
 fancy first fact: A cat called Dusty has the known record for the most kittens. She had more than 420 kittens in her lifetime.
 ```
 
@@ -139,15 +143,19 @@ from prefect import flow, task
 import httpx
 import time
 
+MAX_CAT_FACT_LENGTH = 500
+
 @task
 def get_cat_fact(max_length: int) -> str:
     response = httpx.get(f"https://catfact.ninja/fact?max_length={max_length}")
+    if response.status_code != 200:
+        raise ValueError(f"Failed to get cat fact: {response.text}")
     return response.json()["fact"]
 
 @flow
-def magic_stone_way():
+def magic_stone_way(n: int = 100):
     start_time = time.time()
-    cat_facts = get_cat_fact.map([100] * 10).result()
+    cat_facts = get_cat_fact.map([MAX_CAT_FACT_LENGTH] * n).result()
     end_time = time.time()
     return cat_facts, end_time - start_time
 
@@ -159,7 +167,7 @@ print(f"magic stone first fact: {facts[0]}")
 grug run magic stone code, see result:
 
 ```
-magic stone time: 0.43 seconds
+magic stone time: 2.81 seconds
 magic stone first fact: Cat bites are more likely to become infected than dog bites.
 ```
 
