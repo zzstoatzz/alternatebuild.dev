@@ -106,7 +106,7 @@ grug impressed with speed. but grug worried. too many new words: `async`, `await
 ## magic 🗿 way (Prefect `.map`)
 
 
-grug read about `prefect` on `r/dataengineering`. grug learn `prefect` is tool for making flow of tasks. grug think flow like river, task like rock in river. prefect help flow around rock.
+grug read about `prefect` on r/dataengineering. grug learn `prefect` is tool for making flow of tasks. grug think flow like river, task like rock in river. prefect help flow around rock.
 
 <br>
 
