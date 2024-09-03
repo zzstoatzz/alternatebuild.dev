@@ -15,7 +15,7 @@ grug scratch head, then idea come. grug try three way to get 23 cat facts:
 
 -- grug way (`for` loop)
 -- fancy way (`asyncio gather`)
--- magic stone way (Prefect `.map`)
+-- magic 🗿 way (Prefect `.map`)
 
 <br>
 
@@ -103,7 +103,7 @@ grug impressed with speed. but grug worried. too many new words: `async`, `await
 
 <br>
 
-## magic stone way (Prefect `.map`)
+## magic 🗿 way (Prefect `.map`)
 
 
 grug read about `prefect` on r/dataengineering. grug learn `prefect` is tool for making flow of tasks. grug think flow like river, task like rock in river. prefect help flow around rock.
@@ -127,18 +127,20 @@ and grug install special rock tools:
 uv pip install prefect
 ```
 
-and link grug box to whale box:
+young grug say `uv` is faster than `pip`. grug like fast.
+
+<br>
+
+grug link grug box to whale box:
 
 ```bash
 prefect config set PREFECT_API_URL="http://0.0.0.0:4200/api"
 ```
 
-young grug say `uv` is faster than `pip`. grug like fast.
-
 <br>
 
 
-grug hear Prefect `.map` can repeat same task many times, like magic stone. grug like magic stone. grug try:
+grug hear Prefect `.map` repeat same task many times, like favorable magic 🗿. grug try:
 
 ```python
 from prefect import flow, task
@@ -165,14 +167,14 @@ print(f"magic 🗿 time: {magic_time:.2f} seconds")
 print(f"magic 🗿 first fact: {facts[0]}")
 ```
 
-grug run magic stone code, see result:
+grug see result:
 
 ```
-magic stone time: 0.74 seconds
-magic stone first fact: Cat bites are more likely to become infected than dog bites.
+magic 🗿 time: 0.74 seconds
+magic 🗿 first fact: Cat bites are more likely to become infected than dog bites.
 ```
 
-grug happy. magic stone fast like fancy way, but simple like grug way. grug can stalk task in UI.
+grug happy - 🗿 fast in fancy way, but simple in grug way. grug can stalk task in UI.
 
 <br>
 
