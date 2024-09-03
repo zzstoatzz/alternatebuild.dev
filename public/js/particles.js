@@ -7,15 +7,15 @@ const MIN_PARTICLE_RADIUS = 1;
 const MAX_PARTICLE_RADIUS = 4;
 
 // Experimental constants
-const DRAG_CONSTANT = 0.01;
-const ELASTICITY_CONSTANT = 0.5;
-const INITIAL_VELOCITY_RANGE = 0.1;
+let DRAG_CONSTANT = 0.01;
+let ELASTICITY_CONSTANT = 0.5;
+let INITIAL_VELOCITY_RANGE = 0.1;
 
-const CONNECTION_OPACITY = 0.03;
+let CONNECTION_OPACITY = 0.03;
 const MIN_GRAVITY_DISTANCE = 0.01;
-const MAX_HEAT_FACTOR = 0.2;
-const MIN_CLUSTER_OPACITY = 0.6;
-const OPACITY_REDUCTION_FACTOR = 1;
+let MAX_HEAT_FACTOR = 0.2;
+let MIN_CLUSTER_OPACITY = 0.6;
+let OPACITY_REDUCTION_FACTOR = 1;
 
 class Particle {
     constructor(position, radius, color) {
