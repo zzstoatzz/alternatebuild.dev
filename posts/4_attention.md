@@ -7,7 +7,7 @@ I love twitter - been on there a long time, since 2012 (prob not as old as you, 
 
 <br>
 
-I know its a dismissive meme among many to say "I listen to Sam Harris' podcast"[<a href="#fn1" id="fnref1">1</a>] but generally I resonate with aspects of [his experience](https://www.youtube.com/watch?v=hAqifI_Eq9M) there. Spending time on there really does seem to derange my perspective of others in society at large -- the most critique-able facets most likely to be in my face at any given moment. I'd argue it's a framing problem: both on my end and on the platform's end (one that Elon and Zuck aren't eager to fix) that is perhaps best summarized hyperbolically (...._smh_..... damn it, whatever):
+Sure, its a dismissive meme among many to say "I listen to Sam Harris' podcast"[<a href="#fn1" id="fnref1">1</a>] but generally I resonate with aspects of [his experience](https://www.youtube.com/watch?v=hAqifI_Eq9M) there. Spending time on there really does seem to derange my perspective of others in society at large -- the most critique-able facets most likely to be in my face at any given moment. I'd argue it's a framing problem: both on my end and on the platform's end (one that Elon and Zuck aren't eager to fix) that is perhaps best summarized hyperbolically (...._smh_..... damn it, whatever):
 
 
 <blockquote style="background: rgba(0, 0, 0, 0.7); border-left: 10px solid #ccc; margin: 1.5em 10px; padding: 1em 10px; color: #fff;">
@@ -17,7 +17,7 @@ I know its a dismissive meme among many to say "I listen to Sam Harris' podcast"
 
 <br>
 
-I -- like I imagine most casual instagram or LinkedIn users do -- feel the pull to contort or curate my "online presence". The facebook people seem to have stop trying, or more likely, just on average have wayyyyyyyy different desired end goals with that curation. However there's this certain class of Twitter user that are just literally like electronic billboards, constantly flashing sensational garbage in my face under the pretense of knowledge-sharing (yes LinkedIn does this too, it's just not worth being there in the first place, so I don't get worked up about it 🙂). There are certainly valid reasons to be sensational, like when an intellectually engaged person that's deeply embroiled in their domain of expertise makes some observation or discovery, or some genuinely shocking news occurs in the world....
+Like I imagine most casual instagram or LinkedIn users do -- I feel the pull to contort or curate my "online presence". The facebook people seem to have stopped trying, or more likely, just on average have wayyyyyyyy different desired end goals with that curation. However there's this certain class of Twitter user that are just literally like electronic billboards, constantly flashing sensational garbage in my face under the pretense of knowledge-sharing (yes LinkedIn does this too, it's just not worth being there in the first place, so I don't get worked up about it 🙂). There are certainly valid reasons to be sensational, like when an intellectually engaged person that's deeply embroiled in their domain of expertise makes some observation or discovery, or some genuinely shocking news occurs in the world....
 
 <br>
 
