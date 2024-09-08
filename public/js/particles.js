@@ -14,16 +14,16 @@ const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.01 };
 let PARTICLE_COUNT = 710;
 let EXPLOSION_RADIUS = 200;
 const EXPLOSION_FORCE = 1.0;
-let GRAVITY_CONSTANT = -0.02;
-let INTERACTION_RADIUS = 174;
+let GRAVITY_CONSTANT = -0.200;
+let INTERACTION_RADIUS = 204;
 const MIN_PARTICLE_RADIUS = 1;
 const MAX_PARTICLE_RADIUS = 4;
 
-let DRAG_CONSTANT = 0.10;
+let DRAG_CONSTANT = 0.150;
 let ELASTICITY_CONSTANT = 0.3;
 let INITIAL_VELOCITY_RANGE = 0;
 
-let CONNECTION_OPACITY = 0.01;
+let CONNECTION_OPACITY = 0.013;
 const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
@@ -31,6 +31,29 @@ let OPACITY_REDUCTION_FACTOR = 1;
 
 const DEFAULT_CONNECTION_COLOR = '#00db6a';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
+
+// Define palettes
+const PALETTES = {
+    default: [
+        'rgba(142, 106, 63, 0.6)',
+        'rgba(113, 98, 83, 0.6)',
+        'rgba(94, 75, 60, 0.6)',
+        'rgba(66, 92, 73, 0.6)',
+        'rgba(152, 151, 100, 0.6)',
+        'rgba(70, 130, 180, 0.6)',
+        'rgba(100, 149, 237, 0.6)',
+    ],
+    highContrast: [
+        'rgba(255, 0, 0, 0.6)',
+        'rgba(0, 255, 0, 0.6)',
+        'rgba(0, 0, 255, 0.6)',
+        'rgba(255, 255, 0, 0.6)',
+        'rgba(255, 0, 255, 0.6)',
+    ],
+    custom: []
+};
+
+let currentPalette = 'default';
 
 class Particle {
     constructor(position, radius, color) {
@@ -95,6 +118,19 @@ class ParticleSystem {
                             <label style="display: flex; justify-content: space-between; align-items: center;">opacity reduction: <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}"> <span id="opacityReductionFactorValue" style="margin-left: 1vmin;">${OPACITY_REDUCTION_FACTOR}</span></label>
                         </div>
                     </details>
+                    <div style="margin-top: 1vmin;">
+                        <label for="colorPalette">Color Palette:</label>
+                        <select id="colorPalette">
+                            <option value="default">Default</option>
+                            <option value="highContrast">High Contrast</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div id="customPaletteControls" style="display: none; margin-top: 1vmin;">
+                        <input type="color" id="newColor" value="#000000">
+                        <button id="addColor">Add Color</button>
+                        <div id="customColorList"></div>
+                    </div>
                 </div>
             </div>
         `);
@@ -185,6 +221,12 @@ class ParticleSystem {
         this.isMouseDown = false;
 
         this.resizeCanvas();
+        this.updatePaletteDropdown();
+        this.updateCustomPaletteDisplay();
+        const customControls = document.getElementById('customPaletteControls');
+        if (customControls) {
+            customControls.style.display = currentPalette === 'custom' ? 'block' : 'none';
+        }
         this.createParticles();
         this.bindEvents();
         this.bindSliderEvents();
@@ -225,21 +267,16 @@ class ParticleSystem {
     }
 
     createParticles() {
-        const earthTones = [
-            'rgba(142, 106, 63, 0.6)',
-            'rgba(113, 98, 83, 0.6)',
-            'rgba(94, 75, 60, 0.6)',
-            'rgba(66, 92, 73, 0.6)',
-            'rgba(152, 151, 100, 0.6)',
-            'rgba(70, 130, 180, 0.6)',
-            'rgba(100, 149, 237, 0.6)',
-        ];
+        this.particles = [];
+        const activePalette = PALETTES[currentPalette];
+
+        if (activePalette.length === 0) return;
 
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             const x = Math.random() * this.canvas.width;
             const y = Math.random() * this.canvas.height;
             const radius = Math.random() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) + MIN_PARTICLE_RADIUS;
-            const color = earthTones[Math.floor(Math.random() * earthTones.length)];
+            const color = activePalette[Math.floor(Math.random() * activePalette.length)];
             const particle = new Particle({ x, y }, radius, color);
 
             particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY_RANGE;
@@ -264,6 +301,48 @@ class ParticleSystem {
                 document.getElementById('configToggle').click();
             }
         });
+
+        const colorPaletteSelect = document.getElementById('colorPalette');
+        if (colorPaletteSelect) {
+            colorPaletteSelect.addEventListener('change', (e) => {
+                currentPalette = e.target.value;
+                const customControls = document.getElementById('customPaletteControls');
+                if (customControls) {
+                    customControls.style.display = currentPalette === 'custom' ? 'block' : 'none';
+                }
+                this.createParticles();
+                this.updatePaletteDropdown();
+            });
+        }
+
+        const addColorButton = document.getElementById('addColor');
+        if (addColorButton) {
+            addColorButton.addEventListener('click', () => {
+                const newColorInput = document.getElementById('newColor');
+                if (newColorInput) {
+                    const newColor = newColorInput.value;
+                    PALETTES.custom.push(newColor);
+                    this.updateCustomPaletteDisplay();
+                    if (currentPalette === 'custom') {
+                        this.createParticles();
+                    }
+                }
+            });
+        }
+
+        const customColorList = document.getElementById('customColorList');
+        if (customColorList) {
+            customColorList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('removeColor')) {
+                    const index = parseInt(e.target.dataset.index);
+                    PALETTES.custom.splice(index, 1);
+                    this.updateCustomPaletteDisplay();
+                    if (currentPalette === 'custom') {
+                        this.createParticles();
+                    }
+                }
+            });
+        }
     }
 
     bindSliderEvents() {
@@ -376,6 +455,25 @@ class ParticleSystem {
 
         requestAnimationFrame(() => this.animate());
     }
+
+    updateCustomPaletteDisplay() {
+        const customColorList = document.getElementById('customColorList');
+        if (customColorList) {
+            customColorList.innerHTML = PALETTES.custom.map((color, index) => `
+                <div style="display: flex; align-items: center; margin-bottom: 0.5vmin;">
+                    <div style="width: 20px; height: 20px; background-color: ${color}; margin-right: 0.5vmin;"></div>
+                    <button class="removeColor" data-index="${index}">Remove</button>
+                </div>
+            `).join('');
+        }
+    }
+
+    updatePaletteDropdown() {
+        const colorPaletteSelect = document.getElementById('colorPalette');
+        if (colorPaletteSelect) {
+            colorPaletteSelect.value = currentPalette;
+        }
+    }
 }
 
 class UnionFind {
@@ -428,20 +526,22 @@ function applyClusterProperties(particles, uf) {
 
     particles.forEach((particle, index) => {
         const root = uf.find(index);
-        const clusterSize = clusterSizes.get(root);
+        const clusterSize = clusterSizes.get(root) || 1;
 
         const heatFactor = Math.min((clusterSize - 1) / (maxClusterSize - 1), MAX_HEAT_FACTOR);
 
-        const rgbaMatch = particle.originalColor.match(/\d+/g).map(Number);
-        const [r, g, b, a] = rgbaMatch;
+        const rgbaMatch = particle.originalColor.match(/\d+/g);
+        if (rgbaMatch && rgbaMatch.length >= 4) {
+            const [r, g, b, a] = rgbaMatch.map(Number);
 
-        const newR = Math.round(r + (255 - r) * heatFactor);
-        const newG = Math.round(g + (255 - g) * heatFactor);
-        const newB = Math.round(b + (255 - b) * heatFactor);
+            const newR = Math.round(r + (255 - r) * heatFactor);
+            const newG = Math.round(g + (255 - g) * heatFactor);
+            const newB = Math.round(b + (255 - b) * heatFactor);
 
-        const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR);
+            const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR);
 
-        particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
+            particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
+        }
         particle.clusterMass = clusterSize;
     });
 }
