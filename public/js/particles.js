@@ -1,9 +1,9 @@
-// Ranges
-const PARTICLE_COUNT_RANGE = { min: 100, max: 2000 };
+// raw javascript because i don't know any better, please judge me and then PR
+const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 1 };
 const EXPLOSION_RADIUS_RANGE = { min: 50, max: 400 };
 const GRAVITY_CONSTANT_RANGE = { min: -10, max: 10, step: 0.001 };
-const INTERACTION_RADIUS_RANGE = { min: 10, max: 300 }; // Increased max to 300
-const DRAG_CONSTANT_RANGE = { min: 0, max: 0.1, step: 0.001 };
+const INTERACTION_RADIUS_RANGE = { min: 10, max: 300 };
+const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
 const ELASTICITY_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
 const INITIAL_VELOCITY_RANGE_RANGE = { min: 0, max: 1, step: 0.01 };
 const CONNECTION_OPACITY_RANGE = { min: 0, max: 0.5, step: 0.001 };
@@ -19,8 +19,7 @@ let INTERACTION_RADIUS = 174;
 const MIN_PARTICLE_RADIUS = 1;
 const MAX_PARTICLE_RADIUS = 4;
 
-// Experimental constants
-let DRAG_CONSTANT = 0.01;
+let DRAG_CONSTANT = 0.10;
 let ELASTICITY_CONSTANT = 0.3;
 let INITIAL_VELOCITY_RANGE = 0;
 
@@ -84,13 +83,13 @@ class ParticleSystem {
                     <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravityConstant" min="${GRAVITY_CONSTANT_RANGE.min}" max="${GRAVITY_CONSTANT_RANGE.max}" step="${GRAVITY_CONSTANT_RANGE.step}" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue" style="margin-left: 1vmin;">${GRAVITY_CONSTANT}</span></label><br>
                     <label style="display: flex; justify-content: space-between; align-items: center;">interaction radius: <input type="range" id="interactionRadius" min="${INTERACTION_RADIUS_RANGE.min}" max="${INTERACTION_RADIUS_RANGE.max}" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue" style="margin-left: 1vmin;">${INTERACTION_RADIUS}</span></label><br>
                     <label style="display: flex; justify-content: space-between; align-items: center;">initial velocity: <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE_RANGE.min}" max="${INITIAL_VELOCITY_RANGE_RANGE.max}" step="${INITIAL_VELOCITY_RANGE_RANGE.step}" value="${INITIAL_VELOCITY_RANGE}"> <span id="initialVelocityRangeValue" style="margin-left: 1vmin;">${INITIAL_VELOCITY_RANGE}</span></label><br>
+                    <label style="display: flex; justify-content: space-between; align-items: center;">drag: <input type="range" id="dragConstant" min="${DRAG_CONSTANT_RANGE.min}" max="${DRAG_CONSTANT_RANGE.max}" step="${DRAG_CONSTANT_RANGE.step}" value="${DRAG_CONSTANT}"> <span id="dragConstantValue" style="margin-left: 1vmin;">${DRAG_CONSTANT}</span></label><br>
+                    <label style="display: flex; justify-content: space-between; align-items: center;">elasticity: <input type="range" id="elasticityConstant" min="${ELASTICITY_CONSTANT_RANGE.min}" max="${ELASTICITY_CONSTANT_RANGE.max}" step="${ELASTICITY_CONSTANT_RANGE.step}" value="${ELASTICITY_CONSTANT}"> <span id="elasticityConstantValue" style="margin-left: 1vmin;">${ELASTICITY_CONSTANT}</span></label><br>
                     <label style="display: flex; justify-content: space-between; align-items: center;">connection color: <input type="color" id="connectionColor" value="${DEFAULT_CONNECTION_COLOR}"> <span id="connectionColorValue" style="margin-left: 1vmin;">${DEFAULT_CONNECTION_COLOR}</span></label><br>
                     <label style="display: flex; justify-content: space-between; align-items: center;">connection opacity: <input type="range" id="connectionOpacity" min="${CONNECTION_OPACITY_RANGE.min}" max="${CONNECTION_OPACITY_RANGE.max}" step="${CONNECTION_OPACITY_RANGE.step}" value="${CONNECTION_OPACITY}"> <span id="connectionOpacityValue" style="margin-left: 1vmin;">${CONNECTION_OPACITY}</span></label><br>
                     <details>
                         <summary style="cursor: pointer; margin-top: 1vmin;">Experimental Settings</summary>
                         <div style="margin-top: 1vmin;">
-                            <label style="display: flex; justify-content: space-between; align-items: center;">drag: <input type="range" id="dragConstant" min="${DRAG_CONSTANT_RANGE.min}" max="${DRAG_CONSTANT_RANGE.max}" step="${DRAG_CONSTANT_RANGE.step}" value="${DRAG_CONSTANT}"> <span id="dragConstantValue" style="margin-left: 1vmin;">${DRAG_CONSTANT}</span></label><br>
-                            <label style="display: flex; justify-content: space-between; align-items: center;">elasticity: <input type="range" id="elasticityConstant" min="${ELASTICITY_CONSTANT_RANGE.min}" max="${ELASTICITY_CONSTANT_RANGE.max}" step="${ELASTICITY_CONSTANT_RANGE.step}" value="${ELASTICITY_CONSTANT}"> <span id="elasticityConstantValue" style="margin-left: 1vmin;">${ELASTICITY_CONSTANT}</span></label><br>
                             <label style="display: flex; justify-content: space-between; align-items: center;">max heat factor: <input type="range" id="maxHeatFactor" min="${MAX_HEAT_FACTOR_RANGE.min}" max="${MAX_HEAT_FACTOR_RANGE.max}" step="${MAX_HEAT_FACTOR_RANGE.step}" value="${MAX_HEAT_FACTOR}"> <span id="maxHeatFactorValue" style="margin-left: 1vmin;">${MAX_HEAT_FACTOR}</span></label><br>
                             <label style="display: flex; justify-content: space-between; align-items: center;">min cluster opacity: <input type="range" id="minClusterOpacity" min="${MIN_CLUSTER_OPACITY_RANGE.min}" max="${MIN_CLUSTER_OPACITY_RANGE.max}" step="${MIN_CLUSTER_OPACITY_RANGE.step}" value="${MIN_CLUSTER_OPACITY}"> <span id="minClusterOpacityValue" style="margin-left: 1vmin;">${MIN_CLUSTER_OPACITY}</span></label><br>
                             <label style="display: flex; justify-content: space-between; align-items: center;">opacity reduction: <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}"> <span id="opacityReductionFactorValue" style="margin-left: 1vmin;">${OPACITY_REDUCTION_FACTOR}</span></label>
@@ -210,7 +209,6 @@ class ParticleSystem {
         GRAVITY_CONSTANT = parseFloat(document.getElementById('gravityConstant').value) || GRAVITY_CONSTANT;
         INTERACTION_RADIUS = parseInt(document.getElementById('interactionRadius').value) || INTERACTION_RADIUS;
 
-        // Experimental constants
         DRAG_CONSTANT = parseFloat(document.getElementById('dragConstant').value) || DRAG_CONSTANT;
         ELASTICITY_CONSTANT = parseFloat(document.getElementById('elasticityConstant').value) || ELASTICITY_CONSTANT;
         INITIAL_VELOCITY_RANGE = parseFloat(document.getElementById('initialVelocityRange').value) || INITIAL_VELOCITY_RANGE;
@@ -287,7 +285,6 @@ class ParticleSystem {
         document.getElementById('gravityConstantValue').textContent = GRAVITY_CONSTANT.toFixed(3);
         document.getElementById('interactionRadiusValue').textContent = INTERACTION_RADIUS;
 
-        // Experimental constants
         document.getElementById('dragConstantValue').textContent = DRAG_CONSTANT.toFixed(3);
         document.getElementById('elasticityConstantValue').textContent = ELASTICITY_CONSTANT.toFixed(2);
         document.getElementById('initialVelocityRangeValue').textContent = INITIAL_VELOCITY_RANGE.toFixed(2);
