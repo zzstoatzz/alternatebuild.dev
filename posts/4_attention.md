@@ -17,7 +17,7 @@ Sure, its a dismissive meme among many to say "I listen to Sam Harris' podcast"[
 
 <br>
 
-Like I imagine most casual instagram or LinkedIn users do -- I feel the pull to contort or curate my "online presence". The facebook people seem to have stopped trying, or more likely, just on average have wayyyyyyyy different desired end goals with that curation. However there's this certain class of Twitter user that are just literally like electronic billboards, constantly flashing sensational garbage in my face under the pretense of knowledge-sharing (yes LinkedIn does this too, it's just not worth being there in the first place, so I don't get worked up about it 🙂). There are certainly valid reasons to be sensational, like when an intellectually engaged person that's deeply embroiled in their domain of expertise makes some observation or discovery, or some genuinely shocking news occurs in the world....
+Like I imagine most casual instagram or LinkedIn users do -- I feel the pull to contort or curate my "online presence". The facebook people seem to have stopped trying, or more likely, just on average have wayyyyyyyy different desired end goals with that curation. However there's this certain class of Twitter user that are just literally like electronic billboards, constantly flashing sensational garbage in my face under the pretense of knowledge-sharing (yes LinkedIn does this too, it's just not worth being there in the first place, so I don't get worked up about it 🙂). There are certainly valid reasons to be sensational, like when an intellectually engaged person that's deeply invested in their domain of expertise makes some observation or discovery, or some genuinely shocking news occurs in the world....
 
 <br>
 
