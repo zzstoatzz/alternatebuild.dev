@@ -14,7 +14,7 @@ Clever `Assistant` retrieval of highly annotated documents that are embedded in 
 
 <br>
 
-Application state is just a `type[BaseModel]` on a thing that can patch its own schema with knowledge from the world. See this example.
+Application state is just a `type[BaseModel]` on a thing that can patch its own schema with knowledge from the world. See this [example](https://github.com/PrefectHQ/marvin/blob/main/cookbook/maze.py).
 
 <br>
 
