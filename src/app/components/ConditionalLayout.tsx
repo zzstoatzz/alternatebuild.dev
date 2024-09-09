@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import Nav from './Nav';
 import Footer from './Footer';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 
 const GithubInfo = dynamic(() => import('./GithubInfo'), { ssr: false });
 
