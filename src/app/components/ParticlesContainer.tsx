@@ -7,8 +7,12 @@ declare global {
     interface Window {
         particlesInit: (canvas: HTMLCanvasElement) => void;
         handleZenModeTransition: () => void;
-        particleSystem: any; // Add this line
+        particleSystem: ParticleSystem;
     }
+}
+
+interface ParticleSystem {
+    enterZenMode: () => void;
 }
 
 export function ParticlesContainer() {
