@@ -6,6 +6,8 @@ import Script from 'next/script';
 declare global {
     interface Window {
         particlesInit: (canvas: HTMLCanvasElement) => void;
+        handleZenModeTransition: () => void;
+        particleSystem: any; // Add this line
     }
 }
 
@@ -26,6 +28,12 @@ export function ParticlesContainer() {
                 canvas.height = window.innerHeight;
                 window.particlesInit(canvas);
                 particlesInitialized.current = true;
+            }
+        };
+
+        window.handleZenModeTransition = () => {
+            if (window.particleSystem) {
+                window.particleSystem.enterZenMode();
             }
         };
 

@@ -192,18 +192,14 @@ class ParticleSystem {
         this.ctx = this.canvas.getContext('2d');
 
         // Check if we're in Zen mode
-        const isZenMode = window.location.pathname === '/zen'; // Adjust this check as needed
+        this.isZenMode = window.location.pathname === '/zen';
 
         // Add particle controls
         this.canvas.insertAdjacentHTML('beforebegin', PARTICLE_CONTROLS_TEMPLATE);
 
-        // Add Exit Zen Mode button only if in Zen mode
-        if (isZenMode) {
-            this.canvas.insertAdjacentHTML('beforebegin', EXIT_ZEN_MODE_TEMPLATE);
-            const exitZenMode = document.getElementById('exitZenMode');
-            exitZenMode.addEventListener('click', () => {
-                window.location.href = '/'; // Or any other appropriate non-zen page
-            });
+        // Add Exit Zen Mode button if in Zen mode
+        if (this.isZenMode) {
+            this.addExitZenModeButton();
         }
 
         const styleElement = document.createElement('style');
@@ -244,6 +240,9 @@ class ParticleSystem {
                 this.toggleControls();
             }
         });
+
+        // Store the instance globally
+        window.particleSystem = this;
     }
 
     toggleControls() {
@@ -505,6 +504,25 @@ class ParticleSystem {
             colorPaletteSelect.value = currentPalette;
         }
     }
+
+    addExitZenModeButton() {
+        if (!document.getElementById('exitZenMode')) {
+            this.canvas.insertAdjacentHTML('beforebegin', EXIT_ZEN_MODE_TEMPLATE);
+            const exitZenMode = document.getElementById('exitZenMode');
+            exitZenMode.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        }
+    }
+
+    enterZenMode() {
+        this.isZenMode = true;
+        this.addExitZenModeButton();
+        // Hide nav and other elements
+        document.querySelector('nav')?.classList.add('hidden');
+        document.getElementById('githubInfo')?.classList.add('hidden');
+        // Add any other Zen mode-specific changes here
+    }
 }
 
 class UnionFind {
@@ -578,9 +596,5 @@ function applyClusterProperties(particles, uf) {
 }
 
 window.particlesInit = function (canvas) {
-    if (canvas instanceof HTMLCanvasElement) {
-        new ParticleSystem(canvas);
-    } else {
-        console.error('Invalid canvas element:', canvas);
-    }
-}
+    new ParticleSystem(canvas);
+};

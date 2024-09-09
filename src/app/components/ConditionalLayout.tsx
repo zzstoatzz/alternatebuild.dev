@@ -4,12 +4,19 @@ import { usePathname } from 'next/navigation';
 import Nav from './Nav';
 import Footer from './Footer';
 import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
 
 const GithubInfo = dynamic(() => import('./GithubInfo'), { ssr: false });
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isZenMode = pathname === '/zen';
+
+    useEffect(() => {
+        if (isZenMode && typeof window.handleZenModeTransition === 'function') {
+            window.handleZenModeTransition();
+        }
+    }, [isZenMode]);
 
     return (
         <>

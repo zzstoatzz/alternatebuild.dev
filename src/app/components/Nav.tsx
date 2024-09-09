@@ -1,10 +1,19 @@
 'use client'
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function Nav() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleZenModeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        router.push('/zen');
+        if (typeof window.handleZenModeTransition === 'function') {
+            window.handleZenModeTransition();
+        }
+    };
 
     return (
         <nav className="nav">
@@ -17,7 +26,11 @@ export default function Nav() {
                         { href: '/zen', label: 'Zen' },
                     ].map(({ href, label }) => (
                         <li key={href}>
-                            <Link href={href} className={`nav-link ${pathname === href ? 'current' : ''}`}>
+                            <Link
+                                href={href}
+                                className={`nav-link ${pathname === href ? 'current' : ''}`}
+                                onClick={href === '/zen' ? handleZenModeClick : undefined}
+                            >
                                 {label}
                             </Link>
                         </li>
