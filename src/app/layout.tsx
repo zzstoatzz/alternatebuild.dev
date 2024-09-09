@@ -1,13 +1,8 @@
 import { Fira_Code } from 'next/font/google';
 import '../styles/globals.css';
 import { ParticlesContainer } from './components/ParticlesContainer';
-import Nav from './components/Nav';
-import Footer from './components/Footer';
-import dynamic from 'next/dynamic';
+import ConditionalLayout from './components/ConditionalLayout';
 import type { Metadata } from 'next';
-
-
-const GithubInfo = dynamic(() => import('./components/GithubInfo'), { ssr: false });
 
 const firaCode = Fira_Code({
     subsets: ['latin'],
@@ -32,12 +27,9 @@ export default function RootLayout({
             <body className="bg-[#0B0B03] text-white">
                 <ParticlesContainer />
                 <div className="relative z-10 min-h-screen flex flex-col">
-                    <Nav />
-                    <GithubInfo />
-                    <main className="flex-grow container mx-auto px-4 py-8">
+                    <ConditionalLayout>
                         {children}
-                    </main>
-                    <Footer />
+                    </ConditionalLayout>
                 </div>
             </body>
         </html>
