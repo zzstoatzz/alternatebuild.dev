@@ -1,4 +1,6 @@
 // raw javascript because i don't know any better, please judge me and then PR
+
+// particle settings
 const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 1 };
 const EXPLOSION_RADIUS_RANGE = { min: 50, max: 400 };
 const GRAVITY_CONSTANT_RANGE = { min: -10, max: 10, step: 0.001 };
@@ -31,6 +33,98 @@ let OPACITY_REDUCTION_FACTOR = 1;
 
 const DEFAULT_CONNECTION_COLOR = '#00db6a';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
+
+
+// settings display
+
+const PARTICLE_CONTROLS_TEMPLATE = `
+<div id="particleControls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 1.5vmin;">
+    <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit;" title="'P' to toggle settings, Tab/arrow to navigate/edit">
+        <span class="full-text">particle settings</span>
+        <span class="emoji" style="display: none;">⚙️</span>
+    </button>
+    <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; position: fixed; z-index: 1001; font-size: 1vmin; max-width: 300px; max-height: 80vh; overflow-y: auto; top: 8vh; right: 2vw;">
+        <button id="closeSettings" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+        <h2 style="margin-top: 0; margin-bottom: 15px;">Particle Settings</h2>
+        <label style="display: flex; justify-content: space-between; align-items: center;">particle count: <input type="range" id="particleCount" min="${PARTICLE_COUNT_RANGE.min}" max="${PARTICLE_COUNT_RANGE.max}" value="${PARTICLE_COUNT}" style="margin-left: 1vmin;"> <span id="particleCountValue" style="margin-left: 1vmin;">${PARTICLE_COUNT}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">mouse force: <input type="range" id="explosionRadius" min="${EXPLOSION_RADIUS_RANGE.min}" max="${EXPLOSION_RADIUS_RANGE.max}" value="${EXPLOSION_RADIUS}"> <span id="explosionRadiusValue" style="margin-left: 1vmin;">${EXPLOSION_RADIUS}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravityConstant" min="${GRAVITY_CONSTANT_RANGE.min}" max="${GRAVITY_CONSTANT_RANGE.max}" step="${GRAVITY_CONSTANT_RANGE.step}" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue" style="margin-left: 1vmin;">${GRAVITY_CONSTANT}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">interaction radius: <input type="range" id="interactionRadius" min="${INTERACTION_RADIUS_RANGE.min}" max="${INTERACTION_RADIUS_RANGE.max}" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue" style="margin-left: 1vmin;">${INTERACTION_RADIUS}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">initial velocity: <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE_RANGE.min}" max="${INITIAL_VELOCITY_RANGE_RANGE.max}" step="${INITIAL_VELOCITY_RANGE_RANGE.step}" value="${INITIAL_VELOCITY_RANGE}"> <span id="initialVelocityRangeValue" style="margin-left: 1vmin;">${INITIAL_VELOCITY_RANGE}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">drag: <input type="range" id="dragConstant" min="${DRAG_CONSTANT_RANGE.min}" max="${DRAG_CONSTANT_RANGE.max}" step="${DRAG_CONSTANT_RANGE.step}" value="${DRAG_CONSTANT}"> <span id="dragConstantValue" style="margin-left: 1vmin;">${DRAG_CONSTANT}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">elasticity: <input type="range" id="elasticityConstant" min="${ELASTICITY_CONSTANT_RANGE.min}" max="${ELASTICITY_CONSTANT_RANGE.max}" step="${ELASTICITY_CONSTANT_RANGE.step}" value="${ELASTICITY_CONSTANT}"> <span id="elasticityConstantValue" style="margin-left: 1vmin;">${ELASTICITY_CONSTANT}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">connection color: <input type="color" id="connectionColor" value="${DEFAULT_CONNECTION_COLOR}"> <span id="connectionColorValue" style="margin-left: 1vmin;">${DEFAULT_CONNECTION_COLOR}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">connection opacity: <input type="range" id="connectionOpacity" min="${CONNECTION_OPACITY_RANGE.min}" max="${CONNECTION_OPACITY_RANGE.max}" step="${CONNECTION_OPACITY_RANGE.step}" value="${CONNECTION_OPACITY}"> <span id="connectionOpacityValue" style="margin-left: 1vmin;">${CONNECTION_OPACITY}</span></label><br>
+        <details>
+            <summary style="cursor: pointer; margin-top: 1vmin;">Experimental Settings</summary>
+            <div style="margin-top: 1vmin;">
+                <label style="display: flex; justify-content: space-between; align-items: center;">max heat factor: <input type="range" id="maxHeatFactor" min="${MAX_HEAT_FACTOR_RANGE.min}" max="${MAX_HEAT_FACTOR_RANGE.max}" step="${MAX_HEAT_FACTOR_RANGE.step}" value="${MAX_HEAT_FACTOR}"> <span id="maxHeatFactorValue" style="margin-left: 1vmin;">${MAX_HEAT_FACTOR}</span></label><br>
+                <label style="display: flex; justify-content: space-between; align-items: center;">min cluster opacity: <input type="range" id="minClusterOpacity" min="${MIN_CLUSTER_OPACITY_RANGE.min}" max="${MIN_CLUSTER_OPACITY_RANGE.max}" step="${MIN_CLUSTER_OPACITY_RANGE.step}" value="${MIN_CLUSTER_OPACITY}"> <span id="minClusterOpacityValue" style="margin-left: 1vmin;">${MIN_CLUSTER_OPACITY}</span></label><br>
+                <label style="display: flex; justify-content: space-between; align-items: center;">opacity reduction: <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}"> <span id="opacityReductionFactorValue" style="margin-left: 1vmin;">${OPACITY_REDUCTION_FACTOR}</span></label>
+            </div>
+        </details>
+        <div style="margin-top: 1vmin;">
+            <label for="colorPalette">Color Palette:</label>
+            <select id="colorPalette">
+                <option value="default">Default</option>
+                <option value="highContrast">High Contrast</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+        <div id="customPaletteControls" style="display: none; margin-top: 1vmin;">
+            <input type="color" id="newColor" value="#000000">
+            <button id="addColor">Add Color</button>
+            <div id="customColorList"></div>
+        </div>
+    </div>
+</div>
+`
+
+const EXIT_ZEN_MODE_TEMPLATE = `
+<div id="exitZenMode" style="position: fixed; top: 2vh; left: 2vw; z-index: 1000;">
+    <button style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: 1.5vmin;">Exit Zen Mode</button>
+</div>
+`
+
+// settings display styles
+
+const SETTINGS_STYLES = `
+@media (max-width: 768px) {
+    #particleControls #configToggle .full-text {
+        display: none;
+    }
+    #particleControls #configToggle .emoji {
+        display: inline !important;
+        font-size: 24px;
+    }
+    #particleControls #configToggle {
+        padding: 8px;
+        font-size: 24px;
+    }
+    #controlsContent {
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        border-radius: 0 !important;
+        overflow-y: auto;
+        font-size: 16px !important;
+        padding: 20px !important;
+        box-sizing: border-box;
+    }
+    #controlsContent label, #controlsContent input, #controlsContent select {
+        font-size: 16px !important;
+    }
+    #controlsContent > * {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+}
+`
 
 // Define palettes
 const PALETTES = {
@@ -96,126 +190,38 @@ class ParticleSystem {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
-        const maxParticleCount = window.innerWidth < 768 ? 1000 : 2000;
-        this.canvas.insertAdjacentHTML('beforebegin', `
-            <div id="controls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 1.5vmin;">
-                <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit;" title="'P' to toggle settings, Tab/arrow to navigate/edit">particle settings</button>
-                <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; position: fixed; z-index: 1001; font-size: 1vmin;">
-                    <label style="display: flex; justify-content: space-between; align-items: center;">particle count: <input type="range" id="particleCount" min="${PARTICLE_COUNT_RANGE.min}" max="${PARTICLE_COUNT_RANGE.max}" value="${PARTICLE_COUNT}" style="margin-left: 1vmin;"> <span id="particleCountValue" style="margin-left: 1vmin;">${PARTICLE_COUNT}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">mouse force: <input type="range" id="explosionRadius" min="${EXPLOSION_RADIUS_RANGE.min}" max="${EXPLOSION_RADIUS_RANGE.max}" value="${EXPLOSION_RADIUS}""> <span id="explosionRadiusValue" style="margin-left: 1vmin;">${EXPLOSION_RADIUS}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravityConstant" min="${GRAVITY_CONSTANT_RANGE.min}" max="${GRAVITY_CONSTANT_RANGE.max}" step="${GRAVITY_CONSTANT_RANGE.step}" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue" style="margin-left: 1vmin;">${GRAVITY_CONSTANT}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">interaction radius: <input type="range" id="interactionRadius" min="${INTERACTION_RADIUS_RANGE.min}" max="${INTERACTION_RADIUS_RANGE.max}" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue" style="margin-left: 1vmin;">${INTERACTION_RADIUS}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">initial velocity: <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE_RANGE.min}" max="${INITIAL_VELOCITY_RANGE_RANGE.max}" step="${INITIAL_VELOCITY_RANGE_RANGE.step}" value="${INITIAL_VELOCITY_RANGE}"> <span id="initialVelocityRangeValue" style="margin-left: 1vmin;">${INITIAL_VELOCITY_RANGE}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">drag: <input type="range" id="dragConstant" min="${DRAG_CONSTANT_RANGE.min}" max="${DRAG_CONSTANT_RANGE.max}" step="${DRAG_CONSTANT_RANGE.step}" value="${DRAG_CONSTANT}"> <span id="dragConstantValue" style="margin-left: 1vmin;">${DRAG_CONSTANT}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">elasticity: <input type="range" id="elasticityConstant" min="${ELASTICITY_CONSTANT_RANGE.min}" max="${ELASTICITY_CONSTANT_RANGE.max}" step="${ELASTICITY_CONSTANT_RANGE.step}" value="${ELASTICITY_CONSTANT}"> <span id="elasticityConstantValue" style="margin-left: 1vmin;">${ELASTICITY_CONSTANT}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">connection color: <input type="color" id="connectionColor" value="${DEFAULT_CONNECTION_COLOR}"> <span id="connectionColorValue" style="margin-left: 1vmin;">${DEFAULT_CONNECTION_COLOR}</span></label><br>
-                    <label style="display: flex; justify-content: space-between; align-items: center;">connection opacity: <input type="range" id="connectionOpacity" min="${CONNECTION_OPACITY_RANGE.min}" max="${CONNECTION_OPACITY_RANGE.max}" step="${CONNECTION_OPACITY_RANGE.step}" value="${CONNECTION_OPACITY}"> <span id="connectionOpacityValue" style="margin-left: 1vmin;">${CONNECTION_OPACITY}</span></label><br>
-                    <details>
-                        <summary style="cursor: pointer; margin-top: 1vmin;">Experimental Settings</summary>
-                        <div style="margin-top: 1vmin;">
-                            <label style="display: flex; justify-content: space-between; align-items: center;">max heat factor: <input type="range" id="maxHeatFactor" min="${MAX_HEAT_FACTOR_RANGE.min}" max="${MAX_HEAT_FACTOR_RANGE.max}" step="${MAX_HEAT_FACTOR_RANGE.step}" value="${MAX_HEAT_FACTOR}"> <span id="maxHeatFactorValue" style="margin-left: 1vmin;">${MAX_HEAT_FACTOR}</span></label><br>
-                            <label style="display: flex; justify-content: space-between; align-items: center;">min cluster opacity: <input type="range" id="minClusterOpacity" min="${MIN_CLUSTER_OPACITY_RANGE.min}" max="${MIN_CLUSTER_OPACITY_RANGE.max}" step="${MIN_CLUSTER_OPACITY_RANGE.step}" value="${MIN_CLUSTER_OPACITY}"> <span id="minClusterOpacityValue" style="margin-left: 1vmin;">${MIN_CLUSTER_OPACITY}</span></label><br>
-                            <label style="display: flex; justify-content: space-between; align-items: center;">opacity reduction: <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}"> <span id="opacityReductionFactorValue" style="margin-left: 1vmin;">${OPACITY_REDUCTION_FACTOR}</span></label>
-                        </div>
-                    </details>
-                    <div style="margin-top: 1vmin;">
-                        <label for="colorPalette">Color Palette:</label>
-                        <select id="colorPalette">
-                            <option value="default">Default</option>
-                            <option value="highContrast">High Contrast</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                    </div>
-                    <div id="customPaletteControls" style="display: none; margin-top: 1vmin;">
-                        <input type="color" id="newColor" value="#000000">
-                        <button id="addColor">Add Color</button>
-                        <div id="customColorList"></div>
-                    </div>
-                </div>
-            </div>
-        `);
+
+        // Check if we're in Zen mode
+        const isZenMode = window.location.pathname === '/zen'; // Adjust this check as needed
+
+        // Add particle controls
+        this.canvas.insertAdjacentHTML('beforebegin', PARTICLE_CONTROLS_TEMPLATE);
+
+        // Add Exit Zen Mode button only if in Zen mode
+        if (isZenMode) {
+            this.canvas.insertAdjacentHTML('beforebegin', EXIT_ZEN_MODE_TEMPLATE);
+            const exitZenMode = document.getElementById('exitZenMode');
+            exitZenMode.addEventListener('click', () => {
+                window.location.href = '/'; // Or any other appropriate non-zen page
+            });
+        }
 
         const styleElement = document.createElement('style');
-        styleElement.textContent = `
-            @media (max-width: 768px) {
-                #controls {
-                    top: auto !important;
-                    bottom: 2vh !important;
-                    right: 2vw !important;
-                    left: 2vw !important;
-                }
-                #controlsContent {
-                    position: fixed;
-                    max-height: 70vh;
-                    overflow-y: auto;
-                }
-            }
-            #configToggle {
-                position: relative;
-            }
-            #configToggle::after {
-                content: attr(title);
-                position: absolute;
-                top: 120%;
-                left: 50%;
-                transform: translateX(-50%);
-                background-color: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 0.5vmin 1vmin;
-                border-radius: 3px;
-                font-size: 1.2vmin;
-                white-space: normal;
-                max-width: 200px;
-                text-align: center;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.3s, visibility 0.3s;
-                z-index: 1002;
-            }
-            #configToggle:hover::after {
-                opacity: 1;
-                visibility: visible;
-            }
-        `;
+        styleElement.textContent = SETTINGS_STYLES;
         document.head.appendChild(styleElement);
 
-        document.getElementById('configToggle').addEventListener('click', (event) => {
-            event.stopPropagation();
-            const content = document.getElementById('controlsContent');
-            const button = event.currentTarget;
-            const buttonRect = button.getBoundingClientRect();
-            const windowHeight = window.innerHeight;
-            const windowWidth = window.innerWidth;
+        const configToggle = document.getElementById('configToggle');
+        const controlsContent = document.getElementById('controlsContent');
+        const closeSettings = document.getElementById('closeSettings');
 
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-
-                // Calculate available space
-                const spaceAbove = buttonRect.top;
-                const spaceBelow = windowHeight - buttonRect.bottom;
-                const spaceLeft = buttonRect.left;
-                const spaceRight = windowWidth - buttonRect.right;
-
-                // Position the content based on available space
-                if (spaceBelow >= spaceAbove) {
-                    content.style.top = `${buttonRect.bottom}px`;
-                    content.style.bottom = 'auto';
-                } else {
-                    content.style.bottom = `${windowHeight - buttonRect.top}px`;
-                    content.style.top = 'auto';
-                }
-
-                if (spaceRight >= spaceLeft) {
-                    content.style.left = `${buttonRect.left}px`;
-                    content.style.right = 'auto';
-                } else {
-                    content.style.right = `${windowWidth - buttonRect.right}px`;
-                    content.style.left = 'auto';
-                }
-            } else {
-                content.style.display = 'none';
-            }
+        configToggle.addEventListener('click', () => {
+            controlsContent.style.display = controlsContent.style.display === 'none' ? 'block' : 'none';
         });
+
+        closeSettings.addEventListener('click', () => {
+            controlsContent.style.display = 'none';
+        });
+
         this.particles = [];
         this.mousePosition = { x: 0, y: 0 };
         this.isMouseDown = false;
@@ -346,32 +352,57 @@ class ParticleSystem {
     }
 
     bindSliderEvents() {
-        document.querySelectorAll('#controls input').forEach(input => {
-            input.addEventListener('input', () => {
-                this.updateConstants();
-                if (['particleCount', 'initialVelocityRange'].includes(input.id)) {
-                    this.particles = [];
-                    this.createParticles();
+        const sliders = document.querySelectorAll('#controlsContent input[type="range"]');
+        sliders.forEach(slider => {
+            slider.addEventListener('input', (event) => {
+                const target = event.target;
+                const value = target.value;
+                const valueSpan = document.getElementById(`${target.id}Value`);
+                if (valueSpan) {
+                    valueSpan.textContent = value;
                 }
-                this.updateSliderValues();
+                this.updateParticleSettings(target.id, value);
             });
         });
     }
 
-    updateSliderValues() {
-        document.getElementById('particleCountValue').textContent = PARTICLE_COUNT;
-        document.getElementById('explosionRadiusValue').textContent = EXPLOSION_RADIUS;
-        document.getElementById('gravityConstantValue').textContent = GRAVITY_CONSTANT.toFixed(3);
-        document.getElementById('interactionRadiusValue').textContent = INTERACTION_RADIUS;
-
-        document.getElementById('dragConstantValue').textContent = DRAG_CONSTANT.toFixed(3);
-        document.getElementById('elasticityConstantValue').textContent = ELASTICITY_CONSTANT.toFixed(2);
-        document.getElementById('initialVelocityRangeValue').textContent = INITIAL_VELOCITY_RANGE.toFixed(2);
-        document.getElementById('connectionOpacityValue').textContent = CONNECTION_OPACITY.toFixed(3);
-        document.getElementById('maxHeatFactorValue').textContent = MAX_HEAT_FACTOR.toFixed(2);
-        document.getElementById('minClusterOpacityValue').textContent = MIN_CLUSTER_OPACITY.toFixed(2);
-        document.getElementById('opacityReductionFactorValue').textContent = OPACITY_REDUCTION_FACTOR.toFixed(2);
-        document.getElementById('connectionColorValue').textContent = CONNECTION_COLOR;
+    updateParticleSettings(settingId, value) {
+        switch (settingId) {
+            case 'particleCount':
+                PARTICLE_COUNT = parseInt(value);
+                this.createParticles();
+                break;
+            case 'explosionRadius':
+                EXPLOSION_RADIUS = parseInt(value);
+                break;
+            case 'gravityConstant':
+                GRAVITY_CONSTANT = parseFloat(value);
+                break;
+            case 'interactionRadius':
+                INTERACTION_RADIUS = parseInt(value);
+                break;
+            case 'initialVelocityRange':
+                INITIAL_VELOCITY_RANGE = parseFloat(value);
+                break;
+            case 'dragConstant':
+                DRAG_CONSTANT = parseFloat(value);
+                break;
+            case 'elasticityConstant':
+                ELASTICITY_CONSTANT = parseFloat(value);
+                break;
+            case 'connectionOpacity':
+                CONNECTION_OPACITY = parseFloat(value);
+                break;
+            case 'maxHeatFactor':
+                MAX_HEAT_FACTOR = parseFloat(value);
+                break;
+            case 'minClusterOpacity':
+                MIN_CLUSTER_OPACITY = parseFloat(value);
+                break;
+            case 'opacityReductionFactor':
+                OPACITY_REDUCTION_FACTOR = parseFloat(value);
+                break;
+        }
     }
 
     drawConnections() {
