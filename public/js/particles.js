@@ -232,6 +232,7 @@ class ParticleSystem {
         this.createParticles();
         this.bindEvents();
         this.bindSliderEvents();
+        this.bindColorInputEvent();
         this.animate();
 
         // Add keyboard shortcut
@@ -363,6 +364,15 @@ class ParticleSystem {
                 this.updateParticleSettings(target.id, value);
             });
         });
+    }
+
+    bindColorInputEvent() {
+        const connectionColorInput = document.getElementById('connectionColor');
+        if (connectionColorInput) {
+            connectionColorInput.addEventListener('input', (event) => {
+                CONNECTION_COLOR = event.target.value;
+            });
+        }
     }
 
     updateParticleSettings(settingId, value) {
