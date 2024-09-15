@@ -2,8 +2,10 @@
 
 // particle settings
 const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 1 };
-const EXPLOSION_RADIUS_RANGE = { min: 50, max: 400 };
-const GRAVITY_CONSTANT_RANGE = { min: -10, max: 10, step: 0.001 };
+const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500 };
+const EXPLOSION_FORCE_RANGE = { min: 0, max: 30, step: 0.1 };
+const ATTRACT_CONSTANT_RANGE = { min: -10, max: 10, step: 0.001 };
+const GRAVITY_RANGE = { min: -10, max: 10, step: 0.1 };
 const INTERACTION_RADIUS_RANGE = { min: 10, max: 300 };
 const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
 const ELASTICITY_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
@@ -12,12 +14,14 @@ const CONNECTION_OPACITY_RANGE = { min: 0, max: 0.5, step: 0.001 };
 const MAX_HEAT_FACTOR_RANGE = { min: 0, max: 1, step: 0.01 };
 const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.01 };
 const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.01 };
+const SMOOTHING_FACTOR_RANGE = { min: 0, max: 0.5, step: 0.01 };
 
-let PARTICLE_COUNT = 710;
+let PARTICLE_COUNT = 399;
 let EXPLOSION_RADIUS = 200;
-const EXPLOSION_FORCE = 1.0;
-let GRAVITY_CONSTANT = -0.200;
-let INTERACTION_RADIUS = 204;
+let EXPLOSION_FORCE = 5.0;
+let ATTRACT_CONSTANT = -0.100;
+let GRAVITY = 0;
+let INTERACTION_RADIUS = 135;
 const MIN_PARTICLE_RADIUS = 1;
 const MAX_PARTICLE_RADIUS = 4;
 
@@ -25,15 +29,15 @@ let DRAG_CONSTANT = 0.150;
 let ELASTICITY_CONSTANT = 0.3;
 let INITIAL_VELOCITY_RANGE = 0;
 
-let CONNECTION_OPACITY = 0.013;
+let CONNECTION_OPACITY = 0.020;
 const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
+let SMOOTHING_FACTOR = 0.1;
 
 const DEFAULT_CONNECTION_COLOR = '#00db6a';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
-
 
 // settings display
 
@@ -47,14 +51,17 @@ const PARTICLE_CONTROLS_TEMPLATE = `
         <button id="closeSettings" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
         <h2 style="margin-top: 0; margin-bottom: 15px;">Particle Settings</h2>
         <label style="display: flex; justify-content: space-between; align-items: center;">particle count: <input type="range" id="particleCount" min="${PARTICLE_COUNT_RANGE.min}" max="${PARTICLE_COUNT_RANGE.max}" value="${PARTICLE_COUNT}" style="margin-left: 1vmin;"> <span id="particleCountValue" style="margin-left: 1vmin;">${PARTICLE_COUNT}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">mouse force: <input type="range" id="explosionRadius" min="${EXPLOSION_RADIUS_RANGE.min}" max="${EXPLOSION_RADIUS_RANGE.max}" value="${EXPLOSION_RADIUS}"> <span id="explosionRadiusValue" style="margin-left: 1vmin;">${EXPLOSION_RADIUS}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravityConstant" min="${GRAVITY_CONSTANT_RANGE.min}" max="${GRAVITY_CONSTANT_RANGE.max}" step="${GRAVITY_CONSTANT_RANGE.step}" value="${GRAVITY_CONSTANT}"> <span id="gravityConstantValue" style="margin-left: 1vmin;">${GRAVITY_CONSTANT}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">mouse force radius: <input type="range" id="explosionRadius" min="${EXPLOSION_RADIUS_RANGE.min}" max="${EXPLOSION_RADIUS_RANGE.max}" value="${EXPLOSION_RADIUS}"> <span id="explosionRadiusValue" style="margin-left: 1vmin;">${EXPLOSION_RADIUS}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">mouse force strength: <input type="range" id="explosionForce" min="${EXPLOSION_FORCE_RANGE.min}" max="${EXPLOSION_FORCE_RANGE.max}" step="${EXPLOSION_FORCE_RANGE.step}" value="${EXPLOSION_FORCE}"> <span id="explosionForceValue" style="margin-left: 1vmin;">${EXPLOSION_FORCE}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">attract: <input type="range" id="attractConstant" min="${ATTRACT_CONSTANT_RANGE.min}" max="${ATTRACT_CONSTANT_RANGE.max}" step="${ATTRACT_CONSTANT_RANGE.step}" value="${ATTRACT_CONSTANT}"> <span id="attractConstantValue" style="margin-left: 1vmin;">${ATTRACT_CONSTANT}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravity" min="${GRAVITY_RANGE.min}" max="${GRAVITY_RANGE.max}" step="${GRAVITY_RANGE.step}" value="${GRAVITY}"> <span id="gravityValue" style="margin-left: 1vmin;">${GRAVITY}</span></label><br>
         <label style="display: flex; justify-content: space-between; align-items: center;">interaction radius: <input type="range" id="interactionRadius" min="${INTERACTION_RADIUS_RANGE.min}" max="${INTERACTION_RADIUS_RANGE.max}" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue" style="margin-left: 1vmin;">${INTERACTION_RADIUS}</span></label><br>
         <label style="display: flex; justify-content: space-between; align-items: center;">initial velocity: <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE_RANGE.min}" max="${INITIAL_VELOCITY_RANGE_RANGE.max}" step="${INITIAL_VELOCITY_RANGE_RANGE.step}" value="${INITIAL_VELOCITY_RANGE}"> <span id="initialVelocityRangeValue" style="margin-left: 1vmin;">${INITIAL_VELOCITY_RANGE}</span></label><br>
         <label style="display: flex; justify-content: space-between; align-items: center;">drag: <input type="range" id="dragConstant" min="${DRAG_CONSTANT_RANGE.min}" max="${DRAG_CONSTANT_RANGE.max}" step="${DRAG_CONSTANT_RANGE.step}" value="${DRAG_CONSTANT}"> <span id="dragConstantValue" style="margin-left: 1vmin;">${DRAG_CONSTANT}</span></label><br>
         <label style="display: flex; justify-content: space-between; align-items: center;">elasticity: <input type="range" id="elasticityConstant" min="${ELASTICITY_CONSTANT_RANGE.min}" max="${ELASTICITY_CONSTANT_RANGE.max}" step="${ELASTICITY_CONSTANT_RANGE.step}" value="${ELASTICITY_CONSTANT}"> <span id="elasticityConstantValue" style="margin-left: 1vmin;">${ELASTICITY_CONSTANT}</span></label><br>
         <label style="display: flex; justify-content: space-between; align-items: center;">connection color: <input type="color" id="connectionColor" value="${DEFAULT_CONNECTION_COLOR}"> <span id="connectionColorValue" style="margin-left: 1vmin;">${DEFAULT_CONNECTION_COLOR}</span></label><br>
         <label style="display: flex; justify-content: space-between; align-items: center;">connection opacity: <input type="range" id="connectionOpacity" min="${CONNECTION_OPACITY_RANGE.min}" max="${CONNECTION_OPACITY_RANGE.max}" step="${CONNECTION_OPACITY_RANGE.step}" value="${CONNECTION_OPACITY}"> <span id="connectionOpacityValue" style="margin-left: 1vmin;">${CONNECTION_OPACITY}</span></label><br>
+        <label style="display: flex; justify-content: space-between; align-items: center;">smoothing factor: <input type="range" id="smoothingFactor" min="${SMOOTHING_FACTOR_RANGE.min}" max="${SMOOTHING_FACTOR_RANGE.max}" step="${SMOOTHING_FACTOR_RANGE.step}" value="${SMOOTHING_FACTOR}"> <span id="smoothingFactorValue" style="margin-left: 1vmin;">${SMOOTHING_FACTOR}</span></label><br>
         <details>
             <summary style="cursor: pointer; margin-top: 1vmin;">Experimental Settings</summary>
             <div style="margin-top: 1vmin;">
@@ -162,17 +169,21 @@ class Particle {
         this.originalColor = color;
     }
 
-    update(bounds) {
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
+    update(bounds, dt) {
+        // Apply gravity
+        this.velocity.y += GRAVITY * dt;
+
+        // Update position
+        this.position.x += this.velocity.x * dt;
+        this.position.y += this.velocity.y * dt;
 
         // Apply drag
         const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
         const dragForce = DRAG_CONSTANT * speed ** 2;
         const dragX = this.velocity.x * dragForce / speed;
         const dragY = this.velocity.y * dragForce / speed;
-        this.velocity.x -= dragX / this.mass;
-        this.velocity.y -= dragY / this.mass;
+        this.velocity.x -= dragX / this.mass * dt;
+        this.velocity.y -= dragY / this.mass * dt;
 
         // Elastic collision with walls
         if (this.position.x - this.radius < 0 || this.position.x + this.radius > bounds.x) {
@@ -254,7 +265,9 @@ class ParticleSystem {
     updateConstants() {
         PARTICLE_COUNT = parseInt(document.getElementById('particleCount').value) || PARTICLE_COUNT;
         EXPLOSION_RADIUS = parseInt(document.getElementById('explosionRadius').value) || EXPLOSION_RADIUS;
-        GRAVITY_CONSTANT = parseFloat(document.getElementById('gravityConstant').value) || GRAVITY_CONSTANT;
+        EXPLOSION_FORCE = parseFloat(document.getElementById('explosionForce').value) || EXPLOSION_FORCE;
+        ATTRACT_CONSTANT = parseFloat(document.getElementById('attractConstant').value) || ATTRACT_CONSTANT;
+        GRAVITY = parseFloat(document.getElementById('gravity').value) || GRAVITY;
         INTERACTION_RADIUS = parseInt(document.getElementById('interactionRadius').value) || INTERACTION_RADIUS;
 
         DRAG_CONSTANT = parseFloat(document.getElementById('dragConstant').value) || DRAG_CONSTANT;
@@ -264,6 +277,7 @@ class ParticleSystem {
         MAX_HEAT_FACTOR = parseFloat(document.getElementById('maxHeatFactor').value) || MAX_HEAT_FACTOR;
         MIN_CLUSTER_OPACITY = parseFloat(document.getElementById('minClusterOpacity').value) || MIN_CLUSTER_OPACITY;
         OPACITY_REDUCTION_FACTOR = parseFloat(document.getElementById('opacityReductionFactor').value) || OPACITY_REDUCTION_FACTOR;
+        SMOOTHING_FACTOR = parseFloat(document.getElementById('smoothingFactor').value) || SMOOTHING_FACTOR;
         CONNECTION_COLOR = document.getElementById('connectionColor').value || DEFAULT_CONNECTION_COLOR;
     }
 
@@ -384,8 +398,14 @@ class ParticleSystem {
             case 'explosionRadius':
                 EXPLOSION_RADIUS = parseInt(value);
                 break;
-            case 'gravityConstant':
-                GRAVITY_CONSTANT = parseFloat(value);
+            case 'explosionForce':
+                EXPLOSION_FORCE = parseFloat(value);
+                break;
+            case 'attractConstant':
+                ATTRACT_CONSTANT = parseFloat(value);
+                break;
+            case 'gravity':
+                GRAVITY = parseFloat(value);
                 break;
             case 'interactionRadius':
                 INTERACTION_RADIUS = parseInt(value);
@@ -411,6 +431,9 @@ class ParticleSystem {
             case 'opacityReductionFactor':
                 OPACITY_REDUCTION_FACTOR = parseFloat(value);
                 break;
+            case 'smoothingFactor':
+                SMOOTHING_FACTOR = parseFloat(value);
+                break;
         }
     }
 
@@ -432,35 +455,84 @@ class ParticleSystem {
         this.ctx.stroke();
     }
 
-    applyGravity(p1, p2) {
-        const dx = p2.position.x - p1.position.x;
-        const dy = p2.position.y - p1.position.y;
-        const distSq = dx * dx + dy * dy;
-
-        if (distSq > MIN_GRAVITY_DISTANCE && distSq < INTERACTION_RADIUS * INTERACTION_RADIUS) {
-            const distance = Math.sqrt(distSq);
-            const force = GRAVITY_CONSTANT * (p1.mass * p2.mass) / distSq;
-            const forceX = force * dx / distance;
-            const forceY = force * dy / distance;
-
-            p1.velocity.x += forceX / p1.mass;
-            p1.velocity.y += forceY / p1.mass;
-            p2.velocity.x -= forceX / p2.mass;
-            p2.velocity.y -= forceY / p2.mass;
-        }
-    }
-
     updateParticles() {
+        const dt = 1 / 60; // Assuming 60 FPS, adjust if using a different frame rate
         const particleCount = this.particles.length;
+
+        // Use spatial partitioning for optimization
+        const grid = this.createSpatialGrid();
+
         for (let i = 0; i < particleCount; i++) {
-            for (let j = i + 1; j < particleCount; j++) {
-                this.applyGravity(this.particles[i], this.particles[j]);
+            const particle = this.particles[i];
+            const nearbyParticles = this.getNearbyParticles(particle, grid);
+
+            for (const otherParticle of nearbyParticles) {
+                if (particle !== otherParticle) {
+                    this.applyAttraction(particle, otherParticle, dt);
+                }
             }
-            this.particles[i].update({ x: this.canvas.width, y: this.canvas.height });
+
+            particle.update({ x: this.canvas.width, y: this.canvas.height }, dt);
         }
 
         const uf = detectClusters(this.particles, INTERACTION_RADIUS);
         applyClusterProperties(this.particles, uf);
+    }
+
+    createSpatialGrid() {
+        const cellSize = INTERACTION_RADIUS;
+        const grid = {};
+
+        for (const particle of this.particles) {
+            const cellX = Math.floor(particle.position.x / cellSize);
+            const cellY = Math.floor(particle.position.y / cellSize);
+            const cellKey = `${cellX},${cellY}`;
+
+            if (!grid[cellKey]) {
+                grid[cellKey] = [];
+            }
+            grid[cellKey].push(particle);
+        }
+
+        return grid;
+    }
+
+    getNearbyParticles(particle, grid) {
+        const cellSize = INTERACTION_RADIUS;
+        const cellX = Math.floor(particle.position.x / cellSize);
+        const cellY = Math.floor(particle.position.y / cellSize);
+        const nearbyParticles = [];
+
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const cellKey = `${cellX + dx},${cellY + dy}`;
+                if (grid[cellKey]) {
+                    nearbyParticles.push(...grid[cellKey]);
+                }
+            }
+        }
+
+        return nearbyParticles;
+    }
+
+    applyAttraction(p1, p2, dt) {
+        const dx = p2.position.x - p1.position.x;
+        const dy = p2.position.y - p1.position.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq > 0 && distSq < INTERACTION_RADIUS * INTERACTION_RADIUS) {
+            const distance = Math.sqrt(distSq);
+            const smoothingDistance = SMOOTHING_FACTOR * INTERACTION_RADIUS;
+            const smoothedDistance = Math.max(distance, smoothingDistance);
+            const force = 10000 * ATTRACT_CONSTANT * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
+            const forceX = force * dx / smoothedDistance;
+            const forceY = force * dy / smoothedDistance;
+
+            p1.velocity.x += forceX / p1.mass * dt;
+            p1.velocity.y += forceY / p1.mass * dt;
+            p2.velocity.x -= forceX / p2.mass * dt;
+            p2.velocity.y -= forceY / p2.mass * dt;
+        }
     }
 
     applyMouseForce() {
@@ -471,7 +543,9 @@ class ParticleSystem {
             const dy = particle.position.y - this.mousePosition.y;
             const dist = Math.hypot(dx, dy);
             if (dist < EXPLOSION_RADIUS) {
-                const force = (1 - dist / EXPLOSION_RADIUS) * EXPLOSION_FORCE;
+                const normalizedDist = dist / EXPLOSION_RADIUS;
+                const forceFactor = 1 - Math.pow(normalizedDist, 4); // More explosive near the center
+                const force = EXPLOSION_FORCE * forceFactor;
                 particle.velocity.x += (dx / dist) * force;
                 particle.velocity.y += (dy / dist) * force;
             }
