@@ -3,13 +3,13 @@
 // particle settings
 const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 1 };
 const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500 };
-const EXPLOSION_FORCE_RANGE = { min: 0, max: 30, step: 0.1 };
-const ATTRACT_CONSTANT_RANGE = { min: -10, max: 10, step: 0.001 };
-const GRAVITY_RANGE = { min: -10, max: 10, step: 0.1 };
+const EXPLOSION_FORCE_RANGE = { min: 0, max: 100, step: 0.1 };
+const ATTRACT_CONSTANT_RANGE = { min: -100, max: 100, step: 0.01 };
+const GRAVITY_RANGE = { min: -100, max: 100, step: 0.1 };
 const INTERACTION_RADIUS_RANGE = { min: 10, max: 300 };
 const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
 const ELASTICITY_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
-const INITIAL_VELOCITY_RANGE_RANGE = { min: 0, max: 1, step: 0.01 };
+const INITIAL_VELOCITY_RANGE_RANGE = { min: 0, max: 100, step: 0.01 };
 const CONNECTION_OPACITY_RANGE = { min: 0, max: 0.5, step: 0.001 };
 const MAX_HEAT_FACTOR_RANGE = { min: 0, max: 1, step: 0.01 };
 const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.01 };
@@ -19,7 +19,7 @@ const SMOOTHING_FACTOR_RANGE = { min: 0, max: 0.5, step: 0.01 };
 let PARTICLE_COUNT = 399;
 let EXPLOSION_RADIUS = 200;
 let EXPLOSION_FORCE = 5.0;
-let ATTRACT_CONSTANT = -0.100;
+let ATTRACT_CONSTANT = -50;
 let GRAVITY = 0;
 let INTERACTION_RADIUS = 135;
 const MIN_PARTICLE_RADIUS = 1;
@@ -524,7 +524,7 @@ class ParticleSystem {
             const distance = Math.sqrt(distSq);
             const smoothingDistance = SMOOTHING_FACTOR * INTERACTION_RADIUS;
             const smoothedDistance = Math.max(distance, smoothingDistance);
-            const force = 10000 * ATTRACT_CONSTANT * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
+            const force = ATTRACT_CONSTANT * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
             const forceX = force * dx / smoothedDistance;
             const forceY = force * dy / smoothedDistance;
 
