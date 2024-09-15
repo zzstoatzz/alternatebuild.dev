@@ -4,7 +4,7 @@
 const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 1 };
 const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500 };
 const EXPLOSION_FORCE_RANGE = { min: 0, max: 100, step: 0.1 };
-const ATTRACT_CONSTANT_RANGE = { min: -100, max: 100, step: 0.01 };
+const ATTRACT_CONSTANT_RANGE = { min: -1000, max: 1000, step: 0.1 };
 const GRAVITY_RANGE = { min: -100, max: 100, step: 0.1 };
 const INTERACTION_RADIUS_RANGE = { min: 10, max: 300 };
 const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
