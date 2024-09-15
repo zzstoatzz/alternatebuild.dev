@@ -14,7 +14,7 @@ const CONNECTION_OPACITY_RANGE = { min: 0, max: 0.5, step: 0.001 };
 const MAX_HEAT_FACTOR_RANGE = { min: 0, max: 1, step: 0.01 };
 const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.01 };
 const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.01 };
-const SMOOTHING_FACTOR_RANGE = { min: 0, max: 0.5, step: 0.01 };
+const SMOOTHING_FACTOR_RANGE = { min: 0.01, max: 0.5, step: 0.01 };
 
 let PARTICLE_COUNT = 399;
 let EXPLOSION_RADIUS = 200;
@@ -34,7 +34,7 @@ const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
-let SMOOTHING_FACTOR = 0.2;
+let SMOOTHING_FACTOR = 0.1;
 
 const DEFAULT_CONNECTION_COLOR = '#00db6a';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
@@ -481,17 +481,21 @@ class ParticleSystem {
 
     createSpatialGrid() {
         const cellSize = INTERACTION_RADIUS;
-        const grid = {};
+        const grid = [];
+        const gridWidth = Math.ceil(this.canvas.width / cellSize);
+        const gridHeight = Math.ceil(this.canvas.height / cellSize);
+
+        for (let i = 0; i < gridWidth; i++) {
+            grid[i] = [];
+            for (let j = 0; j < gridHeight; j++) {
+                grid[i][j] = [];
+            }
+        }
 
         for (const particle of this.particles) {
             const cellX = Math.floor(particle.position.x / cellSize);
             const cellY = Math.floor(particle.position.y / cellSize);
-            const cellKey = `${cellX},${cellY}`;
-
-            if (!grid[cellKey]) {
-                grid[cellKey] = [];
-            }
-            grid[cellKey].push(particle);
+            grid[cellX][cellY].push(particle);
         }
 
         return grid;
@@ -505,9 +509,10 @@ class ParticleSystem {
 
         for (let dx = -1; dx <= 1; dx++) {
             for (let dy = -1; dy <= 1; dy++) {
-                const cellKey = `${cellX + dx},${cellY + dy}`;
-                if (grid[cellKey]) {
-                    nearbyParticles.push(...grid[cellKey]);
+                const x = cellX + dx;
+                const y = cellY + dy;
+                if (x >= 0 && x < grid.length && y >= 0 && y < grid[0].length) {
+                    nearbyParticles.push(...grid[x][y]);
                 }
             }
         }
@@ -519,8 +524,9 @@ class ParticleSystem {
         const dx = p2.position.x - p1.position.x;
         const dy = p2.position.y - p1.position.y;
         const distSq = dx * dx + dy * dy;
+        const INTERACTION_RADIUS_SQ = INTERACTION_RADIUS * INTERACTION_RADIUS;
 
-        if (distSq > 0 && distSq < INTERACTION_RADIUS * INTERACTION_RADIUS) {
+        if (distSq > 0 && distSq < INTERACTION_RADIUS_SQ) {
             const distance = Math.sqrt(distSq);
             const smoothingDistance = SMOOTHING_FACTOR * INTERACTION_RADIUS;
             const smoothedDistance = Math.max(distance, smoothingDistance);
