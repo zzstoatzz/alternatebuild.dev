@@ -13,6 +13,8 @@ declare global {
 
 interface ParticleSystem {
     enterZenMode: () => void;
+    mousePosition: { x: number; y: number };
+    isMouseDown: boolean;
 }
 
 export function ParticlesContainer() {
@@ -41,8 +43,6 @@ export function ParticlesContainer() {
             }
         };
 
-        window.addEventListener('resize', initParticles);
-
         // Wait for particlesInit to be defined
         const checkParticlesInit = setInterval(() => {
             if (typeof window.particlesInit === 'function') {
@@ -52,7 +52,6 @@ export function ParticlesContainer() {
         }, 100);
 
         return () => {
-            window.removeEventListener('resize', initParticles);
             clearInterval(checkParticlesInit);
         };
     }, []);
