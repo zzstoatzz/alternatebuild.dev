@@ -1,42 +1,44 @@
 // raw javascript because i don't know any better, please judge me and then PR
 
 // particle settings
-const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 1 };
-const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500 };
-const EXPLOSION_FORCE_RANGE = { min: 0, max: 100, step: 0.1 };
-const ATTRACT_CONSTANT_RANGE = { min: -1000, max: 1000, step: 0.1 };
-const GRAVITY_RANGE = { min: -100, max: 100, step: 0.1 };
-const INTERACTION_RADIUS_RANGE = { min: 10, max: 300 };
-const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
-const ELASTICITY_CONSTANT_RANGE = { min: 0, max: 1, step: 0.01 };
-const INITIAL_VELOCITY_RANGE_RANGE = { min: 0, max: 100, step: 0.01 };
-const CONNECTION_OPACITY_RANGE = { min: 0, max: 0.5, step: 0.001 };
-const MAX_HEAT_FACTOR_RANGE = { min: 0, max: 1, step: 0.01 };
-const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.01 };
-const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.01 };
+const MIN_PARTICLE_RADIUS = 1;
+const MAX_PARTICLE_RADIUS = 4;
+
+const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 10 };
+const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500, step: 10 };
+const EXPLOSION_FORCE_RANGE = { min: 0, max: 100, step: 1 };
+const ATTRACT_CONSTANT_RANGE = { min: -1000, max: 1000, step: 10 };
+const GRAVITY_RANGE = { min: -150, max: 150, step: 1 };
+const INTERACTION_RADIUS_RANGE = { min: 10, max: 300, step: 5 };
+const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.05 };
+const ELASTICITY_CONSTANT_RANGE = { min: 0, max: 1, step: 0.05 };
+const INITIAL_VELOCITY_RANGE = { min: 0, max: 100, step: 1 };
+const CONNECTION_OPACITY_RANGE = { min: 0, max: 0.5, step: 0.01 };
+const MAX_HEAT_FACTOR_RANGE = { min: 0, max: 1, step: 0.05 };
+const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.05 };
+const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.05 };
 const SMOOTHING_FACTOR_RANGE = { min: 0.01, max: 0.5, step: 0.01 };
 
 let PARTICLE_COUNT = 399;
 let EXPLOSION_RADIUS = 200;
-let EXPLOSION_FORCE = 13.0;
-let ATTRACT_CONSTANT = -50;
+let EXPLOSION_FORCE = 25.0;
+let ATTRACT_CONSTANT = -200;
 let GRAVITY = 0;
-let INTERACTION_RADIUS = 135;
-const MIN_PARTICLE_RADIUS = 1;
-const MAX_PARTICLE_RADIUS = 4;
+let INTERACTION_RADIUS = 100;
+
 
 let DRAG_CONSTANT = 0.150;
 let ELASTICITY_CONSTANT = 0.3;
-let INITIAL_VELOCITY_RANGE = 0;
+let INITIAL_VELOCITY = 0;
 
 let CONNECTION_OPACITY = 0.020;
 const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
-let SMOOTHING_FACTOR = 0.1;
+let SMOOTHING_FACTOR = 0.13;
 
-const DEFAULT_CONNECTION_COLOR = '#00db6a';
+const DEFAULT_CONNECTION_COLOR = '#4923d1';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
 
 // settings display
@@ -47,52 +49,102 @@ const PARTICLE_CONTROLS_TEMPLATE = `
         <span class="full-text">particle settings</span>
         <span class="emoji" style="display: none;">⚙️</span>
     </button>
-    <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.7); padding: 2vmin; border-radius: 5px; position: fixed; z-index: 1001; font-size: 1vmin; max-width: 300px; max-height: 80vh; overflow-y: auto; top: 8vh; right: 2vw;">
-        <button id="closeSettings" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
-        <h2 style="margin-top: 0; margin-bottom: 15px;">Particle Settings</h2>
-        <label style="display: flex; justify-content: space-between; align-items: center;">particle count: <input type="range" id="particleCount" min="${PARTICLE_COUNT_RANGE.min}" max="${PARTICLE_COUNT_RANGE.max}" value="${PARTICLE_COUNT}" style="margin-left: 1vmin;"> <span id="particleCountValue" style="margin-left: 1vmin;">${PARTICLE_COUNT}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">attract: <input type="range" id="attractConstant" min="${ATTRACT_CONSTANT_RANGE.min}" max="${ATTRACT_CONSTANT_RANGE.max}" step="${ATTRACT_CONSTANT_RANGE.step}" value="${ATTRACT_CONSTANT}"> <span id="attractConstantValue" style="margin-left: 1vmin;">${ATTRACT_CONSTANT}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">gravity: <input type="range" id="gravity" min="${GRAVITY_RANGE.min}" max="${GRAVITY_RANGE.max}" step="${GRAVITY_RANGE.step}" value="${GRAVITY}"> <span id="gravityValue" style="margin-left: 1vmin;">${GRAVITY}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">interaction radius: <input type="range" id="interactionRadius" min="${INTERACTION_RADIUS_RANGE.min}" max="${INTERACTION_RADIUS_RANGE.max}" value="${INTERACTION_RADIUS}"> <span id="interactionRadiusValue" style="margin-left: 1vmin;">${INTERACTION_RADIUS}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">initial velocity: <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE_RANGE.min}" max="${INITIAL_VELOCITY_RANGE_RANGE.max}" step="${INITIAL_VELOCITY_RANGE_RANGE.step}" value="${INITIAL_VELOCITY_RANGE}"> <span id="initialVelocityRangeValue" style="margin-left: 1vmin;">${INITIAL_VELOCITY_RANGE}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">drag: <input type="range" id="dragConstant" min="${DRAG_CONSTANT_RANGE.min}" max="${DRAG_CONSTANT_RANGE.max}" step="${DRAG_CONSTANT_RANGE.step}" value="${DRAG_CONSTANT}"> <span id="dragConstantValue" style="margin-left: 1vmin;">${DRAG_CONSTANT}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">elasticity: <input type="range" id="elasticityConstant" min="${ELASTICITY_CONSTANT_RANGE.min}" max="${ELASTICITY_CONSTANT_RANGE.max}" step="${ELASTICITY_CONSTANT_RANGE.step}" value="${ELASTICITY_CONSTANT}"> <span id="elasticityConstantValue" style="margin-left: 1vmin;">${ELASTICITY_CONSTANT}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">connection color: <input type="color" id="connectionColor" value="${DEFAULT_CONNECTION_COLOR}"> <span id="connectionColorValue" style="margin-left: 1vmin;">${DEFAULT_CONNECTION_COLOR}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">mouse force radius: <input type="range" id="explosionRadius" min="${EXPLOSION_RADIUS_RANGE.min}" max="${EXPLOSION_RADIUS_RANGE.max}" value="${EXPLOSION_RADIUS}"> <span id="explosionRadiusValue" style="margin-left: 1vmin;">${EXPLOSION_RADIUS}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">mouse force strength: <input type="range" id="explosionForce" min="${EXPLOSION_FORCE_RANGE.min}" max="${EXPLOSION_FORCE_RANGE.max}" step="${EXPLOSION_FORCE_RANGE.step}" value="${EXPLOSION_FORCE}"> <span id="explosionForceValue" style="margin-left: 1vmin;">${EXPLOSION_FORCE}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">connection opacity: <input type="range" id="connectionOpacity" min="${CONNECTION_OPACITY_RANGE.min}" max="${CONNECTION_OPACITY_RANGE.max}" step="${CONNECTION_OPACITY_RANGE.step}" value="${CONNECTION_OPACITY}"> <span id="connectionOpacityValue" style="margin-left: 1vmin;">${CONNECTION_OPACITY}</span></label><br>
-        <label style="display: flex; justify-content: space-between; align-items: center;">smoothing factor: <input type="range" id="smoothingFactor" min="${SMOOTHING_FACTOR_RANGE.min}" max="${SMOOTHING_FACTOR_RANGE.max}" step="${SMOOTHING_FACTOR_RANGE.step}" value="${SMOOTHING_FACTOR}"> <span id="smoothingFactorValue" style="margin-left: 1vmin;">${SMOOTHING_FACTOR}</span></label><br>
-        <details>
-            <summary style="cursor: pointer; margin-top: 1vmin;">Experimental Settings</summary>
-            <div style="margin-top: 1vmin;">
-                <label style="display: flex; justify-content: space-between; align-items: center;">max heat factor: <input type="range" id="maxHeatFactor" min="${MAX_HEAT_FACTOR_RANGE.min}" max="${MAX_HEAT_FACTOR_RANGE.max}" step="${MAX_HEAT_FACTOR_RANGE.step}" value="${MAX_HEAT_FACTOR}"> <span id="maxHeatFactorValue" style="margin-left: 1vmin;">${MAX_HEAT_FACTOR}</span></label><br>
-                <label style="display: flex; justify-content: space-between; align-items: center;">min cluster opacity: <input type="range" id="minClusterOpacity" min="${MIN_CLUSTER_OPACITY_RANGE.min}" max="${MIN_CLUSTER_OPACITY_RANGE.max}" step="${MIN_CLUSTER_OPACITY_RANGE.step}" value="${MIN_CLUSTER_OPACITY}"> <span id="minClusterOpacityValue" style="margin-left: 1vmin;">${MIN_CLUSTER_OPACITY}</span></label><br>
-                <label style="display: flex; justify-content: space-between; align-items: center;">opacity reduction: <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}"> <span id="opacityReductionFactorValue" style="margin-left: 1vmin;">${OPACITY_REDUCTION_FACTOR}</span></label>
+    <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.3); padding: 2vmin; border-radius: 5px; position: fixed; z-index: 1001; font-size: calc(8px + 0.5vmin); max-width: 300px; max-height: 80vh; overflow-y: auto; top: 8vh; right: 2vw;">
+        <button id="closeSettings" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: calc(24px + 1vmin); cursor: pointer; padding: calc(5px + 1vmin);">&times;</button>
+        <h2 style="margin-top: 0; margin-bottom: 15px; color: white;">Particle Settings</h2>
+        <div style="display: grid; gap: 10px;">
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                particle count: <span id="particleCountValue">${PARTICLE_COUNT}</span>
+                <input type="range" id="particleCount" min="${PARTICLE_COUNT_RANGE.min}" max="${PARTICLE_COUNT_RANGE.max}" step="${PARTICLE_COUNT_RANGE.step}" value="${PARTICLE_COUNT}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                attract: <span id="attractConstantValue">${ATTRACT_CONSTANT}</span>
+                <input type="range" id="attractConstant" min="${ATTRACT_CONSTANT_RANGE.min}" max="${ATTRACT_CONSTANT_RANGE.max}" step="${ATTRACT_CONSTANT_RANGE.step}" value="${ATTRACT_CONSTANT}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                gravity: <span id="gravityValue">${GRAVITY}</span>
+                <input type="range" id="gravity" min="${GRAVITY_RANGE.min}" max="${GRAVITY_RANGE.max}" step="${GRAVITY_RANGE.step}" value="${GRAVITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                interaction radius: <span id="interactionRadiusValue">${INTERACTION_RADIUS}</span>
+                <input type="range" id="interactionRadius" min="${INTERACTION_RADIUS_RANGE.min}" max="${INTERACTION_RADIUS_RANGE.max}" step="${INTERACTION_RADIUS_RANGE.step}" value="${INTERACTION_RADIUS}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                initial velocity: <span id="initialVelocityRangeValue">${INITIAL_VELOCITY}</span>
+                <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE.min}" max="${INITIAL_VELOCITY_RANGE.max}" step="${INITIAL_VELOCITY_RANGE.step}" value="${INITIAL_VELOCITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                drag: <span id="dragConstantValue">${DRAG_CONSTANT}</span>
+                <input type="range" id="dragConstant" min="${DRAG_CONSTANT_RANGE.min}" max="${DRAG_CONSTANT_RANGE.max}" step="${DRAG_CONSTANT_RANGE.step}" value="${DRAG_CONSTANT}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                elasticity: <span id="elasticityConstantValue">${ELASTICITY_CONSTANT}</span>
+                <input type="range" id="elasticityConstant" min="${ELASTICITY_CONSTANT_RANGE.min}" max="${ELASTICITY_CONSTANT_RANGE.max}" step="${ELASTICITY_CONSTANT_RANGE.step}" value="${ELASTICITY_CONSTANT}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                connection color: <span id="connectionColorValue">${DEFAULT_CONNECTION_COLOR}</span>
+                <input type="color" id="connectionColor" value="${DEFAULT_CONNECTION_COLOR}" style="width: 100%; height: 30px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                connection opacity: <span id="connectionOpacityValue">${CONNECTION_OPACITY}</span>
+                <input type="range" id="connectionOpacity" min="${CONNECTION_OPACITY_RANGE.min}" max="${CONNECTION_OPACITY_RANGE.max}" step="${CONNECTION_OPACITY_RANGE.step}" value="${CONNECTION_OPACITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                mouse force radius: <span id="explosionRadiusValue">${EXPLOSION_RADIUS}</span>
+                <input type="range" id="explosionRadius" min="${EXPLOSION_RADIUS_RANGE.min}" max="${EXPLOSION_RADIUS_RANGE.max}" step="${EXPLOSION_RADIUS_RANGE.step}" value="${EXPLOSION_RADIUS}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                mouse force strength: <span id="explosionForceValue">${EXPLOSION_FORCE}</span>
+                <input type="range" id="explosionForce" min="${EXPLOSION_FORCE_RANGE.min}" max="${EXPLOSION_FORCE_RANGE.max}" step="${EXPLOSION_FORCE_RANGE.step}" value="${EXPLOSION_FORCE}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+            </label>
+        </div>
+        <details style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;">
+            <summary style="cursor: pointer; color: white;">Experimental Settings</summary>
+            <div style="display: grid; gap: 10px; margin-top: 10px;">
+                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                    max heat factor: <span id="maxHeatFactorValue">${MAX_HEAT_FACTOR}</span>
+                    <input type="range" id="maxHeatFactor" min="${MAX_HEAT_FACTOR_RANGE.min}" max="${MAX_HEAT_FACTOR_RANGE.max}" step="${MAX_HEAT_FACTOR_RANGE.step}" value="${MAX_HEAT_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                </label>
+                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                    min cluster opacity: <span id="minClusterOpacityValue">${MIN_CLUSTER_OPACITY}</span>
+                    <input type="range" id="minClusterOpacity" min="${MIN_CLUSTER_OPACITY_RANGE.min}" max="${MIN_CLUSTER_OPACITY_RANGE.max}" step="${MIN_CLUSTER_OPACITY_RANGE.step}" value="${MIN_CLUSTER_OPACITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                </label>
+                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                    opacity reduction: <span id="opacityReductionFactorValue">${OPACITY_REDUCTION_FACTOR}</span>
+                    <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                </label>
+                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                    smoothing factor: <span id="smoothingFactorValue">${SMOOTHING_FACTOR}</span>
+                    <input type="range" id="smoothingFactor" min="${SMOOTHING_FACTOR_RANGE.min}" max="${SMOOTHING_FACTOR_RANGE.max}" step="${SMOOTHING_FACTOR_RANGE.step}" value="${SMOOTHING_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                </label>
             </div>
         </details>
-        <div style="margin-top: 1vmin;">
-            <label for="colorPalette">Color Palette:</label>
-            <select id="colorPalette">
+        <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;">
+            <label for="colorPalette" style="color: white;">Color Palette:</label>
+            <select id="colorPalette" style="width: 100%; margin-top: 5px; padding: 5px; background: rgba(255,255,255,0.1); color: white; border: none; border-radius: 3px;">
                 <option value="default">Default</option>
                 <option value="highContrast">High Contrast</option>
                 <option value="custom">Custom</option>
             </select>
         </div>
-        <div id="customPaletteControls" style="display: none; margin-top: 1vmin;">
-            <input type="color" id="newColor" value="#000000">
-            <button id="addColor">Add Color</button>
-            <div id="customColorList"></div>
+        <div id="customPaletteControls" style="display: none; margin-top: 10px;">
+            <input type="color" id="newColor" value="#000000" style="width: 100%; height: 30px;">
+            <button id="addColor" style="width: 100%; margin-top: 5px; padding: 5px; background: rgba(255,255,255,0.1); color: white; border: none; border-radius: 3px; cursor: pointer;">Add Color</button>
+            <div id="customColorList" style="margin-top: 10px;"></div>
         </div>
-        <div style="margin-top: 1vmin;">
-            <h3>Add a Particle</h3>
-            <label style="display: flex; justify-content: space-between; align-items: center;">
-                Radius: <input type="range" id="newParticleRadius" min="${MIN_PARTICLE_RADIUS}" max="${MAX_PARTICLE_RADIUS * 10}" value="${(MIN_PARTICLE_RADIUS + MAX_PARTICLE_RADIUS) / 2}" step="0.1">
-                <span id="newParticleRadiusValue">${(MIN_PARTICLE_RADIUS + MAX_PARTICLE_RADIUS) / 2}</span>
-            </label>
-            <label style="display: flex; justify-content: space-between; align-items: center;">
-                Color: <input type="color" id="newParticleColor" value="#00db6a">
-            </label>
-            <button id="addParticle" style="margin-top: 0.5vmin;">Add Particle</button>
+        <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px; background: rgba(255,255,255,0.1); border-radius: 5px; padding: 10px;">
+            <h3 style="margin-top: 0; color: white;">Add a Particle</h3>
+            <div style="display: grid; gap: 10px;">
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Radius: <span id="newParticleRadiusValue">${MAX_PARTICLE_RADIUS * 4}</span>
+                    <input type="range" id="newParticleRadius" min="${MIN_PARTICLE_RADIUS}" max="${MAX_PARTICLE_RADIUS * 10}" value="${MAX_PARTICLE_RADIUS * 4}" step="0.1" style="width: 100%;">
+                </label>
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Color:
+                    <input type="color" id="newParticleColor" value="#ffffff" style="width: 100%; height: 30px;">
+                </label>
+                <button id="addParticle" style="width: 100%; padding: 5px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 3px; cursor: pointer;">Add Particle</button>
+            </div>
         </div>
     </div>
 </div>
@@ -107,6 +159,57 @@ const EXIT_ZEN_MODE_TEMPLATE = `
 // settings display styles
 
 const SETTINGS_STYLES = `
+/* General styles */
+#controlsContent label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+#controlsContent input[type="range"] {
+    flex-grow: 1;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+#controlsContent span {
+    min-width: 30px;
+    text-align: right;
+}
+
+/* Desktop styles */
+@media (min-width: 769px) {
+    #controlsContent {
+        width: 400px !important;
+        max-width: 90vw !important;
+    }
+    
+    #controlsContent label {
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    
+    #controlsContent label > span:first-child {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    #controlsContent input[type="range"] {
+        width: calc(100% - 50px);
+        margin-left: 0;
+    }
+    
+    #controlsContent span:last-child {
+        width: 40px;
+        text-align: right;
+    }
+    
+    #controlsContent input[type="color"] {
+        margin-top: 5px;
+        width: 100%;
+    }
+}
+
+/* Mobile styles */
 @media (max-width: 768px) {
     #particleControls #configToggle .full-text {
         display: none;
@@ -134,12 +237,48 @@ const SETTINGS_STYLES = `
         padding: 20px !important;
         box-sizing: border-box;
     }
-    #controlsContent label, #controlsContent input, #controlsContent select {
-        font-size: 16px !important;
+    #controlsContent label {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    #controlsContent > * {
-        margin-left: 10px;
-        margin-right: 10px;
+    #controlsContent label > span:first-child {
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    #controlsContent input[type="range"] {
+        width: 100%;
+        margin: 10px 0;
+        -webkit-appearance: none;
+        background: transparent;
+    }
+    #controlsContent span:last-child {
+        align-self: flex-end;
+        font-size: 14px;
+        opacity: 0.8;
+    }
+    #controlsContent input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: #A9A9A9;
+        cursor: pointer;
+        margin-top: -8px;
+    }
+    #controlsContent input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 8px;
+        background: #ddd;
+        border-radius: 4px;
+    }
+    #controlsContent input[type="color"] {
+        width: 100%;
+        height: 40px;
+        margin-top: 10px;
     }
 }
 `
@@ -283,7 +422,7 @@ class ParticleSystem {
 
         DRAG_CONSTANT = parseFloat(document.getElementById('dragConstant').value) || DRAG_CONSTANT;
         ELASTICITY_CONSTANT = parseFloat(document.getElementById('elasticityConstant').value) || ELASTICITY_CONSTANT;
-        INITIAL_VELOCITY_RANGE = parseFloat(document.getElementById('initialVelocityRange').value) || INITIAL_VELOCITY_RANGE;
+        INITIAL_VELOCITY = parseFloat(document.getElementById('initialVelocityRange').value) || INITIAL_VELOCITY;
         CONNECTION_OPACITY = parseFloat(document.getElementById('connectionOpacity').value) || CONNECTION_OPACITY;
         MAX_HEAT_FACTOR = parseFloat(document.getElementById('maxHeatFactor').value) || MAX_HEAT_FACTOR;
         MIN_CLUSTER_OPACITY = parseFloat(document.getElementById('minClusterOpacity').value) || MIN_CLUSTER_OPACITY;
@@ -310,8 +449,8 @@ class ParticleSystem {
             const color = activePalette[Math.floor(Math.random() * activePalette.length)];
             const particle = new Particle({ x, y }, radius, color);
 
-            particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY_RANGE;
-            particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY_RANGE;
+            particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY;
+            particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY;
 
             this.particles.push(particle);
         }
@@ -413,15 +552,20 @@ class ParticleSystem {
         const newParticleColor = document.getElementById('newParticleColor');
         const addParticleButton = document.getElementById('addParticle');
 
-        newParticleRadius.addEventListener('input', (e) => {
-            newParticleRadiusValue.textContent = parseFloat(e.target.value).toFixed(1);
-        });
+        if (newParticleRadius && newParticleRadiusValue) {
+            newParticleRadius.addEventListener('input', (e) => {
+                const radius = parseFloat(e.target.value).toFixed(1);
+                newParticleRadiusValue.textContent = radius;
+            });
+        }
 
-        addParticleButton.addEventListener('click', () => {
-            const radius = parseFloat(newParticleRadius.value);
-            const color = newParticleColor.value;
-            this.addCustomParticle(radius, color);
-        });
+        if (addParticleButton) {
+            addParticleButton.addEventListener('click', () => {
+                const radius = parseFloat(newParticleRadius.value);
+                const color = newParticleColor.value;
+                this.addCustomParticle(radius, color);
+            });
+        }
     }
 
     bindSliderEvents() {
@@ -444,6 +588,10 @@ class ParticleSystem {
         if (connectionColorInput) {
             connectionColorInput.addEventListener('input', (event) => {
                 CONNECTION_COLOR = event.target.value;
+                const connectionColorValue = document.getElementById('connectionColorValue');
+                if (connectionColorValue) {
+                    connectionColorValue.textContent = CONNECTION_COLOR;
+                }
             });
         }
     }
@@ -470,7 +618,7 @@ class ParticleSystem {
                 INTERACTION_RADIUS = parseInt(value);
                 break;
             case 'initialVelocityRange':
-                INITIAL_VELOCITY_RANGE = parseFloat(value);
+                INITIAL_VELOCITY = parseFloat(value);
                 break;
             case 'dragConstant':
                 DRAG_CONSTANT = parseFloat(value);
@@ -510,7 +658,8 @@ class ParticleSystem {
                 }
             }
         }
-        this.ctx.strokeStyle = `${CONNECTION_COLOR}${Math.round(CONNECTION_OPACITY * 255).toString(16).padStart(2, '0')}`;
+        const opacity = Math.round(CONNECTION_OPACITY * 255).toString(16).padStart(2, '0');
+        this.ctx.strokeStyle = `${CONNECTION_COLOR}${opacity}`;
         this.ctx.stroke();
     }
 
@@ -674,8 +823,8 @@ class ParticleSystem {
         const b = parseInt(color.slice(5, 7), 16);
         const rgba = `rgba(${r}, ${g}, ${b}, 0.6)`;
         const particle = new Particle({ x, y }, radius, rgba);
-        particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY_RANGE;
-        particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY_RANGE;
+        particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY;
+        particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY;
         this.particles.push(particle);
     }
 }
