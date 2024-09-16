@@ -83,6 +83,17 @@ const PARTICLE_CONTROLS_TEMPLATE = `
             <button id="addColor">Add Color</button>
             <div id="customColorList"></div>
         </div>
+        <div style="margin-top: 1vmin;">
+            <h3>Add a Particle</h3>
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+                Radius: <input type="range" id="newParticleRadius" min="${MIN_PARTICLE_RADIUS}" max="${MAX_PARTICLE_RADIUS * 10}" value="${(MIN_PARTICLE_RADIUS + MAX_PARTICLE_RADIUS) / 2}" step="0.1">
+                <span id="newParticleRadiusValue">${(MIN_PARTICLE_RADIUS + MAX_PARTICLE_RADIUS) / 2}</span>
+            </label>
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+                Color: <input type="color" id="newParticleColor" value="#00db6a">
+            </label>
+            <button id="addParticle" style="margin-top: 0.5vmin;">Add Particle</button>
+        </div>
     </div>
 </div>
 `
@@ -363,6 +374,21 @@ class ParticleSystem {
                 }
             });
         }
+
+        const newParticleRadius = document.getElementById('newParticleRadius');
+        const newParticleRadiusValue = document.getElementById('newParticleRadiusValue');
+        const newParticleColor = document.getElementById('newParticleColor');
+        const addParticleButton = document.getElementById('addParticle');
+
+        newParticleRadius.addEventListener('input', (e) => {
+            newParticleRadiusValue.textContent = parseFloat(e.target.value).toFixed(1);
+        });
+
+        addParticleButton.addEventListener('click', () => {
+            const radius = parseFloat(newParticleRadius.value);
+            const color = newParticleColor.value;
+            this.addCustomParticle(radius, color);
+        });
     }
 
     bindSliderEvents() {
@@ -457,13 +483,9 @@ class ParticleSystem {
 
     updateParticles() {
         const dt = 1 / 60; // Assuming 60 FPS, adjust if using a different frame rate
-        const particleCount = this.particles.length;
-
-        // Use spatial partitioning for optimization
         const grid = this.createSpatialGrid();
 
-        for (let i = 0; i < particleCount; i++) {
-            const particle = this.particles[i];
+        for (const particle of this.particles) {
             const nearbyParticles = this.getNearbyParticles(particle, grid);
 
             for (const otherParticle of nearbyParticles) {
@@ -481,21 +503,17 @@ class ParticleSystem {
 
     createSpatialGrid() {
         const cellSize = INTERACTION_RADIUS;
-        const grid = [];
-        const gridWidth = Math.ceil(this.canvas.width / cellSize);
-        const gridHeight = Math.ceil(this.canvas.height / cellSize);
-
-        for (let i = 0; i < gridWidth; i++) {
-            grid[i] = [];
-            for (let j = 0; j < gridHeight; j++) {
-                grid[i][j] = [];
-            }
-        }
+        const gridWidth = Math.max(1, Math.ceil(this.canvas.width / cellSize));
+        const gridHeight = Math.max(1, Math.ceil(this.canvas.height / cellSize));
+        const grid = Array(gridWidth).fill().map(() => Array(gridHeight).fill().map(() => []));
 
         for (const particle of this.particles) {
             const cellX = Math.floor(particle.position.x / cellSize);
             const cellY = Math.floor(particle.position.y / cellSize);
-            grid[cellX][cellY].push(particle);
+
+            if (cellX >= 0 && cellX < gridWidth && cellY >= 0 && cellY < gridHeight) {
+                grid[cellX][cellY].push(particle);
+            }
         }
 
         return grid;
@@ -561,15 +579,15 @@ class ParticleSystem {
     animate() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.drawConnections();
         this.updateParticles();
+        this.drawConnections();
 
-        this.particles.forEach(particle => {
+        for (const particle of this.particles) {
             this.ctx.beginPath();
             this.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2);
             this.ctx.fillStyle = particle.color;
             this.ctx.fill();
-        });
+        }
 
         this.applyMouseForce();
 
@@ -612,6 +630,20 @@ class ParticleSystem {
         document.querySelector('nav')?.classList.add('hidden');
         document.getElementById('githubInfo')?.classList.add('hidden');
         // Add any other Zen mode-specific changes here
+    }
+
+    addCustomParticle(radius, color) {
+        const x = Math.random() * this.canvas.width;
+        const y = Math.random() * this.canvas.height;
+        // Convert hex color to rgba
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        const rgba = `rgba(${r}, ${g}, ${b}, 0.6)`;
+        const particle = new Particle({ x, y }, radius, rgba);
+        particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY_RANGE;
+        particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY_RANGE;
+        this.particles.push(particle);
     }
 }
 
