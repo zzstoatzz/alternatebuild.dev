@@ -319,12 +319,45 @@ class ParticleSystem {
 
     bindEvents() {
         window.addEventListener('resize', () => this.resizeCanvas());
+
+        // Mouse events
         window.addEventListener('mousemove', (e) => {
             this.mousePosition.x = e.clientX;
             this.mousePosition.y = e.clientY;
         });
-        window.addEventListener('mousedown', () => this.isMouseDown = true);
-        window.addEventListener('mouseup', () => this.isMouseDown = false);
+        window.addEventListener('mousedown', () => {
+            this.isMouseDown = true;
+        });
+        window.addEventListener('mouseup', () => {
+            this.isMouseDown = false;
+        });
+
+        // Touch events
+        window.addEventListener('touchstart', (e) => {
+            this.isMouseDown = true;
+            const touch = e.touches[0];
+            if (touch) {
+                this.mousePosition.x = touch.clientX;
+                this.mousePosition.y = touch.clientY;
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            if (touch) {
+                this.mousePosition.x = touch.clientX;
+                this.mousePosition.y = touch.clientY;
+            }
+        });
+
+        window.addEventListener('touchend', () => {
+            this.isMouseDown = false;
+        });
+
+        window.addEventListener('touchcancel', () => {
+            this.isMouseDown = false;
+        });
+
         window.addEventListener('resize', () => {
             const content = document.getElementById('controlsContent');
             if (content.style.display !== 'none') {
