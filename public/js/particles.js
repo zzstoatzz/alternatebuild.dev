@@ -7,7 +7,7 @@ const MAX_PARTICLE_RADIUS = 4;
 const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 10 };
 const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500, step: 10 };
 const EXPLOSION_FORCE_RANGE = { min: 0, max: 100, step: 1 };
-const ATTRACT_CONSTANT_RANGE = { min: -1000, max: 1000, step: 10 };
+const ATTRACT_CONSTANT_RANGE = { min: -1500, max: 1500, step: 10 };
 const GRAVITY_RANGE = { min: -150, max: 150, step: 1 };
 const INTERACTION_RADIUS_RANGE = { min: 10, max: 300, step: 5 };
 const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.05 };
@@ -19,15 +19,15 @@ const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.05 };
 const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.05 };
 const SMOOTHING_FACTOR_RANGE = { min: 0.01, max: 0.5, step: 0.01 };
 
-let PARTICLE_COUNT = 600;
+let PARTICLE_COUNT = 399;
 let EXPLOSION_RADIUS = 200;
 let EXPLOSION_FORCE = 25.0;
-let ATTRACT_CONSTANT = -200;
+let ATTRACT_CONSTANT = 400;
 let GRAVITY = 0;
-let INTERACTION_RADIUS = 50;
+let INTERACTION_RADIUS = 70;
 
 
-let DRAG_CONSTANT = 0.150;
+let DRAG_CONSTANT = 0.00;
 let ELASTICITY_CONSTANT = 0.3;
 let INITIAL_VELOCITY = 0;
 
@@ -36,7 +36,7 @@ const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
-let SMOOTHING_FACTOR = 0.20;
+let SMOOTHING_FACTOR = 0.35;
 
 const DEFAULT_CONNECTION_COLOR = '#4923d1';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
