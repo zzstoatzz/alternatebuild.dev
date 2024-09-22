@@ -2,10 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getPosts } from '@/utils/posts';
 
-function truncateExcerpt(excerpt: string, maxLength: number = 150) {
-    if (excerpt.length <= maxLength) return excerpt;
-    return excerpt.slice(0, excerpt.lastIndexOf(' ', maxLength)) + '...';
-}
 
 export default function Home() {
     const posts = getPosts();
