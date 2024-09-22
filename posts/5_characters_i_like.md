@@ -96,5 +96,6 @@ td:first-child {
 }
 tr:nth-child(even) {
     background-color: #333641;
+    opacity: 0.9;
 }
 </style>
