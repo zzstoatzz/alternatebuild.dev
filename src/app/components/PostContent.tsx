@@ -60,16 +60,14 @@ export default function PostContent({ content }: PostContentProps) {
     const handleCopyClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target && target.classList.contains('copy-button')) {
-        const targetId = target.getAttribute('data-target');
-        const code = document.getElementById(targetId)?.textContent;
-        if (code) {
-          navigator.clipboard.writeText(code).then(() => {
-            target.textContent = '✓';
-            setTimeout(() => {
-              target.textContent = 'Copy';
-            }, 2000);
-          });
-        }
+        const targetId = target.getAttribute('data-target') || '';
+        const code = document.getElementById(targetId)?.textContent || '';
+        navigator.clipboard.writeText(code).then(() => {
+          target.textContent = '✓';
+          setTimeout(() => {
+            target.textContent = 'Copy';
+          }, 2000);
+        });
       }
     };
 
