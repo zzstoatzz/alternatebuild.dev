@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getPosts } from '@/utils/posts';
-import ReactMarkdown from 'react-markdown';
 
 function truncateExcerpt(excerpt: string, maxLength: number = 150) {
     if (excerpt.length <= maxLength) return excerpt;
@@ -28,9 +27,6 @@ export default function Home() {
                     <div key={post.slug} className="post-card group">
                         <h3 className="post-title group-hover:text-cyan-400 transition-colors">{post.title}</h3>
                         <p className="post-date">{post.date}</p>
-                        <div className="post-excerpt">
-                            <ReactMarkdown>{truncateExcerpt(post.excerpt)}</ReactMarkdown>
-                        </div>
                         <Link href={`/posts/${post.slug}`} className="read-more group-hover:underline">
                             Read more
                         </Link>
