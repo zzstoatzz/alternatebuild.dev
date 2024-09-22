@@ -4,6 +4,7 @@ import { ParticlesContainer } from './components/ParticlesContainer';
 import ConditionalLayout from './components/ConditionalLayout';
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import 'highlight.js/styles/atom-one-dark.css';
 
 const firaCode = Fira_Code({
     subsets: ['latin'],

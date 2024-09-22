@@ -24,7 +24,7 @@ let EXPLOSION_RADIUS = 200;
 let EXPLOSION_FORCE = 25.0;
 let ATTRACT_CONSTANT = 400;
 let GRAVITY = 0;
-let INTERACTION_RADIUS = 70;
+let INTERACTION_RADIUS = 60;
 
 
 let DRAG_CONSTANT = 0.00;
@@ -137,7 +137,7 @@ const PARTICLE_CONTROLS_TEMPLATE = `
             <div style="display: grid; gap: 10px;">
                 <label style="display: flex; flex-direction: column; color: white;">
                     Radius: <span id="newParticleRadiusValue">${MAX_PARTICLE_RADIUS * 4}</span>
-                    <input type="range" id="newParticleRadius" min="${MIN_PARTICLE_RADIUS}" max="${MAX_PARTICLE_RADIUS * 10}" value="${MAX_PARTICLE_RADIUS * 4}" step="0.1" style="width: 100%;">
+                    <input type="range" id="newParticleRadius" min="${MIN_PARTICLE_RADIUS}" max="${MAX_PARTICLE_RADIUS * 20}" value="${MAX_PARTICLE_RADIUS * 4}" step="0.1" style="width: 100%;">
                 </label>
                 <label style="display: flex; flex-direction: column; color: white;">
                     Color:
