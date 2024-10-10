@@ -7,8 +7,8 @@ const MAX_PARTICLE_RADIUS = 4;
 const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 10 };
 const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500, step: 10 };
 const EXPLOSION_FORCE_RANGE = { min: 0, max: 100, step: 1 };
-const ATTRACT_CONSTANT_RANGE = { min: -1500, max: 1500, step: 10 };
-const GRAVITY_RANGE = { min: -150, max: 150, step: 1 };
+const ATTRACT_CONSTANT_RANGE = { min: -2000, max: 2000, step: 10 };
+const GRAVITY_RANGE = { min: -500, max: 500, step: 1 };
 const INTERACTION_RADIUS_RANGE = { min: 10, max: 300, step: 5 };
 const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.05 };
 const ELASTICITY_CONSTANT_RANGE = { min: 0, max: 1, step: 0.05 };
@@ -19,12 +19,12 @@ const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.05 };
 const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.05 };
 const SMOOTHING_FACTOR_RANGE = { min: 0.01, max: 0.5, step: 0.01 };
 
-let PARTICLE_COUNT = 399;
+let PARTICLE_COUNT = 1000;
 let EXPLOSION_RADIUS = 200;
 let EXPLOSION_FORCE = 25.0;
-let ATTRACT_CONSTANT = 400;
-let GRAVITY = 0;
-let INTERACTION_RADIUS = 60;
+let ATTRACT_CONSTANT = -750;
+let GRAVITY = 100;
+let INTERACTION_RADIUS = 35;
 
 
 let DRAG_CONSTANT = 0.00;
@@ -36,10 +36,14 @@ const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
-let SMOOTHING_FACTOR = 0.35;
+let SMOOTHING_FACTOR = 0.20;
 
 const DEFAULT_CONNECTION_COLOR = '#4923d1';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
+
+let SHOW_CLUSTER_LINES = true;
+let CLUSTER_LINE_COLOR = '#FFFFFF';
+let CLUSTER_LINE_OPACITY = 0.1;
 
 // settings display
 
@@ -99,23 +103,19 @@ const PARTICLE_CONTROLS_TEMPLATE = `
             </label>
         </div>
         <details style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;">
-            <summary style="cursor: pointer; color: white;">Experimental Settings</summary>
+            <summary style="cursor: pointer; color: white;">Cluster Visualization Settings</summary>
             <div style="display: grid; gap: 10px; margin-top: 10px;">
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    max heat factor: <span id="maxHeatFactorValue">${MAX_HEAT_FACTOR}</span>
-                    <input type="range" id="maxHeatFactor" min="${MAX_HEAT_FACTOR_RANGE.min}" max="${MAX_HEAT_FACTOR_RANGE.max}" step="${MAX_HEAT_FACTOR_RANGE.step}" value="${MAX_HEAT_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                <label style="display: flex; align-items: center; color: white;">
+                    <input type="checkbox" id="showClusterLines" style="margin-right: 10px;" checked>
+                    Show Cluster Lines
                 </label>
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    min cluster opacity: <span id="minClusterOpacityValue">${MIN_CLUSTER_OPACITY}</span>
-                    <input type="range" id="minClusterOpacity" min="${MIN_CLUSTER_OPACITY_RANGE.min}" max="${MIN_CLUSTER_OPACITY_RANGE.max}" step="${MIN_CLUSTER_OPACITY_RANGE.step}" value="${MIN_CLUSTER_OPACITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Cluster Line Color:
+                    <input type="color" id="clusterLineColor" value="#FFFFFF" style="width: 100%; height: 30px; margin-top: 5px;">
                 </label>
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    opacity reduction: <span id="opacityReductionFactorValue">${OPACITY_REDUCTION_FACTOR}</span>
-                    <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
-                </label>
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    smoothing factor: <span id="smoothingFactorValue">${SMOOTHING_FACTOR}</span>
-                    <input type="range" id="smoothingFactor" min="${SMOOTHING_FACTOR_RANGE.min}" max="${SMOOTHING_FACTOR_RANGE.max}" step="${SMOOTHING_FACTOR_RANGE.step}" value="${SMOOTHING_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Cluster Line Opacity: <span id="clusterLineOpacityValue">0.1</span>
+                    <input type="range" id="clusterLineOpacity" min="0" max="1" step="0.01" value="0.1" style="width: 100%;">
                 </label>
             </div>
         </details>
@@ -351,7 +351,10 @@ class ParticleSystem {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
-
+        this.startTime = Date.now();
+        this.collapseDetected = false;
+        this.lastCollapseCheck = 0;
+        
         // Check if we're in Zen mode
         this.isZenMode = window.location.pathname === '/zen';
 
@@ -454,6 +457,10 @@ class ParticleSystem {
 
             this.particles.push(particle);
         }
+        this.startTime = Date.now();
+        this.collapseDetected = false;
+        this.lastCollapseCheck = 0;
+        document.getElementById('collapseNotification').style.display = 'none';
     }
 
     bindEvents() {
@@ -564,6 +571,32 @@ class ParticleSystem {
                 const radius = parseFloat(newParticleRadius.value);
                 const color = newParticleColor.value;
                 this.addCustomParticle(radius, color);
+            });
+        }
+
+        // Bind event for showClusterLines checkbox
+        const showClusterLinesCheckbox = document.getElementById('showClusterLines');
+        if (showClusterLinesCheckbox) {
+            showClusterLinesCheckbox.addEventListener('change', (e) => {
+                SHOW_CLUSTER_LINES = e.target.checked;
+            });
+        }
+
+        // Bind event for clusterLineColor input
+        const clusterLineColorInput = document.getElementById('clusterLineColor');
+        if (clusterLineColorInput) {
+            clusterLineColorInput.addEventListener('input', (e) => {
+                CLUSTER_LINE_COLOR = e.target.value;
+            });
+        }
+
+        // Bind event for clusterLineOpacity slider
+        const clusterLineOpacitySlider = document.getElementById('clusterLineOpacity');
+        const clusterLineOpacityValue = document.getElementById('clusterLineOpacityValue');
+        if (clusterLineOpacitySlider && clusterLineOpacityValue) {
+            clusterLineOpacitySlider.addEventListener('input', (e) => {
+                CLUSTER_LINE_OPACITY = parseFloat(e.target.value);
+                clusterLineOpacityValue.textContent = e.target.value;
             });
         }
     }
@@ -765,10 +798,21 @@ class ParticleSystem {
         this.drawConnections();
 
         for (const particle of this.particles) {
+            // Draw particle
             this.ctx.beginPath();
             this.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2);
             this.ctx.fillStyle = particle.color;
             this.ctx.fill();
+
+            // Draw line to cluster representative if enabled
+            if (SHOW_CLUSTER_LINES && particle.clusterRepresentative && particle !== particle.clusterRepresentative) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(particle.position.x, particle.position.y);
+                this.ctx.lineTo(particle.clusterRepresentative.position.x, particle.clusterRepresentative.position.y);
+                const opacityHex = Math.round(CLUSTER_LINE_OPACITY * 255).toString(16).padStart(2, '0');
+                this.ctx.strokeStyle = `${CLUSTER_LINE_COLOR}${opacityHex}`;
+                this.ctx.stroke();
+            }
         }
 
         this.applyMouseForce();
@@ -808,10 +852,8 @@ class ParticleSystem {
     enterZenMode() {
         this.isZenMode = true;
         this.addExitZenModeButton();
-        // Hide nav and other elements
         document.querySelector('nav')?.classList.add('hidden');
         document.getElementById('githubInfo')?.classList.add('hidden');
-        // Add any other Zen mode-specific changes here
     }
 
     addCustomParticle(radius, color) {
@@ -867,35 +909,53 @@ function detectClusters(particles, interactionRadius) {
 }
 
 function applyClusterProperties(particles, uf) {
-    const clusterSizes = new Map();
+    const clusters = new Map();
     let maxClusterSize = 1;
 
-    for (let index = 0; index < particles.length; index++) {
-        const root = uf.find(index);
-        const size = (clusterSizes.get(root) || 0) + 1;
-        clusterSizes.set(root, size);
-        maxClusterSize = Math.max(maxClusterSize, size);
+    // Group particles by cluster root
+    for (let i = 0; i < particles.length; i++) {
+        const root = uf.find(i);
+
+        if (!clusters.has(root)) {
+            clusters.set(root, {
+                size: 0,
+                representative: particles[root], // Use root particle as representative
+                particles: [],
+            });
+        }
+
+        const cluster = clusters.get(root);
+        cluster.size += 1;
+        cluster.particles.push(particles[i]);
+
+        maxClusterSize = Math.max(maxClusterSize, cluster.size);
     }
 
-    particles.forEach((particle, index) => {
-        const root = uf.find(index);
-        const clusterSize = clusterSizes.get(root) || 1;
+    // Apply properties to particles
+    clusters.forEach((cluster) => {
+        const clusterSize = cluster.size;
+        const representative = cluster.representative;
 
-        const heatFactor = Math.min((clusterSize - 1) / (maxClusterSize - 1), MAX_HEAT_FACTOR);
+        cluster.particles.forEach((particle) => {
+            const heatFactor = Math.min((clusterSize - 1) / (maxClusterSize - 1), MAX_HEAT_FACTOR);
 
-        const rgbaMatch = particle.originalColor.match(/\d+/g);
-        if (rgbaMatch && rgbaMatch.length >= 4) {
-            const [r, g, b, a] = rgbaMatch.map(Number);
+            // Adjust particle color based on cluster size
+            const rgbaMatch = particle.originalColor.match(/\d+/g);
+            if (rgbaMatch && rgbaMatch.length >= 4) {
+                const [r, g, b, a] = rgbaMatch.map(Number);
 
-            const newR = Math.round(r + (255 - r) * heatFactor);
-            const newG = Math.round(g + (255 - g) * heatFactor);
-            const newB = Math.round(b + (255 - b) * heatFactor);
+                const newR = Math.round(r + (255 - r) * heatFactor);
+                const newG = Math.round(g + (255 - g) * heatFactor);
+                const newB = Math.round(b + (255 - b) * heatFactor);
 
-            const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR);
+                const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR);
 
-            particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
-        }
-        particle.clusterMass = clusterSize;
+                particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
+            }
+
+            particle.clusterMass = clusterSize;
+            particle.clusterRepresentative = representative; // Store representative for visualization
+        });
     });
 }
 
