@@ -41,11 +41,13 @@ let SMOOTHING_FACTOR = 0.20;
 const DEFAULT_CONNECTION_COLOR = '#4923d1';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
 
-let SHOW_CLUSTER_LINES = true;
-let CLUSTER_LINE_COLOR = '#FFFFFF';
-let CLUSTER_LINE_OPACITY = 0.1;
-
-// settings display
+const EXPERIMENTAL_SETTINGS = {
+    SHOW_CLUSTER_LINES: true,
+    CLUSTER_LINE_COLOR: '#FFFFFF',
+    BASE_CONNECTION_OPACITY: 0.1,
+    MAX_OPACITY_INCREASE: 0.5,
+    MAX_DEPTH: 10, // Adjust based on your needs
+};
 
 const PARTICLE_CONTROLS_TEMPLATE = `
 <div id="particleControls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 1.5vmin;">
@@ -103,7 +105,7 @@ const PARTICLE_CONTROLS_TEMPLATE = `
             </label>
         </div>
         <details style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;">
-            <summary style="cursor: pointer; color: white;">Cluster Visualization Settings</summary>
+            <summary style="cursor: pointer; color: white;">Experimental Clustering Settings</summary>
             <div style="display: grid; gap: 10px; margin-top: 10px;">
                 <label style="display: flex; align-items: center; color: white;">
                     <input type="checkbox" id="showClusterLines" style="margin-right: 10px;" checked>
@@ -111,11 +113,15 @@ const PARTICLE_CONTROLS_TEMPLATE = `
                 </label>
                 <label style="display: flex; flex-direction: column; color: white;">
                     Cluster Line Color:
-                    <input type="color" id="clusterLineColor" value="#FFFFFF" style="width: 100%; height: 30px; margin-top: 5px;">
+                    <input type="color" id="clusterLineColor" value="${EXPERIMENTAL_SETTINGS.CLUSTER_LINE_COLOR}" style="width: 100%; height: 30px; margin-top: 5px;">
                 </label>
                 <label style="display: flex; flex-direction: column; color: white;">
-                    Cluster Line Opacity: <span id="clusterLineOpacityValue">0.1</span>
-                    <input type="range" id="clusterLineOpacity" min="0" max="1" step="0.01" value="0.1" style="width: 100%;">
+                    Base Connection Opacity: <span id="baseConnectionOpacityValue">${EXPERIMENTAL_SETTINGS.BASE_CONNECTION_OPACITY}</span>
+                    <input type="range" id="baseConnectionOpacity" min="0" max="1" step="0.01" value="${EXPERIMENTAL_SETTINGS.BASE_CONNECTION_OPACITY}" style="width: 100%;">
+                </label>
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Max Opacity Increase: <span id="maxOpacityIncreaseValue">${EXPERIMENTAL_SETTINGS.MAX_OPACITY_INCREASE}</span>
+                    <input type="range" id="maxOpacityIncrease" min="0" max="1" step="0.01" value="${EXPERIMENTAL_SETTINGS.MAX_OPACITY_INCREASE}" style="width: 100%;">
                 </label>
             </div>
         </details>
@@ -352,8 +358,6 @@ class ParticleSystem {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.startTime = Date.now();
-        this.collapseDetected = false;
-        this.lastCollapseCheck = 0;
         
         // Check if we're in Zen mode
         this.isZenMode = window.location.pathname === '/zen';
@@ -457,10 +461,6 @@ class ParticleSystem {
 
             this.particles.push(particle);
         }
-        this.startTime = Date.now();
-        this.collapseDetected = false;
-        this.lastCollapseCheck = 0;
-        document.getElementById('collapseNotification').style.display = 'none';
     }
 
     bindEvents() {
@@ -578,7 +578,7 @@ class ParticleSystem {
         const showClusterLinesCheckbox = document.getElementById('showClusterLines');
         if (showClusterLinesCheckbox) {
             showClusterLinesCheckbox.addEventListener('change', (e) => {
-                SHOW_CLUSTER_LINES = e.target.checked;
+                EXPERIMENTAL_SETTINGS.SHOW_CLUSTER_LINES = e.target.checked;
             });
         }
 
@@ -586,7 +586,7 @@ class ParticleSystem {
         const clusterLineColorInput = document.getElementById('clusterLineColor');
         if (clusterLineColorInput) {
             clusterLineColorInput.addEventListener('input', (e) => {
-                CLUSTER_LINE_COLOR = e.target.value;
+                EXPERIMENTAL_SETTINGS.CLUSTER_LINE_COLOR = e.target.value;
             });
         }
 
@@ -595,7 +595,7 @@ class ParticleSystem {
         const clusterLineOpacityValue = document.getElementById('clusterLineOpacityValue');
         if (clusterLineOpacitySlider && clusterLineOpacityValue) {
             clusterLineOpacitySlider.addEventListener('input', (e) => {
-                CLUSTER_LINE_OPACITY = parseFloat(e.target.value);
+                EXPERIMENTAL_SETTINGS.CLUSTER_LINE_OPACITY = parseFloat(e.target.value);
                 clusterLineOpacityValue.textContent = e.target.value;
             });
         }
@@ -793,30 +793,30 @@ class ParticleSystem {
 
     animate() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
+    
         this.updateParticles();
         this.drawConnections();
-
+    
         for (const particle of this.particles) {
             // Draw particle
             this.ctx.beginPath();
             this.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2);
             this.ctx.fillStyle = particle.color;
             this.ctx.fill();
-
-            // Draw line to cluster representative if enabled
-            if (SHOW_CLUSTER_LINES && particle.clusterRepresentative && particle !== particle.clusterRepresentative) {
+    
+            // Draw line to cluster parent
+            if (EXPERIMENTAL_SETTINGS.SHOW_CLUSTER_LINES && particle.clusterParent) {
                 this.ctx.beginPath();
                 this.ctx.moveTo(particle.position.x, particle.position.y);
-                this.ctx.lineTo(particle.clusterRepresentative.position.x, particle.clusterRepresentative.position.y);
-                const opacityHex = Math.round(CLUSTER_LINE_OPACITY * 255).toString(16).padStart(2, '0');
-                this.ctx.strokeStyle = `${CLUSTER_LINE_COLOR}${opacityHex}`;
+                this.ctx.lineTo(particle.clusterParent.position.x, particle.clusterParent.position.y);
+                const opacityHex = Math.round(EXPERIMENTAL_SETTINGS.CLUSTER_LINE_OPACITY * 255).toString(16).padStart(2, '0');
+                this.ctx.strokeStyle = `${EXPERIMENTAL_SETTINGS.CLUSTER_LINE_COLOR}${opacityHex}`;
                 this.ctx.stroke();
             }
         }
-
+    
         this.applyMouseForce();
-
+    
         requestAnimationFrame(() => this.animate());
     }
 
@@ -877,16 +877,19 @@ class UnionFind {
     }
 
     find(x) {
-        if (this.parent[x] !== x) {
-            this.parent[x] = this.find(this.parent[x]); // Path compression
+        // Do not perform path compression
+        while (this.parent[x] !== x) {
+            x = this.parent[x];
         }
-        return this.parent[x];
+        return x;
     }
 
     union(x, y) {
         const rootX = this.find(x);
         const rootY = this.find(y);
+
         if (rootX !== rootY) {
+            // Make one root point to the other
             this.parent[rootY] = rootX;
         }
     }
@@ -909,53 +912,58 @@ function detectClusters(particles, interactionRadius) {
 }
 
 function applyClusterProperties(particles, uf) {
-    const clusters = new Map();
     let maxClusterSize = 1;
+    const clusterSizes = new Map();
 
-    // Group particles by cluster root
-    for (let i = 0; i < particles.length; i++) {
-        const root = uf.find(i);
+    calculateNodeDepth(particles, uf);
 
-        if (!clusters.has(root)) {
-            clusters.set(root, {
-                size: 0,
-                representative: particles[root], // Use root particle as representative
-                particles: [],
-            });
+    // Assign parent and calculate cluster sizes
+    particles.forEach((particle, index) => {
+        const parentIndex = uf.parent[index];
+        particle.clusterParent = parentIndex !== index ? particles[parentIndex] : null; // Root if no parent
+
+        // Calculate cluster sizes
+        const root = uf.find(index);
+        clusterSizes.set(root, (clusterSizes.get(root) || 0) + 1);
+        maxClusterSize = Math.max(maxClusterSize, clusterSizes.get(root));
+
+        const opacityIncrease = (particle.depth / EXPERIMENTAL_SETTINGS.MAX_DEPTH) * EXPERIMENTAL_SETTINGS.MAX_OPACITY_INCREASE;
+        connectionOpacity = Math.min(EXPERIMENTAL_SETTINGS.BASE_CONNECTION_OPACITY + opacityIncrease, 1.0);
+    });
+
+    // Adjust particle properties based on cluster size
+    particles.forEach((particle, index) => {
+        const root = uf.find(index);
+        const clusterSize = clusterSizes.get(root) || 1;
+        const heatFactor = Math.min((clusterSize - 1) / (maxClusterSize - 1), MAX_HEAT_FACTOR);
+
+        // Adjust particle color based on cluster size
+        const rgbaMatch = particle.originalColor.match(/\d+/g);
+        if (rgbaMatch && rgbaMatch.length >= 4) {
+            const [r, g, b, a] = rgbaMatch.map(Number);
+
+            const newR = Math.round(r + (255 - r) * heatFactor);
+            const newG = Math.round(g + (255 - g) * heatFactor);
+            const newB = Math.round(b + (255 - b) * heatFactor);
+
+            const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR);
+
+            particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
         }
 
-        const cluster = clusters.get(root);
-        cluster.size += 1;
-        cluster.particles.push(particles[i]);
+        particle.clusterMass = clusterSize;
+    });
+}
 
-        maxClusterSize = Math.max(maxClusterSize, cluster.size);
-    }
-
-    // Apply properties to particles
-    clusters.forEach((cluster) => {
-        const clusterSize = cluster.size;
-        const representative = cluster.representative;
-
-        cluster.particles.forEach((particle) => {
-            const heatFactor = Math.min((clusterSize - 1) / (maxClusterSize - 1), MAX_HEAT_FACTOR);
-
-            // Adjust particle color based on cluster size
-            const rgbaMatch = particle.originalColor.match(/\d+/g);
-            if (rgbaMatch && rgbaMatch.length >= 4) {
-                const [r, g, b, a] = rgbaMatch.map(Number);
-
-                const newR = Math.round(r + (255 - r) * heatFactor);
-                const newG = Math.round(g + (255 - g) * heatFactor);
-                const newB = Math.round(b + (255 - b) * heatFactor);
-
-                const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR);
-
-                particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
-            }
-
-            particle.clusterMass = clusterSize;
-            particle.clusterRepresentative = representative; // Store representative for visualization
-        });
+function calculateNodeDepth(particles, uf) {
+    particles.forEach((particle, index) => {
+        let depth = 0;
+        let currentIndex = index;
+        while (uf.parent[currentIndex] !== currentIndex) {
+            currentIndex = uf.parent[currentIndex];
+            depth++;
+        }
+        particle.depth = depth;
     });
 }
 
