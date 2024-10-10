@@ -7,8 +7,8 @@ const MAX_PARTICLE_RADIUS = 4;
 const PARTICLE_COUNT_RANGE = { min: 13, max: 2000, step: 10 };
 const EXPLOSION_RADIUS_RANGE = { min: 50, max: 500, step: 10 };
 const EXPLOSION_FORCE_RANGE = { min: 0, max: 100, step: 1 };
-const ATTRACT_CONSTANT_RANGE = { min: -1500, max: 1500, step: 10 };
-const GRAVITY_RANGE = { min: -150, max: 150, step: 1 };
+const ATTRACT_CONSTANT_RANGE = { min: -2000, max: 2000, step: 10 };
+const GRAVITY_RANGE = { min: -500, max: 500, step: 1 };
 const INTERACTION_RADIUS_RANGE = { min: 10, max: 300, step: 5 };
 const DRAG_CONSTANT_RANGE = { min: 0, max: 1, step: 0.05 };
 const ELASTICITY_CONSTANT_RANGE = { min: 0, max: 1, step: 0.05 };
@@ -19,12 +19,12 @@ const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.05 };
 const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.05 };
 const SMOOTHING_FACTOR_RANGE = { min: 0.01, max: 0.5, step: 0.01 };
 
-let PARTICLE_COUNT = 399;
+let PARTICLE_COUNT = 1000;
 let EXPLOSION_RADIUS = 200;
 let EXPLOSION_FORCE = 25.0;
-let ATTRACT_CONSTANT = 400;
-let GRAVITY = 0;
-let INTERACTION_RADIUS = 60;
+let ATTRACT_CONSTANT = -750;
+let GRAVITY = 100;
+let INTERACTION_RADIUS = 35;
 
 
 let DRAG_CONSTANT = 0.00;
@@ -36,12 +36,18 @@ const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
-let SMOOTHING_FACTOR = 0.35;
+let SMOOTHING_FACTOR = 0.20;
 
 const DEFAULT_CONNECTION_COLOR = '#4923d1';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
 
-// settings display
+const EXPERIMENTAL_SETTINGS = {
+    SHOW_CLUSTER_LINES: true,
+    CLUSTER_LINE_COLOR: '#FFFFFF',
+    BASE_CONNECTION_OPACITY: 0.1,
+    MAX_OPACITY_INCREASE: 0.5,
+    MAX_DEPTH: 10, // Adjust based on your needs
+};
 
 const PARTICLE_CONTROLS_TEMPLATE = `
 <div id="particleControls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 1.5vmin;">
@@ -99,23 +105,23 @@ const PARTICLE_CONTROLS_TEMPLATE = `
             </label>
         </div>
         <details style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;">
-            <summary style="cursor: pointer; color: white;">Experimental Settings</summary>
+            <summary style="cursor: pointer; color: white;">Experimental Clustering Settings</summary>
             <div style="display: grid; gap: 10px; margin-top: 10px;">
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    max heat factor: <span id="maxHeatFactorValue">${MAX_HEAT_FACTOR}</span>
-                    <input type="range" id="maxHeatFactor" min="${MAX_HEAT_FACTOR_RANGE.min}" max="${MAX_HEAT_FACTOR_RANGE.max}" step="${MAX_HEAT_FACTOR_RANGE.step}" value="${MAX_HEAT_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                <label style="display: flex; align-items: center; color: white;">
+                    <input type="checkbox" id="showClusterLines" style="margin-right: 10px;" checked>
+                    Show Cluster Lines
                 </label>
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    min cluster opacity: <span id="minClusterOpacityValue">${MIN_CLUSTER_OPACITY}</span>
-                    <input type="range" id="minClusterOpacity" min="${MIN_CLUSTER_OPACITY_RANGE.min}" max="${MIN_CLUSTER_OPACITY_RANGE.max}" step="${MIN_CLUSTER_OPACITY_RANGE.step}" value="${MIN_CLUSTER_OPACITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Cluster Line Color:
+                    <input type="color" id="clusterLineColor" value="${EXPERIMENTAL_SETTINGS.CLUSTER_LINE_COLOR}" style="width: 100%; height: 30px; margin-top: 5px;">
                 </label>
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    opacity reduction: <span id="opacityReductionFactorValue">${OPACITY_REDUCTION_FACTOR}</span>
-                    <input type="range" id="opacityReductionFactor" min="${OPACITY_REDUCTION_FACTOR_RANGE.min}" max="${OPACITY_REDUCTION_FACTOR_RANGE.max}" step="${OPACITY_REDUCTION_FACTOR_RANGE.step}" value="${OPACITY_REDUCTION_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Base Connection Opacity: <span id="baseConnectionOpacityValue">${EXPERIMENTAL_SETTINGS.BASE_CONNECTION_OPACITY}</span>
+                    <input type="range" id="baseConnectionOpacity" min="0" max="1" step="0.01" value="${EXPERIMENTAL_SETTINGS.BASE_CONNECTION_OPACITY}" style="width: 100%;">
                 </label>
-                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                    smoothing factor: <span id="smoothingFactorValue">${SMOOTHING_FACTOR}</span>
-                    <input type="range" id="smoothingFactor" min="${SMOOTHING_FACTOR_RANGE.min}" max="${SMOOTHING_FACTOR_RANGE.max}" step="${SMOOTHING_FACTOR_RANGE.step}" value="${SMOOTHING_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                <label style="display: flex; flex-direction: column; color: white;">
+                    Max Opacity Increase: <span id="maxOpacityIncreaseValue">${EXPERIMENTAL_SETTINGS.MAX_OPACITY_INCREASE}</span>
+                    <input type="range" id="maxOpacityIncrease" min="0" max="1" step="0.01" value="${EXPERIMENTAL_SETTINGS.MAX_OPACITY_INCREASE}" style="width: 100%;">
                 </label>
             </div>
         </details>
@@ -351,7 +357,8 @@ class ParticleSystem {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
-
+        this.startTime = Date.now();
+        
         // Check if we're in Zen mode
         this.isZenMode = window.location.pathname === '/zen';
 
@@ -566,6 +573,32 @@ class ParticleSystem {
                 this.addCustomParticle(radius, color);
             });
         }
+
+        // Bind event for showClusterLines checkbox
+        const showClusterLinesCheckbox = document.getElementById('showClusterLines');
+        if (showClusterLinesCheckbox) {
+            showClusterLinesCheckbox.addEventListener('change', (e) => {
+                EXPERIMENTAL_SETTINGS.SHOW_CLUSTER_LINES = e.target.checked;
+            });
+        }
+
+        // Bind event for clusterLineColor input
+        const clusterLineColorInput = document.getElementById('clusterLineColor');
+        if (clusterLineColorInput) {
+            clusterLineColorInput.addEventListener('input', (e) => {
+                EXPERIMENTAL_SETTINGS.CLUSTER_LINE_COLOR = e.target.value;
+            });
+        }
+
+        // Bind event for clusterLineOpacity slider
+        const clusterLineOpacitySlider = document.getElementById('clusterLineOpacity');
+        const clusterLineOpacityValue = document.getElementById('clusterLineOpacityValue');
+        if (clusterLineOpacitySlider && clusterLineOpacityValue) {
+            clusterLineOpacitySlider.addEventListener('input', (e) => {
+                EXPERIMENTAL_SETTINGS.CLUSTER_LINE_OPACITY = parseFloat(e.target.value);
+                clusterLineOpacityValue.textContent = e.target.value;
+            });
+        }
     }
 
     bindSliderEvents() {
@@ -760,19 +793,30 @@ class ParticleSystem {
 
     animate() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
+    
         this.updateParticles();
         this.drawConnections();
-
+    
         for (const particle of this.particles) {
+            // Draw particle
             this.ctx.beginPath();
             this.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2);
             this.ctx.fillStyle = particle.color;
             this.ctx.fill();
+    
+            // Draw line to cluster parent
+            if (EXPERIMENTAL_SETTINGS.SHOW_CLUSTER_LINES && particle.clusterParent) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(particle.position.x, particle.position.y);
+                this.ctx.lineTo(particle.clusterParent.position.x, particle.clusterParent.position.y);
+                const opacityHex = Math.round(EXPERIMENTAL_SETTINGS.CLUSTER_LINE_OPACITY * 255).toString(16).padStart(2, '0');
+                this.ctx.strokeStyle = `${EXPERIMENTAL_SETTINGS.CLUSTER_LINE_COLOR}${opacityHex}`;
+                this.ctx.stroke();
+            }
         }
-
+    
         this.applyMouseForce();
-
+    
         requestAnimationFrame(() => this.animate());
     }
 
@@ -808,10 +852,8 @@ class ParticleSystem {
     enterZenMode() {
         this.isZenMode = true;
         this.addExitZenModeButton();
-        // Hide nav and other elements
         document.querySelector('nav')?.classList.add('hidden');
         document.getElementById('githubInfo')?.classList.add('hidden');
-        // Add any other Zen mode-specific changes here
     }
 
     addCustomParticle(radius, color) {
@@ -835,16 +877,19 @@ class UnionFind {
     }
 
     find(x) {
-        if (this.parent[x] !== x) {
-            this.parent[x] = this.find(this.parent[x]); // Path compression
+        // Do not perform path compression
+        while (this.parent[x] !== x) {
+            x = this.parent[x];
         }
-        return this.parent[x];
+        return x;
     }
 
     union(x, y) {
         const rootX = this.find(x);
         const rootY = this.find(y);
+
         if (rootX !== rootY) {
+            // Make one root point to the other
             this.parent[rootY] = rootX;
         }
     }
@@ -867,22 +912,32 @@ function detectClusters(particles, interactionRadius) {
 }
 
 function applyClusterProperties(particles, uf) {
-    const clusterSizes = new Map();
     let maxClusterSize = 1;
+    const clusterSizes = new Map();
 
-    for (let index = 0; index < particles.length; index++) {
+    calculateNodeDepth(particles, uf);
+
+    // Assign parent and calculate cluster sizes
+    particles.forEach((particle, index) => {
+        const parentIndex = uf.parent[index];
+        particle.clusterParent = parentIndex !== index ? particles[parentIndex] : null; // Root if no parent
+
+        // Calculate cluster sizes
         const root = uf.find(index);
-        const size = (clusterSizes.get(root) || 0) + 1;
-        clusterSizes.set(root, size);
-        maxClusterSize = Math.max(maxClusterSize, size);
-    }
+        clusterSizes.set(root, (clusterSizes.get(root) || 0) + 1);
+        maxClusterSize = Math.max(maxClusterSize, clusterSizes.get(root));
 
+        const opacityIncrease = (particle.depth / EXPERIMENTAL_SETTINGS.MAX_DEPTH) * EXPERIMENTAL_SETTINGS.MAX_OPACITY_INCREASE;
+        connectionOpacity = Math.min(EXPERIMENTAL_SETTINGS.BASE_CONNECTION_OPACITY + opacityIncrease, 1.0);
+    });
+
+    // Adjust particle properties based on cluster size
     particles.forEach((particle, index) => {
         const root = uf.find(index);
         const clusterSize = clusterSizes.get(root) || 1;
-
         const heatFactor = Math.min((clusterSize - 1) / (maxClusterSize - 1), MAX_HEAT_FACTOR);
 
+        // Adjust particle color based on cluster size
         const rgbaMatch = particle.originalColor.match(/\d+/g);
         if (rgbaMatch && rgbaMatch.length >= 4) {
             const [r, g, b, a] = rgbaMatch.map(Number);
@@ -895,7 +950,20 @@ function applyClusterProperties(particles, uf) {
 
             particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
         }
+
         particle.clusterMass = clusterSize;
+    });
+}
+
+function calculateNodeDepth(particles, uf) {
+    particles.forEach((particle, index) => {
+        let depth = 0;
+        let currentIndex = index;
+        while (uf.parent[currentIndex] !== currentIndex) {
+            currentIndex = uf.parent[currentIndex];
+            depth++;
+        }
+        particle.depth = depth;
     });
 }
 
