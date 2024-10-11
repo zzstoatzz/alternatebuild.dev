@@ -61,10 +61,10 @@ uv pip install pydantic-settings
 ```
 
 <details>
-<summary style="color: green;">Details if you want to follow along</summary>
+<summary style="color: green;">details if you want to follow along</summary>
 
 ```bash
-# you _can_ use pip, but I don't like pain
+# you _can_ use pip, but I am impatient
 uv pip install pydantic-settings
 export REDIS_HOST="localhost"
 export REDIS_PORT="6379"

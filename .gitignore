@@ -41,3 +41,7 @@ next-env.d.ts
 
 # uv
 uv.lock
+
+# sound
+*.mp3
+*.wav
