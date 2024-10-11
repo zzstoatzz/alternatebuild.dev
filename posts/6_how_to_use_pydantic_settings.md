@@ -333,7 +333,7 @@ Sure, yes, sometimes this level of type safety and validation is overkill - howe
 
 <br>
 
-<li>The cost of adding a standarization layer later rather than sooner is very high.</li>
+<li>The cost of adding a standarization layer later rather than sooner can be very high.</li>
 <li>The default experience of using <code>pydantic-settings</code> is consistently sane.</li>
 <li>The default experience of using raw <code>os</code> depends on individual developers (i.e insane).</li>
 
