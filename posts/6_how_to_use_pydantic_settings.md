@@ -3,6 +3,19 @@ title: "how to use pydantic settings"
 date: "2024-10-10"
 ---
 
+<div style="background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 5px; backdrop-filter: blur(5px); text-align: center;">
+  <strong>note:</strong> i use <code>os.getenv</code> often, and my point is <strong>not</strong> that it's bad, it's just ∃ tools..
+  
+  all hyperbole is for emphatic effect
+
+</div>
+
+<center>
+    ...
+</center>
+
+<br>
+
 each time I see code like this in the wild, I cry 1 tear. I've cried many tears
 
 <br>
@@ -25,7 +38,7 @@ if not (OPENAI_API_KEY := os.getenv("OPENAI_API_KEY")):
 print(f"""
 Current user: {CURRENT_USER}
 Redis host: {REDIS_HOST}
-Redis port: {int(REDIS_PORT)}
+Redis port: {REDIS_PORT}
 OpenAI API key: {OPENAI_API_KEY}
 """)
 ```
@@ -47,14 +60,24 @@ and yes, i also love scripting and using raw `os` is fine to get things done in 
 
 <br>
 
-there's too much pain in the world for another developer to embark on this defensive side-quest to get correct env vars values for the thing they actually care about. we may be authors of python, but we _can_ have validated types to avoid ambiguous values. [TFCTMTT](https://knowyourmeme.com/memes/thanks-for-coming-to-my-ted-talk)
+there's too much pain in the world for another being to embark on this defensive side-quest to get correct env vars values for the thing they actually care about. we may be authors of python, but we _can_ have validated types to avoid ambiguous values. [TFCTMTT](https://knowyourmeme.com/memes/thanks-for-coming-to-my-ted-talk)
 
 <br>
 
-it feels clear that the above code is pain to consume downstream, it forces you to ask silly questions all the time like "are you _sure_ `REDIS_PORT` is a valid integer?" etc.
+when I look at the above code, it feels like it's going to cause downstream clutter because I'm deferring silly questions like "am I _sure_ `REDIS_PORT` is a valid integer?" that I can **definitely** rely on myself to answer concisely in application code, right?
+<br>
+
+<center>
+    <img src="/assets/images/optional.png" alt="option" style="width: 70%; height: auto;" />
+</center>
+
+<br>
+
 <br>
 
 ---
+
+<br>
 
 ```bash
 uv pip install pydantic-settings
@@ -81,7 +104,7 @@ export OPENAI_API_KEY="sk-yeah-right"
 
 <br>
 
-The same code, but with `pydantic_settings` (scoops env vars by field name or `alias`):
+The same code, but with `pydantic_settings` (scoops env vars by field name [or `alias`](https://docs.pydantic.dev/latest/concepts/alias/)):
 
 ```python
 from pydantic import Field, SecretStr
@@ -113,7 +136,7 @@ Redis port: 6379
 OpenAI API key: ********** value: sk-yeah-right
 ```
 
-because if they weren't at least the right type... it just wouldn't work
+because if they weren't at least the right type... we throw `ValidationError` immediately
 
 ```bash
 » export REDIS_PORT=trustmebro
@@ -129,11 +152,13 @@ redis_port
   Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='trustmebro', input_type=str]
 ```
 
+<br>
+
 ---
 
 <br>
 
-identifying a few things we've implicitly gained here:
+## identifying a few things we've implicitly gained here:
 
 <br>
 
@@ -273,7 +298,7 @@ print(Settings().to_env_vars())  # type: ignore
 
 > **Q:** "what is this `# /// script` nonsense?"
 >
-> **A:** its [cool](https://docs.astral.sh/uv/guides/scripts/#declaring-script-dependencies)
+> **A:** its [cool](https://docs.astral.sh/uv/guides/scripts/#declaring-script-dependencies), its inline metadata from [PEP 723](https://peps.python.org/pep-0723/)
 
 ```bash
 » uv run posts/auxiliary/python/pydantic_settings_example.py
@@ -290,7 +315,7 @@ Installed 6 packages in 16ms
 
 <br>
 
-I hope that now you too have become a `pydantic-settings` evangelist, and that you join me in shedding tears of sorrow for those consuming raw `os.getenv` values in the wild.
+I hope that now you too have become a `pydantic-settings` evangelist, and that you join me in shedding tears of sorrow for those consuming raw `os.getenv` values in the wild (like me sometimes).
 
 <br>
 

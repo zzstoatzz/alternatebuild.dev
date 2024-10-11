@@ -74,6 +74,8 @@ date: "2024-09-22"
 |     ።     | Ethiopic Full Stop                         | U+1362  |
 |     ፨     | Ethiopic Paragraph Separator               | U+1368  |
 |     »     | Right-Pointing Double Angle Quotation Mark | U+00BB  |
+|     ∃     | There Exists                               | U+2203  |
+|     ∈     | Element of                                 | U+2208  |
 
 <br>
 
