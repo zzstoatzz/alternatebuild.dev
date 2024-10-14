@@ -4,15 +4,13 @@
 # ]
 # ///
 
-from typing import Annotated, TypeVar
+from typing import Annotated
 
 from pydantic import Field, PlainSerializer, Secret, SecretStr, SerializationInfo
 from pydantic_settings import BaseSettings
 
-T = TypeVar("T")
 
-
-def maybe_unmask(v: Secret[T], info: SerializationInfo) -> T | Secret[T]:
+def maybe_unmask[T](v: Secret[T], info: SerializationInfo) -> T | Secret[T]:
     if info.context and info.context.get("unmask"):
         return v.get_secret_value()
     return v
