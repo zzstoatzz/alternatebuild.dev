@@ -19,10 +19,10 @@ const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.05 };
 const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.05 };
 const SMOOTHING_FACTOR_RANGE = { min: 0.01, max: 0.5, step: 0.01 };
 
-let PARTICLE_COUNT = 1400;
+let PARTICLE_COUNT = 1200;
 let EXPLOSION_RADIUS = 200;
 let EXPLOSION_FORCE = 25.0;
-let ATTRACT_CONSTANT = -800;
+let ATTRACT_CONSTANT = -900;
 let GRAVITY = 0;
 let INTERACTION_RADIUS = 25;
 
@@ -31,12 +31,12 @@ let DRAG_CONSTANT = 0.13;
 let ELASTICITY_CONSTANT = 0.3;
 let INITIAL_VELOCITY = 0;
 
-let CONNECTION_OPACITY = 0.350;
+let CONNECTION_OPACITY = 0.300;
 const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
-let SMOOTHING_FACTOR = 0.25;
+let SMOOTHING_FACTOR = 0.20;
 
 const DEFAULT_CONNECTION_COLOR = '#4923d1';
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
@@ -68,10 +68,6 @@ const PARTICLE_CONTROLS_TEMPLATE = `
             <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
                 interaction radius: <span id="interactionRadiusValue">${INTERACTION_RADIUS}</span>
                 <input type="range" id="interactionRadius" min="${INTERACTION_RADIUS_RANGE.min}" max="${INTERACTION_RADIUS_RANGE.max}" step="${INTERACTION_RADIUS_RANGE.step}" value="${INTERACTION_RADIUS}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
-            </label>
-            <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
-                initial velocity: <span id="initialVelocityRangeValue">${INITIAL_VELOCITY}</span>
-                <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE.min}" max="${INITIAL_VELOCITY_RANGE.max}" step="${INITIAL_VELOCITY_RANGE.step}" value="${INITIAL_VELOCITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
             </label>
             <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
                 drag: <span id="dragConstantValue">${DRAG_CONSTANT}</span>
@@ -116,6 +112,10 @@ const PARTICLE_CONTROLS_TEMPLATE = `
                 <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
                     smoothing factor: <span id="smoothingFactorValue">${SMOOTHING_FACTOR}</span>
                     <input type="range" id="smoothingFactor" min="${SMOOTHING_FACTOR_RANGE.min}" max="${SMOOTHING_FACTOR_RANGE.max}" step="${SMOOTHING_FACTOR_RANGE.step}" value="${SMOOTHING_FACTOR}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
+                </label>
+                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                    initial velocity: <span id="initialVelocityRangeValue">${INITIAL_VELOCITY}</span>
+                    <input type="range" id="initialVelocityRange" min="${INITIAL_VELOCITY_RANGE.min}" max="${INITIAL_VELOCITY_RANGE.max}" step="${INITIAL_VELOCITY_RANGE.step}" value="${INITIAL_VELOCITY}" style="flex-grow: 1; margin-left: 10px; margin-right: 10px;">
                 </label>
             </div>
         </details>
