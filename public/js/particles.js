@@ -44,13 +44,12 @@ let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
 // settings display
 
 const PARTICLE_CONTROLS_TEMPLATE = `
-<div id="particleControls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1000; font-size: 1.5vmin;">
-    <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit;" title="'P' to toggle settings, Tab/arrow to navigate/edit">
+<div id="particleControls" style="position: fixed; top: 2vh; right: 2vw; z-index: 1002; font-size: 1.5vmin;">
+    <button id="configToggle" style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: inherit; position: relative; z-index: 1003;" title="'P' to toggle settings, Tab/arrow to navigate/edit">
         <span class="full-text">particle settings</span>
         <span class="emoji" style="display: none;">⚙️</span>
     </button>
     <div id="controlsContent" style="display: none; background: rgba(0,0,0,0.3); padding: 2vmin; border-radius: 5px; position: fixed; z-index: 1001; font-size: calc(8px + 0.5vmin); max-width: 300px; max-height: 80vh; overflow-y: auto; top: 8vh; right: 2vw;">
-        <button id="closeSettings" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: calc(24px + 1vmin); cursor: pointer; padding: calc(5px + 1vmin);">&times;</button>
         <h2 style="margin-top: 0; margin-bottom: 15px; color: white;">Particle Settings</h2>
         <div style="display: grid; gap: 10px;">
             <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
@@ -369,14 +368,9 @@ class ParticleSystem {
 
         const configToggle = document.getElementById('configToggle');
         const controlsContent = document.getElementById('controlsContent');
-        const closeSettings = document.getElementById('closeSettings');
 
         configToggle.addEventListener('click', () => {
             controlsContent.style.display = controlsContent.style.display === 'none' ? 'block' : 'none';
-        });
-
-        closeSettings.addEventListener('click', () => {
-            controlsContent.style.display = 'none';
         });
 
         this.particles = [];
@@ -902,3 +896,4 @@ function applyClusterProperties(particles, uf) {
 window.particlesInit = function (canvas) {
     new ParticleSystem(canvas);
 };
+
