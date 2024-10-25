@@ -95,8 +95,6 @@ export default function SoundCloudPlayer() {
         setShowUsernameModal(false);
     };
 
-    // Add some debug logging
-    console.log('Render SoundCloudPlayer', { isMinimized, isPlaying, shouldShow });
 
     if (!shouldShow) return null;
     
@@ -110,7 +108,15 @@ export default function SoundCloudPlayer() {
             >
                 <div className={`bg-black bg-opacity-80 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden h-full
                     ${isPlaying ? 'animate-glow bg-blue-500/5' : 'transition-[box-shadow,background-color] duration-75'}`}>
-                    <div className="h-12 px-4 flex items-center justify-between bg-black bg-opacity-40">
+                    <div 
+                        className="h-12 px-4 flex items-center justify-between bg-black bg-opacity-40 cursor-pointer relative z-10"
+                        onClick={(e) => {
+                            if (!isMinimized) {
+                                e.stopPropagation();
+                                setIsMinimized(true);
+                            }
+                        }}
+                    >
                         <div className="w-full h-full flex items-center justify-between text-xl transition-colors group">
                             {isMinimized ? (
                                 <span className="text-cyan-300 group-hover:text-cyan-400">♪</span>
@@ -142,14 +148,16 @@ export default function SoundCloudPlayer() {
                     </div>
                     
                     <div className={`w-full transition-all duration-200 ${isMinimized ? 'opacity-0 h-0' : 'opacity-100 h-[calc(100%-3rem)]'}`}>
-                        <iframe
-                            width="100%"
-                            height="100%"
-                            scrolling="no"
-                            frameBorder="no"
-                            allow="autoplay"
-                            src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${username}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`}
-                        />
+                        <div className="relative z-20 h-full">
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                scrolling="no"
+                                frameBorder="no"
+                                allow="autoplay"
+                                src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${username}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`}
+                            />
+                        </div>
                         {!isMinimized && <MinimizeIndicator onMinimize={() => setIsMinimized(true)} />}
                     </div>
                 </div>
