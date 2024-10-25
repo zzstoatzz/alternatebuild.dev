@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+// First, let's define a type for the SoundCloud Widget
+interface SoundCloudWidget {
+    bind: (event: string, callback: () => void) => void;
+    getPosition: (callback: (position: number) => void) => void;
+    isPaused: (callback: (isPaused: boolean) => void) => void;
+}
+
 const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
     <div 
         className="absolute left-0 right-0 top-0 h-24 opacity-10 hover:opacity-30 cursor-pointer 
@@ -17,11 +24,11 @@ const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
 
 export default function SoundCloudPlayer() {
     const [isMinimized, setIsMinimized] = useState(true);
-    const [shouldShow, setShouldShow] = useState(true); // Set this to true by default
+    const [shouldShow] = useState(true); // Remove setShouldShow since it's not used
     const [username, setUsername] = useState("stoat-master");
     const [showUsernameModal, setShowUsernameModal] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
-    const widgetRef = useRef<any>(null);
+    const widgetRef = useRef<SoundCloudWidget | null>(null); // Use our new type instead of any
     
     // Move the widget setup into a separate effect that depends on shouldShow
     useEffect(() => {
@@ -43,24 +50,28 @@ export default function SoundCloudPlayer() {
             }
 
             try {
-                const widget = (window as any).SC.Widget(iframe);
-                widgetRef.current = widget;
-                console.log('Widget initialized successfully');
+                // Type assertion since we know the shape of SC.Widget
+                const widget = (window as { SC?: { Widget: (element: HTMLElement) => SoundCloudWidget } })
+                    .SC?.Widget(iframe);
+                    
+                if (widget) {
+                    widgetRef.current = widget;
+                    console.log('Widget initialized successfully');
 
-                // Add periodic state checking
-                const stateCheckInterval = setInterval(() => {
-                    widget.getPosition((position: number) => {
-                        if (position > 0) {
-                            widget.isPaused((isPaused: boolean) => {
-                                setIsPlaying(!isPaused);
-                            });
-                        }
-                    });
-                }, 1000);
+                    // Add periodic state checking
+                    const stateCheckInterval = setInterval(() => {
+                        widget.getPosition((position: number) => {
+                            if (position > 0) {
+                                widget.isPaused((isPaused: boolean) => {
+                                    setIsPlaying(!isPaused);
+                                });
+                            }
+                        });
+                    }, 1000);
 
-                // Clean up interval on unmount
-                return () => clearInterval(stateCheckInterval);
-
+                    // Clean up interval on unmount
+                    return () => clearInterval(stateCheckInterval);
+                }
             } catch (error) {
                 console.error('Error setting up widget:', error);
             }
