@@ -5,6 +5,7 @@ import ConditionalLayout from './components/ConditionalLayout';
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import 'highlight.js/styles/atom-one-dark.css';
+import SoundCloudPlayer from './components/SoundCloudPlayer';
 
 const firaCode = Fira_Code({
     subsets: ['latin'],
@@ -47,6 +48,7 @@ export default function RootLayout({
                         {children}
                     </ConditionalLayout>
                 </div>
+                <SoundCloudPlayer />
             </body>
         </html>
     );
