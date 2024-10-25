@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
     <div 
-        className="absolute left-1/2 top-6 -translate-x-1/2 opacity-10 cursor-pointer w-12 h-12 flex items-center justify-center"
+        className="absolute left-0 right-0 top-0 h-24 opacity-10 hover:opacity-30 cursor-pointer 
+            flex items-center justify-center transition-opacity"
         onClick={onMinimize}
     >
         <div className="animate-bounce-subtle flex flex-col items-center pointer-events-none">
@@ -16,21 +17,66 @@ const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
 
 export default function SoundCloudPlayer() {
     const [isMinimized, setIsMinimized] = useState(true);
-    const [shouldShow, setShouldShow] = useState(false);
+    const [shouldShow, setShouldShow] = useState(true); // Set this to true by default
     const [username, setUsername] = useState("stoat-master");
     const [showUsernameModal, setShowUsernameModal] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const widgetRef = useRef<any>(null);
     
+    // Move the widget setup into a separate effect that depends on shouldShow
     useEffect(() => {
-        const savedUsername = localStorage.getItem('soundcloudUsername');
-        if (savedUsername) setUsername(savedUsername);
+        if (!shouldShow) return; // Don't do anything if component isn't shown
         
-        const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
-        if (!hasVisitedBefore) {
-            localStorage.setItem('hasVisitedBefore', 'true');
-        } else {
-            setTimeout(() => setShouldShow(true), 1000);
-        }
-    }, []);
+        console.log('Setting up SoundCloud widget');
+        
+        const script = document.createElement('script');
+        script.src = 'https://w.soundcloud.com/player/api.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        const setupWidget = () => {
+            console.log('Setting up widget events');
+            const iframe = document.querySelector('iframe');
+            if (!iframe) {
+                console.error('No iframe found');
+                return;
+            }
+
+            try {
+                const widget = (window as any).SC.Widget(iframe);
+                widgetRef.current = widget;
+                console.log('Widget initialized successfully');
+
+                // Add periodic state checking
+                const stateCheckInterval = setInterval(() => {
+                    widget.getPosition((position: number) => {
+                        if (position > 0) {
+                            widget.isPaused((isPaused: boolean) => {
+                                setIsPlaying(!isPaused);
+                            });
+                        }
+                    });
+                }, 1000);
+
+                // Clean up interval on unmount
+                return () => clearInterval(stateCheckInterval);
+
+            } catch (error) {
+                console.error('Error setting up widget:', error);
+            }
+        };
+
+        script.onload = () => {
+            console.log('SoundCloud script loaded');
+            setTimeout(setupWidget, 1000);
+        };
+
+        return () => {
+            if (script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+        };
+    }, [shouldShow]); // Add shouldShow as a dependency
 
     const handleUsernameSubmit = (newUsername: string) => {
         setUsername(newUsername);
@@ -38,34 +84,50 @@ export default function SoundCloudPlayer() {
         setShowUsernameModal(false);
     };
 
+    // Add some debug logging
+    console.log('Render SoundCloudPlayer', { isMinimized, isPlaying, shouldShow });
+
     if (!shouldShow) return null;
     
     return (
         <>
-            <div className={`fixed bottom-4 left-4 transition-all duration-300 ease-in-out z-50 
-                ${shouldShow ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'}
-                ${isMinimized ? 'h-12 w-12' : 'h-[465px] w-[320px]'}`}>
-                <div className="bg-black bg-opacity-80 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden h-full">
+            <div 
+                className={`fixed bottom-4 left-4 transition-all duration-300 ease-in-out z-50 
+                    ${shouldShow ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'}
+                    ${isMinimized ? 'h-12 w-12 cursor-pointer' : 'h-[465px] w-[320px]'}`}
+                onClick={() => isMinimized ? setIsMinimized(false) : null}
+            >
+                <div className={`bg-black bg-opacity-80 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden h-full
+                    ${isPlaying ? 'animate-glow bg-blue-500/5' : 'transition-[box-shadow,background-color] duration-75'}`}>
                     <div className="h-12 px-4 flex items-center justify-between bg-black bg-opacity-40">
-                        <button 
-                            onClick={() => setIsMinimized(!isMinimized)}
-                            className="w-full h-full flex items-center justify-between text-xl transition-colors group"
-                        >
-                            <span className="text-cyan-300 group-hover:text-cyan-400">
-                                {isMinimized ? '♪' : ''}
-                            </span>
-                            {!isMinimized && (
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowUsernameModal(true);
-                                    }}
-                                    className="text-xs text-gray-500 opacity-40 hover:opacity-60"
-                                >
-                                    change user
-                                </button>
+                        <div className="w-full h-full flex items-center justify-between text-xl transition-colors group">
+                            {isMinimized ? (
+                                <span className="text-cyan-300 group-hover:text-cyan-400">♪</span>
+                            ) : (
+                                <>
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsMinimized(true);
+                                        }}
+                                        className="text-cyan-300 group-hover:text-cyan-400"
+                                    >
+                                        ♪
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowUsernameModal(true);
+                                        }}
+                                        className="text-xs text-gray-500 opacity-40 hover:opacity-60 relative z-[60]"
+                                        style={{ width: 'fit-content' }}
+                                    >
+                                        change user
+                                    </button>
+                                </>
                             )}
-                        </button>
+                        </div>
                     </div>
                     
                     <div className={`w-full transition-all duration-200 ${isMinimized ? 'opacity-0 h-0' : 'opacity-100 h-[calc(100%-3rem)]'}`}>
