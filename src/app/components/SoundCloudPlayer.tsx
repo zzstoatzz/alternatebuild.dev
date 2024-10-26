@@ -25,7 +25,7 @@ const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
 export default function SoundCloudPlayer() {
     const [isMinimized, setIsMinimized] = useState(true);
     const [shouldShow] = useState(true); // Remove setShouldShow since it's not used
-    const [username, setUsername] = useState("stoat-master");
+    const [username, setUsername] = useState("larryfisherman");
     const [showUsernameModal, setShowUsernameModal] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const widgetRef = useRef<SoundCloudWidget | null>(null); // Use our new type instead of any
