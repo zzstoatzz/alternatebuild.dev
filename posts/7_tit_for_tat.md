@@ -19,7 +19,7 @@ over time, I (like many) have been frustrated with the detached and irrational m
 
 <br>
 
-to me, “tit for tat” is an illegitimate justification for being cruel to “lefties” on the internet, or “watching them squirm” in the wake of recent events. tit for tat [may be a good strategy](https://youtu.be/mScpHTIi-kM?si=t42BlSP3QTlnkAwW) for self-interested militaries, but we are humans in society who can communicate ideas and collectively benefit from prosperity.
+to me, “tit for tat” is an illegitimate justification for dunking on “lefties” on the internet, or “watching them squirm” or freak out. sure, some people are freaking out on false pretenses, that's not the point. tit for tat [may be a good strategy](https://youtu.be/mScpHTIi-kM?si=t42BlSP3QTlnkAwW) for self-interested militaries, but we are humans in society who can communicate ideas and collectively benefit from prosperity.
 
 
 <br>
