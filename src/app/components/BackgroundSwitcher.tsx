@@ -2,6 +2,7 @@
 
 import { useBackground } from '../contexts/BackgroundContext';
 import { DEFAULT_IMAGES } from '../contexts/BackgroundContext';
+import type { BackgroundType } from '../contexts/BackgroundContext';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';

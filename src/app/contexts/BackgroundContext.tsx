@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 
-type BackgroundType = 'solid' | 'image';
+export type BackgroundType = 'solid' | 'image';
 
 interface BackgroundState {
     type: BackgroundType;

@@ -3,14 +3,18 @@
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 import { usePathname, useRouter } from 'next/navigation';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context';
+
+// Define minimal router type for our needs
+interface RouterInstance {
+    push: (path: string) => void;
+}
 
 declare global {
     interface Window {
         particlesInit: (canvas: HTMLCanvasElement) => void;
         handleZenModeTransition: () => void;
         particleSystem: ParticleSystem;
-        nextRouter: AppRouterInstance;
+        nextRouter: RouterInstance;
     }
 }
 
