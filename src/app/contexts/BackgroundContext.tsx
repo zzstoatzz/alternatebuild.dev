@@ -26,7 +26,7 @@ const BackgroundContext = createContext<BackgroundContextType | undefined>(undef
 export function BackgroundProvider({ children }: { children: React.ReactNode }) {
     const [background, setBackground] = useState<BackgroundState>({
         type: 'solid',
-        color: '#000001',
+        color: '#070610',
         imageUrl: DEFAULT_IMAGES[0]
     });
 
