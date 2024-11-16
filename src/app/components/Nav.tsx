@@ -7,11 +7,20 @@ export default function Nav() {
     const pathname = usePathname();
     const router = useRouter();
 
-    const handleZenModeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
         e.preventDefault();
-        router.push('/zen');
-        if (typeof window.handleZenModeTransition === 'function') {
-            window.handleZenModeTransition();
+        if (pathname === '/zen') {
+            document.querySelector('nav')?.classList.remove('hidden');
+            document.querySelector('.github-info')?.classList.remove('hidden');
+            document.getElementById('exitZenMode')?.remove();
+            router.push('/');
+        } else if (href === '/zen') {
+            router.push('/zen');
+            if (typeof window.handleZenModeTransition === 'function') {
+                window.handleZenModeTransition();
+            }
+        } else {
+            router.push(href);
         }
     };
 
@@ -29,7 +38,7 @@ export default function Nav() {
                             <Link
                                 href={href}
                                 className={`nav-link ${pathname === href ? 'current' : ''}`}
-                                onClick={href === '/zen' ? handleZenModeClick : undefined}
+                                onClick={(e) => handleNavClick(e, href)}
                             >
                                 {label}
                             </Link>

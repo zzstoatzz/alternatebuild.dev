@@ -2,12 +2,15 @@
 
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
+import { usePathname, useRouter } from 'next/navigation';
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context';
 
 declare global {
     interface Window {
         particlesInit: (canvas: HTMLCanvasElement) => void;
         handleZenModeTransition: () => void;
         particleSystem: ParticleSystem;
+        nextRouter: AppRouterInstance;
     }
 }
 
@@ -20,8 +23,13 @@ interface ParticleSystem {
 export function ParticlesContainer() {
     const particlesInitialized = useRef<boolean>(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const pathname = usePathname();
+    const router = useRouter();
+    const isZenMode = pathname === '/zen';
 
     useEffect(() => {
+        window.nextRouter = router;
+
         const initParticles = () => {
             if (
                 canvasRef.current &&
@@ -34,16 +42,23 @@ export function ParticlesContainer() {
                 canvas.height = window.innerHeight;
                 window.particlesInit(canvas);
                 particlesInitialized.current = true;
+
+                if (isZenMode && window.particleSystem?.enterZenMode) {
+                    window.particleSystem.enterZenMode();
+                }
             }
         };
 
         window.handleZenModeTransition = () => {
-            if (window.particleSystem) {
-                window.particleSystem.enterZenMode();
+            if (window.particleSystem?.enterZenMode) {
+                try {
+                    window.particleSystem.enterZenMode();
+                } catch (error) {
+                    console.warn('Failed to enter zen mode:', error);
+                }
             }
         };
 
-        // Wait for particlesInit to be defined
         const checkParticlesInit = setInterval(() => {
             if (typeof window.particlesInit === 'function') {
                 clearInterval(checkParticlesInit);
@@ -54,7 +69,7 @@ export function ParticlesContainer() {
         return () => {
             clearInterval(checkParticlesInit);
         };
-    }, []);
+    }, [router, isZenMode]);
 
     return (
         <>
@@ -78,6 +93,10 @@ export function ParticlesContainer() {
                         canvas.height = window.innerHeight;
                         window.particlesInit(canvas);
                         particlesInitialized.current = true;
+                        
+                        if (isZenMode && window.particleSystem?.enterZenMode) {
+                            window.particleSystem.enterZenMode();
+                        }
                     }
                 }}
             />

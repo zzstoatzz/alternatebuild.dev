@@ -159,6 +159,8 @@
         padding: 1.5rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+        text-decoration: none;
+        display: block;
     }
 
     .post-card:hover {
@@ -171,6 +173,11 @@
         font-weight: 700;
         color: #64ffda;
         margin-bottom: 0.5rem;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .post-card:hover .post-title {
+        color: #7bd1ff;
     }
 
     .post-date {
@@ -186,16 +193,15 @@
 
     .read-more {
         color: #64ffda;
-        text-decoration: none;
         transition: color 0.3s ease-in-out;
         display: block;
         text-align: center;
+        margin-top: 1rem;
     }
 
-    .read-more:hover {
+    .post-card:hover .read-more {
         color: #7bd1ff;
         text-decoration: underline;
-
     }
 
     .footer {
