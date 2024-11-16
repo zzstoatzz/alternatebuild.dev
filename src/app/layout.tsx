@@ -1,11 +1,13 @@
 import { Fira_Code } from 'next/font/google';
 import '../styles/globals.css';
-import { ParticlesContainer } from './components/ParticlesContainer';
 import ConditionalLayout from './components/ConditionalLayout';
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import 'highlight.js/styles/atom-one-dark.css';
 import SoundCloudPlayer from './components/SoundCloudPlayer';
+import { BackgroundProvider } from './contexts/BackgroundContext';
+import BackgroundSwitcher from './components/BackgroundSwitcher';
+import Background from './components/Background';
 
 const firaCode = Fira_Code({
     subsets: ['latin'],
@@ -41,14 +43,17 @@ export default function RootLayout({
                     `}
                 </Script>
             </head>
-            <body className="bg-[#0B0B03] text-white">
-                <ParticlesContainer />
-                <div className="relative z-10 min-h-screen flex flex-col">
-                    <ConditionalLayout>
-                        {children}
-                    </ConditionalLayout>
-                </div>
-                <SoundCloudPlayer />
+            <body className="bg-[#0B0B03]">
+                <BackgroundProvider>
+                    <Background />
+                    <div className="relative z-10 min-h-screen flex flex-col">
+                        <BackgroundSwitcher />
+                        <ConditionalLayout>
+                            {children}
+                        </ConditionalLayout>
+                    </div>
+                    <SoundCloudPlayer />
+                </BackgroundProvider>
             </body>
         </html>
     );

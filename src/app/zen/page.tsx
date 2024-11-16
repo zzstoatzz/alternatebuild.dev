@@ -26,7 +26,6 @@ export default function Zen() {
                     </button>
                 </div>
             )}
-            {/* Intentionally left empty for zen */}
         </main>
     );
 }

@@ -32,7 +32,6 @@ let ELASTICITY_CONSTANT = 0.3;
 let INITIAL_VELOCITY = 0;
 
 let CONNECTION_OPACITY = 0.300;
-const MIN_GRAVITY_DISTANCE = 0.01;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
@@ -794,7 +793,13 @@ class ParticleSystem {
             this.canvas.insertAdjacentHTML('beforebegin', EXIT_ZEN_MODE_TEMPLATE);
             const exitZenMode = document.getElementById('exitZenMode');
             exitZenMode.addEventListener('click', () => {
-                window.location.href = '/';
+                // Remove the button
+                document.getElementById('exitZenMode')?.remove();
+                
+                // Use the Next.js router we added to window
+                if (window.nextRouter) {
+                    window.nextRouter.push('/');
+                }
             });
         }
     }
@@ -885,7 +890,7 @@ function applyClusterProperties(particles, uf) {
             const newG = Math.round(g + (255 - g) * heatFactor);
             const newB = Math.round(b + (255 - b) * heatFactor);
 
-            const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR);
+            const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR * a);
 
             particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
         }

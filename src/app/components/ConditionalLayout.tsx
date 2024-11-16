@@ -21,7 +21,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     return (
         <>
             {!isZenMode && <Nav />}
-            {!isZenMode && <GithubInfo />}
+            {!isZenMode && <div className="github-info"><GithubInfo /></div>}
             <main className="flex-grow container mx-auto px-4 py-8">
                 {children}
             </main>
