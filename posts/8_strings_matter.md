@@ -3,13 +3,13 @@ title: "telling strings that they matter"
 date: "2024-11-24"
 ---
 
-i worked over the weekend on a contribution to [marshalx/atproto](https://github.com/MarshalX/atproto), a python client for the at protocol (the protocol that powers bluesky).
+i worked over the weekend on a [contribution](https://github.com/MarshalX/atproto/pull/451) to [marshalx/atproto](https://github.com/MarshalX/atproto), a python client for the at protocol (the protocol that powers bluesky).
 
 <br>
 
 ## the issue
 
-the project needed to implement validation for various string formats defined in the [at protocol spec](https://atproto.com/specs/lexicon#string-formats):
+there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to implement validation for various string formats defined in the [at protocol spec](https://atproto.com/specs/lexicon#string-formats):
 
 | format | example | pattern |
 |--------|---------|---------|
@@ -23,9 +23,9 @@ the project needed to implement validation for various string formats defined in
 | `uri` | `https://example.com/path` | standard uri format |
 
 <div class="note-box">
-  <div class="note-header">📝 note</div>
+  <div class="note-header">📝 note (as of Sun Nov 24 2024)</div>
   <div class="note-content">
-    this is my current understanding of the formats at the time of writing
+    this is my current understanding of the formats
   </div>
 </div>
 
@@ -152,44 +152,49 @@ since this validation gets generated into all the model classes, [@MarshalX](htt
 i used pydantic's [validation context](https://docs.pydantic.dev/2.9/concepts/validators/#validation-context) to allow opt-in validation:
 
 ```python
-from pydantic import Field, ValidationInfo
-from typing import Callable, Literal, Mapping
+from pydantic import BaseModel, BeforeValidator, ValidationInfo
+from typing import Annotated, Literal, Mapping
 
-_OPT_IN_KEY: Literal["strict_string_format"] = "strict_string_format"
+PLS_BE_SERIOUS: Literal["i am being so serious rn"] = "i am being so serious rn"
 
-def only_validate_if_strict(validate_fn):
-    """Skip validation if not opting into strict validation."""
+def contextually_validate(validate_fn):
     def wrapper(v: str, info: ValidationInfo) -> str:
         if (
-            info
-            and isinstance(info.context, Mapping)
-            and info.context.get(_OPT_IN_KEY, False)
+            info and
+            isinstance(info.context, Mapping) and
+            info.context.get(PLS_BE_SERIOUS)
         ):
             return validate_fn(v, info)
         return v
     return wrapper
+
+@contextually_validate
+def assert_bespoke_requirement(v, info) -> str:
+    if "lol" in v.lower():
+        raise ValueError("this is serious business")
+    return v
+
+class Message(BaseModel):
+    content: Annotated[str, BeforeValidator(assert_bespoke_requirement)]
+
+Message(content="lol whatever")
+Message.model_validate( # raises
+    {"content": "lol whatever"},
+    context={"i am being so serious rn": True}
+)
 ```
 
-this allows users to opt-in to validation when needed:
-
 ```python
-from atproto_client.models.utils import get_or_create
-from atproto_client.models import ModelBase, str_frmt
-
-class MyModel(ModelBase):
-    did_field: str_frmt.DidField
-    handle: str_frmt.HandleField
-
-# normal happy path no-op
-model = get_or_create(data, MyModel)
-
-# strict validation enabled
-model = get_or_create(data, MyModel, strict_string_format=True)
+ValidationError: 1 validation error for Message
+content
+  Value error, this is serious business [type=value_error, input_value='lol whatever', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.8/v/value_error
 ```
 
 <br>
 
-## performance impact
+## performance impact (*[obligatory micro-benchmark disclaimer]*)
+there's small (but non-zero) performance cost to the mere existence of the annotations:
 
 | test type                     | items   | time (seconds) | items/second |
 | ---------------------------- | ------- | -------------- | ------------ |
@@ -239,4 +244,4 @@ we used the official [atproto interop test files](https://github.com/bluesky-soc
 
 <br>
 
-the [pr](https://github.com/MarshalX/atproto/pull/451) is under review. thanks to [@MarshalX](https://github.com/MarshalX) for the guidance throughout.
+this is just stream of consciousness, and the [pr](https://github.com/MarshalX/atproto/pull/451) is still up for review so I will update this if more interesting things come up 🙂 - but thanks [@MarshalX](https://github.com/MarshalX) for guidance thus far and for maintaining!
