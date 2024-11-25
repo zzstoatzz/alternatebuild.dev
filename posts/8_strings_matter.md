@@ -132,7 +132,7 @@ h2 {
 }
 </style>
 
-since this validation gets generated into all the model classes, [@MarshalX](https://github.com/MarshalX) reminded me to make it optional, which made sense for two familiar reasons:
+since this validation gets generated into all the model classes, [@MarshalX](https://github.com/MarshalX) wisely [asked me to make it optional](https://github.com/MarshalX/atproto/issues/406#issuecomment-2485780481), which made sense for two familiar reasons:
 
 <div class="reasons-list">
     <div class="reason">
@@ -147,7 +147,7 @@ since this validation gets generated into all the model classes, [@MarshalX](htt
 
 <br>
 
-## the key snippet
+## the main idea
 
 i used pydantic's [validation context](https://docs.pydantic.dev/2.9/concepts/validators/#validation-context) to allow opt-in validation:
 
