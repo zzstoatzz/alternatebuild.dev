@@ -1,9 +1,17 @@
 ---
-title: "telling strings that they matter"
+title: "strings matter"
 date: "2024-11-24"
 ---
 
-i worked over the weekend on a [contribution](https://github.com/MarshalX/atproto/pull/451) to [marshalx/atproto](https://github.com/MarshalX/atproto), a python client for the at protocol (the protocol that powers bluesky).
+<div class="note-box">
+  <div class="note-header">👋 hi</div>
+  <div class="note-content">
+    i'm on bsky as <a href="https://bsky.app/profile/alternatebuild.dev">n8@alternatebuild.dev</a>
+  </div>
+</div>
+
+
+i worked a bit over the weekend on a [contribution](https://github.com/MarshalX/atproto/pull/451) to [Marshalx/atproto](https://github.com/MarshalX/atproto), a python client for [ATProtocol](https://atproto.com/) (the protocol that powers bluesky).
 
 <br>
 
@@ -23,7 +31,7 @@ there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to imp
 | `uri` | `https://example.com/path` | standard uri format |
 
 <div class="note-box">
-  <div class="note-header">📝 note (as of Sun Nov 24 2024)</div>
+  <div class="note-header">note (as of Sun Nov 24 2024)</div>
   <div class="note-content">
     this is my current understanding of the formats
   </div>
@@ -132,6 +140,12 @@ h2 {
 }
 </style>
 
+<br>
+
+I was like, ooh! I know how to do this! bc [i looooove annotated types](https://alternatebuild.dev/posts/6_how_to_use_pydantic_settings)
+
+<br>
+
 since this validation gets generated into all the model classes, [@MarshalX](https://github.com/MarshalX) wisely [asked me to make it optional](https://github.com/MarshalX/atproto/issues/406#issuecomment-2485780481), which made sense for two familiar reasons:
 
 <div class="reasons-list">
@@ -157,44 +171,42 @@ from typing import Annotated, Literal, Mapping
 
 PLS_BE_SERIOUS: Literal["i am being so serious rn"] = "i am being so serious rn"
 
-def contextually_validate(validate_fn):
-    def wrapper(v: str, info: ValidationInfo) -> str:
-        if (
-            info and
-            isinstance(info.context, Mapping) and
-            info.context.get(PLS_BE_SERIOUS)
-        ):
-            return validate_fn(v, info)
-        return v
-    return wrapper
-
-@contextually_validate
-def assert_bespoke_requirement(v, info) -> str:
-    if "lol" in v.lower():
+def maybe_validate_bespoke_format(v: str, info: ValidationInfo) -> str:
+    if (
+        info and 
+        isinstance(info.context, Mapping) and
+        info.context.get(PLS_BE_SERIOUS) and
+        "lol" in v.lower()
+    ):
         raise ValueError("this is serious business")
     return v
 
-class Message(BaseModel):
-    content: Annotated[str, BeforeValidator(assert_bespoke_requirement)]
+class BskyModel(BaseModel):
+    handle: Annotated[str, BeforeValidator(maybe_validate_bespoke_format)]
 
-Message(content="lol whatever")
-Message.model_validate( # raises
-    {"content": "lol whatever"},
-    context={"i am being so serious rn": True}
+BskyModel.model_validate( # skips validation
+    {"handle": "alice.bsky.social"}
+)
+BskyModel.model_validate( # raises
+    {"handle": "lol whatever"},
+    context={PLS_BE_SERIOUS: True}
 )
 ```
 
 ```python
-ValidationError: 1 validation error for Message
-content
+ValidationError: 1 validation error for BskyModel
+handle
   Value error, this is serious business [type=value_error, input_value='lol whatever', input_type=str]
     For further information visit https://errors.pydantic.dev/2.8/v/value_error
 ```
 
 <br>
 
+See here for some [more realistic](https://github.com/MarshalX/atproto/pull/451/files#diff-2a32a53e86030a7a6860211073303be9944578bb2d13f4558124cc75d0d3081eR44-R136) format validators.
+
+
 ## performance impact (*[obligatory micro-benchmark disclaimer]*)
-there's small (but non-zero) performance cost to the mere existence of the annotations:
+there's small (but non-zero) [performance cost](https://gist.github.com/zzstoatzz/fd0654593ad3f46af4c31a75550d7dd7?permalink_comment_id=5291350#file-atproto_validators-py-L237-L289) for the mere existence of the annotations:
 
 | test type                     | items   | time (seconds) | items/second |
 | ---------------------------- | ------- | -------------- | ------------ |
@@ -234,7 +246,7 @@ we used the official [atproto interop test files](https://github.com/bluesky-soc
 <div class="reasons-list">
     <div class="reason">
         <span class="number">1</span>
-        <span class="text">"🧑‍🚀 🌕 its all just canaries? it always has been 👨‍🚀 🔫"</span>
+        <span class="text">"🧑‍🚀 🌕 its all just canaries?" "it always has been 👨‍🚀 🔫"</span>
     </div>
     <div class="reason">
         <span class="number">2</span>
