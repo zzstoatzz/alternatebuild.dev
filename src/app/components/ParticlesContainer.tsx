@@ -53,15 +53,7 @@ export function ParticlesContainer() {
             }
         };
 
-        window.handleZenModeTransition = () => {
-            if (window.particleSystem?.enterZenMode) {
-                try {
-                    window.particleSystem.enterZenMode();
-                } catch (error) {
-                    console.warn('Failed to enter zen mode:', error);
-                }
-            }
-        };
+        window.onkeydown = null;
 
         const checkParticlesInit = setInterval(() => {
             if (typeof window.particlesInit === 'function') {

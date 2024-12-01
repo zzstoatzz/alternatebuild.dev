@@ -389,12 +389,6 @@ class ParticleSystem {
         this.bindColorInputEvent();
         this.animate();
 
-        // Add keyboard shortcut
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'p' || e.key === 'P') {
-                this.toggleControls();
-            }
-        });
 
         // Store the instance globally
         window.particleSystem = this;

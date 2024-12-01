@@ -19,19 +19,19 @@ i worked a bit over the weekend on a [contribution](https://github.com/MarshalX/
 
 there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to implement validation for various string formats defined in the [at protocol spec](https://atproto.com/specs/lexicon#string-formats):
 
-| format | example | pattern |
+| format | example | pattern/constraints |
 |--------|---------|---------|
-| [`did`](https://github.com/did-method-plc/did-method-plc) | `did:plc:z72i7hdynmk6r22z27h6tvur` | `did:[method]:[identifier]` |
-| `handle` | `alice.bsky.social` | `[user].[domain].[tld]` |
-| `at-uri` | `at://alice.bsky.social/app.bsky.feed.post/3jxtb5w2hkt2m` | `at://[authority]/[collection]/[record]` |
-| `datetime` | `2024-11-24T06:02:00Z` | ISO 8601 with timezone |
-| `nsid` | `app.bsky.feed.post` | `[service].[provider].[name]` |
-| `tid` | `3jxtb5w2hkt2m` | 13 chars of [a-z2-7] |
-| `cid` | `bafyreia3tbsfxe3cc75xrxyyn6qc42oupi7g7zfhqimj7w5` | content identifier (..?) |
-| `uri` | `https://example.com/path` | standard uri format |
+| `handle` | `alice.bsky.social` | Domain name: 2+ segments, ASCII alphanumeric/hyphens, 1-63 chars per segment, max 253 total. Last segment no leading digit. |
+| `at-uri` | `at://alice.bsky.social/app.bsky.feed.post/3jxtb5w2hkt2m` | `at://` + handle/DID + optional `/collection/rkey`. Max 8KB. No query/fragment in Lexicon. |
+| `datetime` | `2024-11-24T06:02:00Z` | ISO 8601/RFC 3339 with required 'T', seconds, timezone (Z/±HH:MM). No -00:00. |
+| `nsid` | `app.bsky.feed.post` | 3+ segments: reversed domain (lowercase alphanum+hyphen) + name (letters only). Max 317 chars. |
+| `tid` | `3jxtb5w2hkt2m` | 13 chars of [2-7a-z]. First byte's high bit (0x40) must be 0. |
+| `record-key` | `3jxtb5w2hkt2m` | 1-512 chars of [A-Za-z0-9._:~-]. "." and ".." forbidden. |
+| `uri` | `https://example.com/path` | RFC-3986 URI with letter scheme + netloc/path/query/fragment. Max 8KB, no spaces. |
+| `did:plc` | `did:plc:z72i7hdynmk6r22z27h6tvur` | Method identifier must be 24 chars of base32 ([a-z2-7]). Cannot include underscore. |
 
 <div class="note-box">
-  <div class="note-header">note (as of Sun Nov 24 2024)</div>
+  <div class="note-header">note (originally Sun Nov 24 2024, updated Sun Dec 1 2024)</div>
   <div class="note-content">
     this is my current understanding of the formats
   </div>
@@ -257,3 +257,60 @@ we used the official [atproto interop test files](https://github.com/bluesky-soc
 <br>
 
 this is just stream of consciousness, and the [pr](https://github.com/MarshalX/atproto/pull/451) is still up for review so I will update this if more interesting things come up 🙂 - but thanks [@MarshalX](https://github.com/MarshalX) for guidance thus far and for maintaining!
+
+## update (Sun Dec 1 2024)
+
+after some more good [feedback](https://github.com/MarshalX/atproto/pull/451#discussion_r1859107073) from [@MarshalX](https://github.com/MarshalX), I found some interesting nuances in the string format validation:
+
+<div class="reasons-list">
+    <div class="reason">
+        <span class="number">1</span>
+        <span class="text">
+            the test cases from <a href="https://github.com/bluesky-social/atproto/tree/main/interop-test-files/syntax">atproto's interop tests</a> revealed edge cases not covered by existing validation:
+        </span>
+    </div>
+</div>
+
+```python
+# at-uri examples that should fail:
+"a://did:plc:asdf123"    # must start with "at://"
+"at:/did:plc:asdf123"    # needs double slash
+"at://name"              # handle needs 2+ segments
+"at://name.0"           # last segment can't start with number
+"at://did:plc:asdf123/12345"  # path must be valid NSID
+```
+
+<div class="reasons-list">
+    <div class="reason">
+        <span class="number">2</span>
+        <span class="text">
+            some formats have subtle requirements that aren't immediately obvious from the spec. for example, at-uri validation needs to check:
+            <br>- strict "at://" prefix
+            <br>- handle format in authority section
+            <br>- NSID-compliant path segments
+        </span>
+    </div>
+</div>
+
+<div class="reasons-list">
+    <div class="reason">
+        <span class="number">3</span>
+        <span class="text">
+            watch out for whitespace! learned this the fun way when <code>.strip()</code>ing test cases:
+        </span>
+    </div>
+</div>
+
+```python
+# bad
+with open("invalid_datetimes.txt") as f:
+    cases = [line.strip() for line in f]  # strips whitespace (that should be preserved to correctly fail)
+
+# good
+with open("invalid_datetimes.txt") as f:
+    cases = [line.rstrip('\n') for line in f]  # keeps whitespace (correctly fail)
+```
+
+<br>
+
+the [PR](https://github.com/MarshalX/atproto/pull/451) is still up for review but I will update again if more interesting things come up 🙂
