@@ -38,9 +38,17 @@ there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to imp
 </div>
 
 <style>
+/* table wrapper for horizontal scrolling */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
 /* base table styles */
 table {
-    width: 100%;
+    min-width: 100%;
     border-collapse: collapse;
     margin: 1.5em 0;
     background: rgba(30, 30, 40, 0.6);
@@ -138,6 +146,138 @@ h2 {
     margin-top: 2em;
     margin-bottom: 1em;
 }
+
+/* technical list style */
+.tech-list {
+    background: rgba(30, 30, 40, 0.6);
+    border-radius: 8px;
+    padding: 1.2em;
+    margin: 1.5em 0;
+}
+
+.tech-list .reason {
+    display: flex;
+    flex-direction: column;
+    margin: 1.2em 0;
+    padding: 0;
+}
+
+.tech-list .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.8em;
+}
+
+.tech-list .number {
+    color: #64e3ff;
+    font-weight: bold;
+    margin-right: 1.2em;
+    min-width: 1.5em;
+}
+
+.tech-list .text {
+    color: #e1e1e1;
+    flex: 1;
+    line-height: 1.6;
+}
+
+.tech-list .content {
+    margin-left: calc(1.5em + 1.2em); /* align with text */
+    margin-top: 0.8em;
+}
+
+.tech-list code {
+    color: #98ff98;
+    background: rgba(50, 50, 60, 0.5);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* technical section styling */
+.tech-section {
+    background: rgba(30, 30, 40, 0.6);
+    border-radius: 8px;
+    padding: 1.2em;
+    margin: 1.5em 0;
+}
+
+.tech-header {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1em;
+    color: #e1e1e1;
+}
+
+.tech-number {
+    color: #64e3ff;
+    font-weight: bold;
+    margin-right: 1.2em;
+    min-width: 1.5em;
+    flex-shrink: 0;
+}
+
+.tech-header span:last-child {
+    line-height: 1.6;
+}
+
+.tech-header code {
+    color: #98ff98;
+    background: rgba(50, 50, 60, 0.5);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.tech-content {
+    margin-left: calc(1.5em + 1.2em);
+    color: #e1e1e1;
+}
+
+.tech-content ul {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
+.tech-content li {
+    margin: 0.5em 0;
+}
+
+.tech-content code {
+    color: #98ff98;
+    background: rgba(50, 50, 60, 0.5);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.tech-list-items {
+    margin-left: calc(1.5em + 1.2em);
+    color: #e1e1e1;
+    list-style: none;
+    padding: 0;
+}
+
+.tech-list-items li {
+    margin: 0.5em 0;
+}
+
+.custom-list {
+    margin-left: calc(1.5em + 1.2em);
+    padding-left: 1.2em;
+    list-style-type: disc;
+    color: #e1e1e1;
+}
+
+.custom-list li {
+    margin: 0.5em 0;
+    padding-left: 0.5em;
+}
+
+.custom-list code {
+    color: #98ff98;
+    background: rgba(50, 50, 60, 0.5);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
 </style>
 
 <br>
@@ -208,30 +348,15 @@ See here for some [more realistic](https://github.com/MarshalX/atproto/pull/451/
 ## performance impact (*[obligatory micro-benchmark disclaimer]*)
 there's small (but non-zero) [performance cost](https://gist.github.com/zzstoatzz/fd0654593ad3f46af4c31a75550d7dd7?permalink_comment_id=5291350#file-atproto_validators-py-L237-L289) for the mere existence of the annotations:
 
+<div class="table-wrapper">
+
 | test type                     | items   | time (seconds) | items/second |
 | ---------------------------- | ------- | -------------- | ------------ |
 | raw dictionaries             | 100,000 | 0.40           | 247,971      |
 | skipped validation (default) | 100,000 | 0.57           | 176,242      |
 | opted-in to strict validation| 100,000 | 1.00           | 99,908       |
 
-<style>
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-th {
-    background-color: #f9f9f9;
-}
-tr:nth-child(even) {
-    background-color: #333641;
-    opacity: 0.9;
-}
-</style>
+</div>
 
 <br>
 
@@ -262,13 +387,10 @@ this is just stream of consciousness, and the [pr](https://github.com/MarshalX/a
 
 after some more good [feedback](https://github.com/MarshalX/atproto/pull/451#discussion_r1859107073) from [@MarshalX](https://github.com/MarshalX), I found some interesting nuances in the string format validation:
 
-<div class="reasons-list">
-    <div class="reason">
-        <span class="number">1</span>
-        <span class="text">
-            the test cases from <a href="https://github.com/bluesky-social/atproto/tree/main/interop-test-files/syntax">atproto's interop tests</a> revealed edge cases not covered by existing validation:
-        </span>
-    </div>
+<div class="tech-section">
+<div class="tech-header">
+    <span class="tech-number">1</span>
+    <span>cases from <a href="https://github.com/bluesky-social/atproto/tree/main/interop-test-files/syntax">atproto's interop tests</a> revealed edge cases not covered by existing validation:</span>
 </div>
 
 ```python
@@ -280,37 +402,42 @@ after some more good [feedback](https://github.com/MarshalX/atproto/pull/451#dis
 "at://did:plc:asdf123/12345"  # path must be valid NSID
 ```
 
-<div class="reasons-list">
-    <div class="reason">
-        <span class="number">2</span>
-        <span class="text">
-            some formats have subtle requirements that aren't immediately obvious from the spec. for example, at-uri validation needs to check:
-            <br>- strict "at://" prefix
-            <br>- handle format in authority section
-            <br>- NSID-compliant path segments
-        </span>
-    </div>
+<div class="tech-header">
+    <span class="tech-number">2</span>
+    <span>some formats have subtle requirements that aren't immediately obvious from the spec. for example, at-uri validation needs to check:</span>
 </div>
 
-<div class="reasons-list">
-    <div class="reason">
-        <span class="number">3</span>
-        <span class="text">
-            watch out for whitespace! learned this the fun way when <code>.strip()</code>ing test cases:
-        </span>
-    </div>
+<ul class="custom-list">
+    <li>strict <code>at://</code> prefix</li>
+    <li>handle format in authority section</li>
+    <li>NSID-compliant path segments</li>
+</ul>
+
+<div class="tech-header">
+    <span class="tech-number">3</span>
+    <span>watch out for whitespace! learned this [the fun way](https://github.com/MarshalX/atproto/pull/451#issuecomment-2508756798) when <code>.strip()</code>ing test cases:</span>
 </div>
+
+
+### Invalid datetimes
+```text
+# whitespace
+·1985-04-12T23:20:50.123Z
+```
 
 ```python
 # bad
 with open("invalid_datetimes.txt") as f:
-    cases = [line.strip() for line in f]  # strips whitespace (that should be preserved to correctly fail)
-
+    cases = [line.strip() for line in f]  # strips whitespace
 # good
 with open("invalid_datetimes.txt") as f:
-    cases = [line.rstrip('\n') for line in f]  # keeps whitespace (correctly fail)
+    cases = [line.rstrip('\n') for line in f]  # keeps whitespace
 ```
+</div>
+
+
+which resulted in this invalid case _not_ failing validation, bc the whitespace was stripped 🙃
 
 <br>
 
-the [PR](https://github.com/MarshalX/atproto/pull/451) is still up for review but I will update again if more interesting things come up 🙂
+[PR](https://github.com/MarshalX/atproto/pull/451) is still up for review but I will update again if more interesting things come up 🙂
