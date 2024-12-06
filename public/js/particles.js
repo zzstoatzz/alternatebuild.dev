@@ -19,7 +19,7 @@ const MIN_CLUSTER_OPACITY_RANGE = { min: 0, max: 1, step: 0.05 };
 const OPACITY_REDUCTION_FACTOR_RANGE = { min: 0, max: 2, step: 0.05 };
 const SMOOTHING_FACTOR_RANGE = { min: 0.01, max: 0.5, step: 0.01 };
 
-let PARTICLE_COUNT = 1200;
+let PARTICLE_COUNT = 800;
 let EXPLOSION_RADIUS = 200;
 let EXPLOSION_FORCE = 25.0;
 let ATTRACT_CONSTANT = -900;
