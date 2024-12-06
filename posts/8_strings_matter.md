@@ -488,7 +488,7 @@ which resulted in this invalid case _not_ failing validation, bc the whitespace 
 
 <br>
 
-## update (Sun Dec 5 2024)
+## update (Thurs Dec 5 2024)
 
 <div class="announcement-box">
   <div class="announcement-content">
