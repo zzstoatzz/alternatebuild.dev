@@ -11,13 +11,13 @@ date: "2024-11-24"
 </div>
 
 
-i worked a bit over the weekend on a [contribution](https://github.com/MarshalX/atproto/pull/451) to [Marshalx/atproto](https://github.com/MarshalX/atproto), a python client for [ATProtocol](https://atproto.com/) (the protocol that powers bluesky).
+i worked a bit over the past weekend on a [contribution](https://github.com/MarshalX/atproto/pull/451) to [MarshalX/atproto](https://github.com/MarshalX/atproto), a python client for [ATProtocol](https://atproto.com/) (the protocol that powers bluesky).
 
 <br>
 
 ## the issue
 
-there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to implement validation for various string formats defined in the [at protocol spec](https://atproto.com/specs/lexicon#string-formats):
+there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to implement [pydantic](https://docs.pydantic.dev/) validation for various string formats defined in the [at protocol spec](https://atproto.com/specs/lexicon#string-formats) that are relevant throughout the python client:
 
 | format | example | pattern/constraints |
 |--------|---------|---------|
@@ -28,7 +28,7 @@ there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to imp
 | `tid` | `3jxtb5w2hkt2m` | 13 chars of [2-7a-z]. First byte's high bit (0x40) must be 0. |
 | `record-key` | `3jxtb5w2hkt2m` | 1-512 chars of [A-Za-z0-9._:~-]. "." and ".." forbidden. |
 | `uri` | `https://example.com/path` | RFC-3986 URI with letter scheme + netloc/path/query/fragment. Max 8KB, no spaces. |
-| `did:plc` | `did:plc:z72i7hdynmk6r22z27h6tvur` | Method identifier must be 24 chars of base32 ([a-z2-7]). Cannot include underscore. |
+| `did:plc` | `did:plc:z72i7hdynmk6r22z27h6tvur` | Must be "did:plc:" followed by 24 chars of base32 ([a-z2-7]). No underscores. |
 
 <div class="note-box">
   <div class="note-header">note (originally Sun Nov 24 2024, updated Sun Dec 1 2024)</div>
@@ -278,6 +278,16 @@ h2 {
     padding: 2px 6px;
     border-radius: 4px;
 }
+
+.pass {
+    color: #98ff98;  /* soft green */
+    font-family: monospace;
+}
+
+.fail {
+    color: #ff9898;  /* soft red */
+    font-family: monospace;
+}
 </style>
 
 <br>
@@ -286,18 +296,43 @@ I was like, ooh! I know how to do this! bc [i looooove annotated types](https://
 
 <br>
 
-since this validation gets generated into all the model classes, [@MarshalX](https://github.com/MarshalX) wisely [asked me to make it optional](https://github.com/MarshalX/atproto/issues/406#issuecomment-2485780481), which made sense for two familiar reasons:
+since this validation gets [generated into all the model classes](https://github.com/MarshalX/atproto/issues/406#issuecomment-2492940574), [@MarshalX](https://github.com/MarshalX) wisely [asked me to make it optional](https://github.com/MarshalX/atproto/issues/406#issuecomment-2485780481), which made sense for two familiar reasons:
 
 <div class="reasons-list">
     <div class="reason">
         <span class="number">1</span>
-        <span class="text">derisk the happy path</span>
+        <span class="text">derisk the default path</span>
     </div>
     <div class="reason">
         <span class="number">2</span>
         <span class="text">lure early adopters with goodies</span>
     </div>
 </div>
+
+<br>
+
+... and a more practical reason.
+
+## performance impact (*[obligatory micro-benchmark disclaimer]*)
+there's small (but non-zero) [performance cost](https://gist.github.com/zzstoatzz/fd0654593ad3f46af4c31a75550d7dd7?permalink_comment_id=5291350#file-atproto_validators-py-L237-L289) for the mere existence of the annotations:
+
+<div class="table-wrapper">
+
+| test type                     | items   | time (seconds) | items/second |
+| ---------------------------- | ------- | -------------- | ------------ |
+| raw dictionaries             | 100,000 | 0.40           | 247,971      |
+| skipped validation (default) | 100,000 | 0.57           | 176,242      |
+| opted-in to strict validation| 100,000 | 1.00           | 99,908       |
+
+</div>
+
+<br>
+
+and at least a 2x slowdown when strict validation is enabled.
+
+<br>
+
+... but what does this actually look like to implement this?
 
 <br>
 
@@ -345,24 +380,21 @@ handle
 See here for some [more realistic](https://github.com/MarshalX/atproto/pull/451/files#diff-2a32a53e86030a7a6860211073303be9944578bb2d13f4558124cc75d0d3081eR44-R136) format validators.
 
 
-## performance impact (*[obligatory micro-benchmark disclaimer]*)
-there's small (but non-zero) [performance cost](https://gist.github.com/zzstoatzz/fd0654593ad3f46af4c31a75550d7dd7?permalink_comment_id=5291350#file-atproto_validators-py-L237-L289) for the mere existence of the annotations:
-
-<div class="table-wrapper">
-
-| test type                     | items   | time (seconds) | items/second |
-| ---------------------------- | ------- | -------------- | ------------ |
-| raw dictionaries             | 100,000 | 0.40           | 247,971      |
-| skipped validation (default) | 100,000 | 0.57           | 176,242      |
-| opted-in to strict validation| 100,000 | 1.00           | 99,908       |
-
-</div>
-
 <br>
 
 ## testing
 
-we used the official [atproto interop test files](https://github.com/bluesky-social/atproto/tree/main/interop-test-files/syntax) for test data, which provide valid and invalid examples for each string format.
+we used the official [atproto interop test files](https://github.com/bluesky-social/atproto/tree/main/interop-test-files/syntax) for test data, which provide valid and invalid examples for each of the string formats (see table at the top).
+
+<br>
+
+I wrote `pytest` fixtures to load these cases and verify that for all string formats:
+
+| validation mode | value | expected |
+|----------------|--------|-----------|
+| default (skip) | <span class="fail">`"not.@ valid.handle"`</span> | <span class="pass">passes</span> |
+| strict | <span class="pass">`"valid.handle.social"`</span> | <span class="pass">passes</span> |
+| strict | <span class="fail">`"not.@ valid.handle"`</span> | <span class="fail">raises ValidationError</span> |
 
 <br>
 
@@ -383,6 +415,13 @@ we used the official [atproto interop test files](https://github.com/bluesky-soc
 
 this is just stream of consciousness, and the [pr](https://github.com/MarshalX/atproto/pull/451) is still up for review so I will update this if more interesting things come up 🙂 - but thanks [@MarshalX](https://github.com/MarshalX) for guidance thus far and for maintaining!
 
+
+<br>
+
+<hr>
+
+<br>
+
 ## update (Sun Dec 1 2024)
 
 after some more good [feedback](https://github.com/MarshalX/atproto/pull/451#discussion_r1859107073) from [@MarshalX](https://github.com/MarshalX), I found some interesting nuances in the string format validation:
@@ -394,32 +433,32 @@ after some more good [feedback](https://github.com/MarshalX/atproto/pull/451#dis
 </div>
 
 ```python
-# at-uri examples that should fail:
-"a://did:plc:asdf123"    # must start with "at://"
-"at:/did:plc:asdf123"    # needs double slash
-"at://name"              # handle needs 2+ segments
-"at://name.0"           # last segment can't start with number
+# invalid instances of at-uri that should fail validation:
+"a://did:plc:asdf123"         # must start with "at://"
+"at:/did:plc:asdf123"         # needs double slash
+"at://name"                   # handle needs 2+ segments
+"at://name.0"                 # last segment can't start with number
 "at://did:plc:asdf123/12345"  # path must be valid NSID
 ```
 
 <div class="tech-header">
     <span class="tech-number">2</span>
-    <span>some formats have subtle requirements that aren't immediately obvious from the spec. for example, at-uri validation needs to check:</span>
+    <span>some formats are very subtle and defined by a mix of other standards. for example, <code>datetime</code> strings must meet the intersecting requirements of:</span>
 </div>
 
 <ul class="custom-list">
-    <li>strict <code>at://</code> prefix</li>
-    <li>handle format in authority section</li>
-    <li>NSID-compliant path segments</li>
+    <li>RFC 3339</li>
+    <li>ISO 8601</li>
+    <li>WHATWG HTML datetime standard</li>
 </ul>
 
 <div class="tech-header">
     <span class="tech-number">3</span>
-    <span>watch out for whitespace! learned this [the fun way](https://github.com/MarshalX/atproto/pull/451#issuecomment-2508756798) when <code>.strip()</code>ing test cases:</span>
+    <span>watch out for whitespace! learned this eventually when <code>.strip()</code>ing test cases:</span>
 </div>
 
 
-### Invalid datetimes
+### Invalid datetime (because of leading whitespace)
 ```text
 # whitespace
 ·1985-04-12T23:20:50.123Z
@@ -441,3 +480,66 @@ which resulted in this invalid case _not_ failing validation, bc the whitespace 
 <br>
 
 [PR](https://github.com/MarshalX/atproto/pull/451) is still up for review but I will update again if more interesting things come up 🙂
+
+
+<br>
+
+<hr>
+
+<br>
+
+## update (Sun Dec 5 2024)
+
+<div class="announcement-box">
+  <div class="announcement-content">
+    <span class="announcement-emoji">🎉</span>
+    <span class="announcement-text">the <a href="https://github.com/MarshalX/atproto/pull/451">PR</a> was merged!</span>
+  </div>
+</div>
+
+<style>
+
+.announcement-box {
+    background: linear-gradient(135deg, rgba(40, 40, 60, 0.9), rgba(30, 30, 40, 0.9));
+    border-radius: 12px;
+    padding: 1.5em;
+    margin: 2em 0;
+    text-align: center;
+    border: 2px solid rgba(100, 227, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+}
+
+.announcement-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8em;
+}
+
+.announcement-emoji {
+    font-size: 1.5em;
+    animation: bounce 1s infinite;
+}
+
+.announcement-text {
+    color: #e1e1e1;
+    font-size: 1.2em;
+}
+
+.announcement-text a {
+    color: #64e3ff;
+    text-decoration: none;
+    border-bottom: 2px solid rgba(100, 227, 255, 0.3);
+    transition: border-color 0.2s;
+}
+
+.announcement-text a:hover {
+    border-color: rgba(100, 227, 255, 0.8);
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+</style>
