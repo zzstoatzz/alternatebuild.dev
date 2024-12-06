@@ -470,7 +470,7 @@ with open("invalid_datetimes.txt") as f:
     cases = [line.strip() for line in f]  # strips whitespace
 # good
 with open("invalid_datetimes.txt") as f:
-    cases = [line.rstrip('\n') for line in f]  # keeps whitespace
+    cases = [line for line in f]  # keeps whitespace
 ```
 </div>
 
