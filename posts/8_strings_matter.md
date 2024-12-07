@@ -19,6 +19,9 @@ i worked a bit over the past weekend on a [contribution](https://github.com/Mars
 
 there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to implement [pydantic](https://docs.pydantic.dev/) validation for various string formats defined in the [at protocol spec](https://atproto.com/specs/lexicon#string-formats) that are relevant throughout the python client:
 
+
+<div class="table-wrapper">
+
 | format | example | pattern/constraints |
 |--------|---------|---------|
 | `handle` | `alice.bsky.social` | Domain name: 2+ segments, ASCII alphanumeric/hyphens, 1-63 chars per segment, max 253 total. Last segment no leading digit. |
@@ -29,6 +32,10 @@ there was an [open issue](https://github.com/MarshalX/atproto/issues/406) to imp
 | `record-key` | `3jxtb5w2hkt2m` | 1-512 chars of [A-Za-z0-9._:~-]. "." and ".." forbidden. |
 | `uri` | `https://example.com/path` | RFC-3986 URI with letter scheme + netloc/path/query/fragment. Max 8KB, no spaces. |
 | `did:plc` | `did:plc:z72i7hdynmk6r22z27h6tvur` | Must be "did:plc:" followed by 24 chars of base32 ([a-z2-7]). No underscores. |
+
+</div>
+
+<br>
 
 <div class="note-box">
   <div class="note-header">note (originally Sun Nov 24 2024, updated Sun Dec 1 2024)</div>

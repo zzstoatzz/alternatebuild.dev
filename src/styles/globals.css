@@ -275,6 +275,33 @@
 .prose {
     color: #cbd5e1;
     max-width: 100%;
+
+    .table-wrapper {
+        max-width: 100%;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    th, td {
+        padding: 0.75rem;
+        border: 1px solid rgba(100, 255, 218, 0.2);
+        text-align: left;
+    }
+
+    th {
+        background-color: rgba(30, 41, 59, 0.5);
+        color: #64ffda;
+    }
+
+    tr:nth-child(even) {
+        background-color: rgba(30, 41, 59, 0.3);
+    }
 }
 
 .prose h1,
@@ -321,7 +348,7 @@
 }
 
 .content-container {
-    background-color: rgba(175, 181, 240, 0.005);
+    background-color: rgba(175, 181, 240, 0.01);
     backdrop-filter: blur(3px);
     /* Adjust the pixel value for more or less blur */
     padding: 10px;
