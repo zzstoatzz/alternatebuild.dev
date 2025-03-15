@@ -10,7 +10,7 @@ interface SoundCloudWidget {
 }
 
 const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
-    <div 
+    <div
         className="absolute left-0 right-0 top-0 h-24 opacity-10 hover:opacity-30 cursor-pointer 
             flex items-center justify-center transition-opacity"
         onClick={onMinimize}
@@ -25,17 +25,17 @@ const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
 export default function SoundCloudPlayer() {
     const [isMinimized, setIsMinimized] = useState(true);
     const [shouldShow] = useState(true); // Remove setShouldShow since it's not used
-    const [username, setUsername] = useState("larryfisherman");
+    const [username, setUsername] = useState("stoat-master");
     const [showUsernameModal, setShowUsernameModal] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const widgetRef = useRef<SoundCloudWidget | null>(null); // Use our new type instead of any
-    
+
     // Move the widget setup into a separate effect that depends on shouldShow
     useEffect(() => {
         if (!shouldShow) return; // Don't do anything if component isn't shown
-        
+
         console.log('Setting up SoundCloud widget');
-        
+
         const script = document.createElement('script');
         script.src = 'https://w.soundcloud.com/player/api.js';
         script.async = true;
@@ -53,7 +53,7 @@ export default function SoundCloudPlayer() {
                 // Type assertion since we know the shape of SC.Widget
                 const widget = (window as { SC?: { Widget: (element: HTMLElement) => SoundCloudWidget } })
                     .SC?.Widget(iframe);
-                    
+
                 if (widget) {
                     widgetRef.current = widget;
                     console.log('Widget initialized successfully');
@@ -97,10 +97,10 @@ export default function SoundCloudPlayer() {
 
 
     if (!shouldShow) return null;
-    
+
     return (
         <>
-            <div 
+            <div
                 className={`fixed bottom-4 left-4 transition-all duration-300 ease-in-out z-50 
                     ${shouldShow ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'}
                     ${isMinimized ? 'h-12 w-12 cursor-pointer' : 'h-[465px] w-[320px]'}`}
@@ -108,7 +108,7 @@ export default function SoundCloudPlayer() {
             >
                 <div className={`bg-black bg-opacity-80 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden h-full
                     ${isPlaying ? 'animate-glow bg-blue-500/5' : 'transition-[box-shadow,background-color] duration-75'}`}>
-                    <div 
+                    <div
                         className="h-12 px-4 flex items-center justify-between bg-black bg-opacity-40 cursor-pointer relative z-10"
                         onClick={(e) => {
                             if (!isMinimized) {
@@ -122,7 +122,7 @@ export default function SoundCloudPlayer() {
                                 <span className="text-cyan-300 group-hover:text-cyan-400">♪</span>
                             ) : (
                                 <>
-                                    <button 
+                                    <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setIsMinimized(true);
@@ -131,8 +131,8 @@ export default function SoundCloudPlayer() {
                                     >
                                         ♪
                                     </button>
-                                    
-                                    <button 
+
+                                    <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setShowUsernameModal(true);
@@ -146,7 +146,7 @@ export default function SoundCloudPlayer() {
                             )}
                         </div>
                     </div>
-                    
+
                     <div className={`w-full transition-all duration-200 ${isMinimized ? 'opacity-0 h-0' : 'opacity-100 h-[calc(100%-3rem)]'}`}>
                         <div className="relative z-20 h-full">
                             <iframe
@@ -164,11 +164,11 @@ export default function SoundCloudPlayer() {
             </div>
 
             {showUsernameModal && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
                     onClick={() => setShowUsernameModal(false)}
                 >
-                    <div 
+                    <div
                         className="bg-black bg-opacity-80 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4"
                         onClick={e => e.stopPropagation()}
                     >
