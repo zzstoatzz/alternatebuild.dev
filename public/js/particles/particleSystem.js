@@ -107,8 +107,10 @@ export class ParticleSystem {
 		document.addEventListener("mousedown", (e) => {
 			if (this.isPointInCanvas(e.clientX, e.clientY)) {
 				this.isMouseDown = true;
-				this.mouseX = e.clientX;
-				this.mouseY = e.clientY;
+				// Convert screen coordinates to canvas coordinates
+				const rect = this.canvas.getBoundingClientRect();
+				this.mouseX = e.clientX - rect.left;
+				this.mouseY = e.clientY - rect.top;
 			}
 		});
 
@@ -143,8 +145,10 @@ export class ParticleSystem {
 
 						if (!isUIElement) {
 							this.isMouseDown = true;
-							this.mouseX = touch.clientX;
-							this.mouseY = touch.clientY;
+							// Convert screen coordinates to canvas coordinates
+							const rect = this.canvas.getBoundingClientRect();
+							this.mouseX = touch.clientX - rect.left;
+							this.mouseY = touch.clientY - rect.top;
 							e.preventDefault(); // Only prevent default when interacting with particles
 						}
 					}
@@ -173,17 +177,19 @@ export class ParticleSystem {
 		});
 	}
 
-	isPointInCanvas(x, y) {
+	isPointInCanvas(clientX, clientY) {
 		const rect = this.canvas.getBoundingClientRect();
 		return (
-			x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+			clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
 		);
 	}
 
 	handleMouseMove(e) {
 		if (this.isPointInCanvas(e.clientX, e.clientY)) {
-			this.mouseX = e.clientX;
-			this.mouseY = e.clientY;
+			// Convert screen coordinates to canvas coordinates
+			const rect = this.canvas.getBoundingClientRect();
+			this.mouseX = e.clientX - rect.left;
+			this.mouseY = e.clientY - rect.top;
 		}
 	}
 
@@ -221,8 +227,10 @@ export class ParticleSystem {
 		// Use a reasonable cell size for mouse check, potentially larger than interaction radius
 		const cellSize = Math.max(50, settings.INTERACTION_RADIUS > 0 ? settings.INTERACTION_RADIUS : 50);
 		
+		// mouseX and mouseY are now in canvas coordinates (we fixed this in handleMouseMove)
 		const mouseCellX = Math.floor(this.mouseX / cellSize);
 		const mouseCellY = Math.floor(this.mouseY / cellSize);
+		
 		// Adjust check radius based on cellSize
 		const checkRadiusCells = Math.ceil(radius / cellSize);
 		
@@ -231,7 +239,7 @@ export class ParticleSystem {
 		
 		for (let nx = mouseCellX - checkRadiusCells; nx <= mouseCellX + checkRadiusCells; nx++) {
 			for (let ny = mouseCellY - checkRadiusCells; ny <= mouseCellY + checkRadiusCells; ny++) {
-				// Map check cell coords to main grid coords
+				// Map check cell coords to main grid coords - use the same cell format as updateGrid
 				const cellId = nx + ',' + ny;
 				const indices = this.grid[cellId];
 				
@@ -538,13 +546,13 @@ export class ParticleSystem {
 		// Limit number of effects to avoid slowdown
 		const MAX_EFFECTS = 30;
 		if (this.isMouseDown && this.mouseEffects.length < MAX_EFFECTS) {
-			// Add a new effect at current mouse position
+			// mouse coordinates are already in canvas space
 			this.mouseEffects.push({
 				x: this.mouseX,
 				y: this.mouseY,
 				radius: settings.EXPLOSION_RADIUS,
 				startTime: timestamp,
-				duration: 600, // Shorter duration
+				duration: 600, // Shorter duration for better performance
 			});
 		}
 		
