@@ -26,18 +26,17 @@ let ATTRACT_CONSTANT = -900;
 let GRAVITY = 0;
 let INTERACTION_RADIUS = 25;
 
-
 let DRAG_CONSTANT = 0.13;
 let ELASTICITY_CONSTANT = 0.3;
 let INITIAL_VELOCITY = 0;
 
-let CONNECTION_OPACITY = 0.300;
+let CONNECTION_OPACITY = 0.3;
 let MAX_HEAT_FACTOR = 0.2;
 let MIN_CLUSTER_OPACITY = 0.6;
 let OPACITY_REDUCTION_FACTOR = 1;
-let SMOOTHING_FACTOR = 0.20;
+let SMOOTHING_FACTOR = 0.2;
 
-const DEFAULT_CONNECTION_COLOR = '#4923d1';
+const DEFAULT_CONNECTION_COLOR = "#4923d1";
 let CONNECTION_COLOR = DEFAULT_CONNECTION_COLOR;
 
 // settings display
@@ -146,13 +145,7 @@ const PARTICLE_CONTROLS_TEMPLATE = `
         </div>
     </div>
 </div>
-`
-
-const EXIT_ZEN_MODE_TEMPLATE = `
-<div id="exitZenMode" style="position: fixed; top: 2vh; left: 2vw; z-index: 1000;">
-    <button style="background: rgba(0,0,0,0.7); color: white; border: none; padding: 1vmin 2vmin; border-radius: 5px; cursor: pointer; font-size: 1.5vmin;">Exit Zen Mode</button>
-</div>
-`
+`;
 
 // settings display styles
 
@@ -279,620 +272,675 @@ const SETTINGS_STYLES = `
         margin-top: 10px;
     }
 }
-`
+`;
 
 // Define palettes
 const PALETTES = {
-    default: [
-        'rgba(142, 106, 63, 0.6)',
-        'rgba(113, 98, 83, 0.6)',
-        'rgba(94, 75, 60, 0.6)',
-        'rgba(66, 92, 73, 0.6)',
-        'rgba(152, 151, 100, 0.6)',
-        'rgba(70, 130, 180, 0.6)',
-        'rgba(100, 149, 237, 0.6)',
-    ],
-    highContrast: [
-        'rgba(255, 0, 0, 0.6)',
-        'rgba(0, 255, 0, 0.6)',
-        'rgba(0, 0, 255, 0.6)',
-        'rgba(255, 255, 0, 0.6)',
-        'rgba(255, 0, 255, 0.6)',
-    ],
-    custom: []
+	default: [
+		"rgba(142, 106, 63, 0.6)",
+		"rgba(113, 98, 83, 0.6)",
+		"rgba(94, 75, 60, 0.6)",
+		"rgba(66, 92, 73, 0.6)",
+		"rgba(152, 151, 100, 0.6)",
+		"rgba(70, 130, 180, 0.6)",
+		"rgba(100, 149, 237, 0.6)",
+	],
+	highContrast: [
+		"rgba(255, 0, 0, 0.6)",
+		"rgba(0, 255, 0, 0.6)",
+		"rgba(0, 0, 255, 0.6)",
+		"rgba(255, 255, 0, 0.6)",
+		"rgba(255, 0, 255, 0.6)",
+	],
+	custom: [],
 };
 
-let currentPalette = 'default';
+let currentPalette = "default";
 
 class Particle {
-    constructor(position, radius, color) {
-        this.position = position;
-        this.velocity = {
-            x: 0,
-            y: 0
-        };
-        this.radius = radius;
-        this.color = color;
-        this.mass = Math.PI * radius * radius;
-        this.originalColor = color;
-    }
+	constructor(position, radius, color) {
+		this.position = position;
+		this.velocity = {
+			x: 0,
+			y: 0,
+		};
+		this.radius = radius;
+		this.color = color;
+		this.mass = Math.PI * radius * radius;
+		this.originalColor = color;
+	}
 
-    update(bounds, dt) {
-        // Apply gravity
-        this.velocity.y += GRAVITY * dt;
+	update(bounds, dt) {
+		// Apply gravity
+		this.velocity.y += GRAVITY * dt;
 
-        // Update position
-        this.position.x += this.velocity.x * dt;
-        this.position.y += this.velocity.y * dt;
+		// Update position
+		this.position.x += this.velocity.x * dt;
+		this.position.y += this.velocity.y * dt;
 
-        // Apply drag
-        const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-        const dragForce = DRAG_CONSTANT * speed ** 2;
-        const dragX = this.velocity.x * dragForce / speed;
-        const dragY = this.velocity.y * dragForce / speed;
-        this.velocity.x -= dragX / this.mass * dt;
-        this.velocity.y -= dragY / this.mass * dt;
+		// Apply drag
+		const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+		const dragForce = DRAG_CONSTANT * speed ** 2;
+		const dragX = (this.velocity.x * dragForce) / speed;
+		const dragY = (this.velocity.y * dragForce) / speed;
+		this.velocity.x -= (dragX / this.mass) * dt;
+		this.velocity.y -= (dragY / this.mass) * dt;
 
-        // Elastic collision with walls
-        if (this.position.x - this.radius < 0 || this.position.x + this.radius > bounds.x) {
-            this.velocity.x *= -ELASTICITY_CONSTANT;
-            this.position.x = Math.max(this.radius, Math.min(bounds.x - this.radius, this.position.x));
-        }
-        if (this.position.y - this.radius < 0 || this.position.y + this.radius > bounds.y) {
-            this.velocity.y *= -ELASTICITY_CONSTANT;
-            this.position.y = Math.max(this.radius, Math.min(bounds.y - this.radius, this.position.y));
-        }
-    }
+		// Elastic collision with walls
+		if (
+			this.position.x - this.radius < 0 ||
+			this.position.x + this.radius > bounds.x
+		) {
+			this.velocity.x *= -ELASTICITY_CONSTANT;
+			this.position.x = Math.max(
+				this.radius,
+				Math.min(bounds.x - this.radius, this.position.x),
+			);
+		}
+		if (
+			this.position.y - this.radius < 0 ||
+			this.position.y + this.radius > bounds.y
+		) {
+			this.velocity.y *= -ELASTICITY_CONSTANT;
+			this.position.y = Math.max(
+				this.radius,
+				Math.min(bounds.y - this.radius, this.position.y),
+			);
+		}
+	}
 }
 
 class ParticleSystem {
-    constructor(canvas) {
-        this.canvas = canvas;
-        this.ctx = this.canvas.getContext('2d');
+	constructor(canvas) {
+		this.canvas = canvas;
+		this.ctx = this.canvas.getContext("2d");
 
-        // Check if we're in Zen mode
-        this.isZenMode = window.location.pathname === '/zen';
+		// The homepage is now the zen mode
+		this.isZenMode = window.location.pathname === "/";
 
-        // Add particle controls
-        this.canvas.insertAdjacentHTML('beforebegin', PARTICLE_CONTROLS_TEMPLATE);
+		// Add particle controls
+		this.canvas.insertAdjacentHTML("beforebegin", PARTICLE_CONTROLS_TEMPLATE);
 
-        // Add Exit Zen Mode button if in Zen mode
-        if (this.isZenMode) {
-            this.addExitZenModeButton();
-        }
+		const styleElement = document.createElement("style");
+		styleElement.textContent = SETTINGS_STYLES;
+		document.head.appendChild(styleElement);
 
-        const styleElement = document.createElement('style');
-        styleElement.textContent = SETTINGS_STYLES;
-        document.head.appendChild(styleElement);
+		const configToggle = document.getElementById("configToggle");
+		const controlsContent = document.getElementById("controlsContent");
 
-        const configToggle = document.getElementById('configToggle');
-        const controlsContent = document.getElementById('controlsContent');
+		configToggle.addEventListener("click", () => {
+			controlsContent.style.display =
+				controlsContent.style.display === "none" ? "block" : "none";
+		});
 
-        configToggle.addEventListener('click', () => {
-            controlsContent.style.display = controlsContent.style.display === 'none' ? 'block' : 'none';
-        });
+		this.particles = [];
+		this.mousePosition = { x: 0, y: 0 };
+		this.isMouseDown = false;
 
-        this.particles = [];
-        this.mousePosition = { x: 0, y: 0 };
-        this.isMouseDown = false;
+		this.resizeCanvas();
+		this.updatePaletteDropdown();
+		this.updateCustomPaletteDisplay();
+		const customControls = document.getElementById("customPaletteControls");
+		if (customControls) {
+			customControls.style.display =
+				currentPalette === "custom" ? "block" : "none";
+		}
+		this.createParticles();
+		this.bindEvents();
+		this.bindSliderEvents();
+		this.bindColorInputEvent();
+		this.animate();
 
-        this.resizeCanvas();
-        this.updatePaletteDropdown();
-        this.updateCustomPaletteDisplay();
-        const customControls = document.getElementById('customPaletteControls');
-        if (customControls) {
-            customControls.style.display = currentPalette === 'custom' ? 'block' : 'none';
-        }
-        this.createParticles();
-        this.bindEvents();
-        this.bindSliderEvents();
-        this.bindColorInputEvent();
-        this.animate();
+		// Store the instance globally
+		window.particleSystem = this;
+	}
 
+	toggleControls() {
+		const content = document.getElementById("controlsContent");
+		content.style.display = content.style.display === "none" ? "block" : "none";
+	}
 
-        // Store the instance globally
-        window.particleSystem = this;
-    }
+	updateConstants() {
+		PARTICLE_COUNT =
+			Number.parseInt(document.getElementById("particleCount").value) ||
+			PARTICLE_COUNT;
+		EXPLOSION_RADIUS =
+			Number.parseInt(document.getElementById("explosionRadius").value) ||
+			EXPLOSION_RADIUS;
+		EXPLOSION_FORCE =
+			Number.parseFloat(document.getElementById("explosionForce").value) ||
+			EXPLOSION_FORCE;
+		ATTRACT_CONSTANT =
+			Number.parseFloat(document.getElementById("attractConstant").value) ||
+			ATTRACT_CONSTANT;
+		GRAVITY =
+			Number.parseFloat(document.getElementById("gravity").value) || GRAVITY;
+		INTERACTION_RADIUS =
+			Number.parseInt(document.getElementById("interactionRadius").value) ||
+			INTERACTION_RADIUS;
 
-    toggleControls() {
-        const content = document.getElementById('controlsContent');
-        content.style.display = content.style.display === 'none' ? 'block' : 'none';
-    }
+		DRAG_CONSTANT =
+			Number.parseFloat(document.getElementById("dragConstant").value) ||
+			DRAG_CONSTANT;
+		ELASTICITY_CONSTANT =
+			Number.parseFloat(document.getElementById("elasticityConstant").value) ||
+			ELASTICITY_CONSTANT;
+		INITIAL_VELOCITY =
+			Number.parseFloat(
+				document.getElementById("initialVelocityRange").value,
+			) || INITIAL_VELOCITY;
+		CONNECTION_OPACITY =
+			Number.parseFloat(document.getElementById("connectionOpacity").value) ||
+			CONNECTION_OPACITY;
+		MAX_HEAT_FACTOR =
+			Number.parseFloat(document.getElementById("maxHeatFactor").value) ||
+			MAX_HEAT_FACTOR;
+		MIN_CLUSTER_OPACITY =
+			Number.parseFloat(document.getElementById("minClusterOpacity").value) ||
+			MIN_CLUSTER_OPACITY;
+		OPACITY_REDUCTION_FACTOR =
+			Number.parseFloat(
+				document.getElementById("opacityReductionFactor").value,
+			) || OPACITY_REDUCTION_FACTOR;
+		SMOOTHING_FACTOR =
+			Number.parseFloat(document.getElementById("smoothingFactor").value) ||
+			SMOOTHING_FACTOR;
+		CONNECTION_COLOR =
+			document.getElementById("connectionColor").value ||
+			DEFAULT_CONNECTION_COLOR;
+	}
 
-    updateConstants() {
-        PARTICLE_COUNT = parseInt(document.getElementById('particleCount').value) || PARTICLE_COUNT;
-        EXPLOSION_RADIUS = parseInt(document.getElementById('explosionRadius').value) || EXPLOSION_RADIUS;
-        EXPLOSION_FORCE = parseFloat(document.getElementById('explosionForce').value) || EXPLOSION_FORCE;
-        ATTRACT_CONSTANT = parseFloat(document.getElementById('attractConstant').value) || ATTRACT_CONSTANT;
-        GRAVITY = parseFloat(document.getElementById('gravity').value) || GRAVITY;
-        INTERACTION_RADIUS = parseInt(document.getElementById('interactionRadius').value) || INTERACTION_RADIUS;
+	resizeCanvas() {
+		this.canvas.width = window.innerWidth;
+		this.canvas.height = window.innerHeight;
+	}
 
-        DRAG_CONSTANT = parseFloat(document.getElementById('dragConstant').value) || DRAG_CONSTANT;
-        ELASTICITY_CONSTANT = parseFloat(document.getElementById('elasticityConstant').value) || ELASTICITY_CONSTANT;
-        INITIAL_VELOCITY = parseFloat(document.getElementById('initialVelocityRange').value) || INITIAL_VELOCITY;
-        CONNECTION_OPACITY = parseFloat(document.getElementById('connectionOpacity').value) || CONNECTION_OPACITY;
-        MAX_HEAT_FACTOR = parseFloat(document.getElementById('maxHeatFactor').value) || MAX_HEAT_FACTOR;
-        MIN_CLUSTER_OPACITY = parseFloat(document.getElementById('minClusterOpacity').value) || MIN_CLUSTER_OPACITY;
-        OPACITY_REDUCTION_FACTOR = parseFloat(document.getElementById('opacityReductionFactor').value) || OPACITY_REDUCTION_FACTOR;
-        SMOOTHING_FACTOR = parseFloat(document.getElementById('smoothingFactor').value) || SMOOTHING_FACTOR;
-        CONNECTION_COLOR = document.getElementById('connectionColor').value || DEFAULT_CONNECTION_COLOR;
-    }
+	createParticles() {
+		this.particles = [];
+		const activePalette = PALETTES[currentPalette];
 
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
+		if (activePalette.length === 0) return;
 
-    createParticles() {
-        this.particles = [];
-        const activePalette = PALETTES[currentPalette];
+		for (let i = 0; i < PARTICLE_COUNT; i++) {
+			const x = Math.random() * this.canvas.width;
+			const y = Math.random() * this.canvas.height;
+			const radius =
+				Math.random() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) +
+				MIN_PARTICLE_RADIUS;
+			const color =
+				activePalette[Math.floor(Math.random() * activePalette.length)];
+			const particle = new Particle({ x, y }, radius, color);
 
-        if (activePalette.length === 0) return;
+			particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY;
+			particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY;
 
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const x = Math.random() * this.canvas.width;
-            const y = Math.random() * this.canvas.height;
-            const radius = Math.random() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) + MIN_PARTICLE_RADIUS;
-            const color = activePalette[Math.floor(Math.random() * activePalette.length)];
-            const particle = new Particle({ x, y }, radius, color);
+			this.particles.push(particle);
+		}
+	}
 
-            particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY;
-            particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY;
+	bindEvents() {
+		window.addEventListener("resize", () => this.resizeCanvas());
 
-            this.particles.push(particle);
-        }
-    }
+		// Mouse events
+		window.addEventListener("mousemove", (e) => {
+			this.mousePosition.x = e.clientX;
+			this.mousePosition.y = e.clientY;
+		});
+		window.addEventListener("mousedown", () => {
+			this.isMouseDown = true;
+		});
+		window.addEventListener("mouseup", () => {
+			this.isMouseDown = false;
+		});
 
-    bindEvents() {
-        window.addEventListener('resize', () => this.resizeCanvas());
+		// Touch events
+		window.addEventListener("touchstart", (e) => {
+			this.isMouseDown = true;
+			const touch = e.touches[0];
+			if (touch) {
+				this.mousePosition.x = touch.clientX;
+				this.mousePosition.y = touch.clientY;
+			}
+		});
 
-        // Mouse events
-        window.addEventListener('mousemove', (e) => {
-            this.mousePosition.x = e.clientX;
-            this.mousePosition.y = e.clientY;
-        });
-        window.addEventListener('mousedown', () => {
-            this.isMouseDown = true;
-        });
-        window.addEventListener('mouseup', () => {
-            this.isMouseDown = false;
-        });
+		window.addEventListener("touchmove", (e) => {
+			const touch = e.touches[0];
+			if (touch) {
+				this.mousePosition.x = touch.clientX;
+				this.mousePosition.y = touch.clientY;
+			}
+		});
 
-        // Touch events
-        window.addEventListener('touchstart', (e) => {
-            this.isMouseDown = true;
-            const touch = e.touches[0];
-            if (touch) {
-                this.mousePosition.x = touch.clientX;
-                this.mousePosition.y = touch.clientY;
-            }
-        });
+		window.addEventListener("touchend", () => {
+			this.isMouseDown = false;
+		});
 
-        window.addEventListener('touchmove', (e) => {
-            const touch = e.touches[0];
-            if (touch) {
-                this.mousePosition.x = touch.clientX;
-                this.mousePosition.y = touch.clientY;
-            }
-        });
+		window.addEventListener("touchcancel", () => {
+			this.isMouseDown = false;
+		});
 
-        window.addEventListener('touchend', () => {
-            this.isMouseDown = false;
-        });
+		window.addEventListener("resize", () => {
+			const content = document.getElementById("controlsContent");
+			if (content.style.display !== "none") {
+				document.getElementById("configToggle").click();
+				document.getElementById("configToggle").click();
+			}
+		});
 
-        window.addEventListener('touchcancel', () => {
-            this.isMouseDown = false;
-        });
+		const colorPaletteSelect = document.getElementById("colorPalette");
+		if (colorPaletteSelect) {
+			colorPaletteSelect.addEventListener("change", (e) => {
+				currentPalette = e.target.value;
+				const customControls = document.getElementById("customPaletteControls");
+				if (customControls) {
+					customControls.style.display =
+						currentPalette === "custom" ? "block" : "none";
+				}
+				this.createParticles();
+				this.updatePaletteDropdown();
+			});
+		}
 
-        window.addEventListener('resize', () => {
-            const content = document.getElementById('controlsContent');
-            if (content.style.display !== 'none') {
-                document.getElementById('configToggle').click();
-                document.getElementById('configToggle').click();
-            }
-        });
+		const addColorButton = document.getElementById("addColor");
+		if (addColorButton) {
+			addColorButton.addEventListener("click", () => {
+				const newColorInput = document.getElementById("newColor");
+				if (newColorInput) {
+					const newColor = newColorInput.value;
+					PALETTES.custom.push(newColor);
+					this.updateCustomPaletteDisplay();
+					if (currentPalette === "custom") {
+						this.createParticles();
+					}
+				}
+			});
+		}
 
-        const colorPaletteSelect = document.getElementById('colorPalette');
-        if (colorPaletteSelect) {
-            colorPaletteSelect.addEventListener('change', (e) => {
-                currentPalette = e.target.value;
-                const customControls = document.getElementById('customPaletteControls');
-                if (customControls) {
-                    customControls.style.display = currentPalette === 'custom' ? 'block' : 'none';
-                }
-                this.createParticles();
-                this.updatePaletteDropdown();
-            });
-        }
+		const customColorList = document.getElementById("customColorList");
+		if (customColorList) {
+			customColorList.addEventListener("click", (e) => {
+				if (e.target.classList.contains("removeColor")) {
+					const index = Number.parseInt(e.target.dataset.index);
+					PALETTES.custom.splice(index, 1);
+					this.updateCustomPaletteDisplay();
+					if (currentPalette === "custom") {
+						this.createParticles();
+					}
+				}
+			});
+		}
 
-        const addColorButton = document.getElementById('addColor');
-        if (addColorButton) {
-            addColorButton.addEventListener('click', () => {
-                const newColorInput = document.getElementById('newColor');
-                if (newColorInput) {
-                    const newColor = newColorInput.value;
-                    PALETTES.custom.push(newColor);
-                    this.updateCustomPaletteDisplay();
-                    if (currentPalette === 'custom') {
-                        this.createParticles();
-                    }
-                }
-            });
-        }
+		const newParticleRadius = document.getElementById("newParticleRadius");
+		const newParticleRadiusValue = document.getElementById(
+			"newParticleRadiusValue",
+		);
+		const newParticleColor = document.getElementById("newParticleColor");
+		const addParticleButton = document.getElementById("addParticle");
 
-        const customColorList = document.getElementById('customColorList');
-        if (customColorList) {
-            customColorList.addEventListener('click', (e) => {
-                if (e.target.classList.contains('removeColor')) {
-                    const index = parseInt(e.target.dataset.index);
-                    PALETTES.custom.splice(index, 1);
-                    this.updateCustomPaletteDisplay();
-                    if (currentPalette === 'custom') {
-                        this.createParticles();
-                    }
-                }
-            });
-        }
+		if (newParticleRadius && newParticleRadiusValue) {
+			newParticleRadius.addEventListener("input", (e) => {
+				const radius = Number.parseFloat(e.target.value).toFixed(1);
+				newParticleRadiusValue.textContent = radius;
+			});
+		}
 
-        const newParticleRadius = document.getElementById('newParticleRadius');
-        const newParticleRadiusValue = document.getElementById('newParticleRadiusValue');
-        const newParticleColor = document.getElementById('newParticleColor');
-        const addParticleButton = document.getElementById('addParticle');
+		if (addParticleButton) {
+			addParticleButton.addEventListener("click", () => {
+				const radius = Number.parseFloat(newParticleRadius.value);
+				const color = newParticleColor.value;
+				this.addCustomParticle(radius, color);
+			});
+		}
+	}
 
-        if (newParticleRadius && newParticleRadiusValue) {
-            newParticleRadius.addEventListener('input', (e) => {
-                const radius = parseFloat(e.target.value).toFixed(1);
-                newParticleRadiusValue.textContent = radius;
-            });
-        }
+	bindSliderEvents() {
+		const sliders = document.querySelectorAll(
+			'#controlsContent input[type="range"]',
+		);
+		sliders.forEach((slider) => {
+			slider.addEventListener("input", (event) => {
+				const target = event.target;
+				const value = target.value;
+				const valueSpan = document.getElementById(`${target.id}Value`);
+				if (valueSpan) {
+					valueSpan.textContent = value;
+				}
+				this.updateParticleSettings(target.id, value);
+			});
+		});
+	}
 
-        if (addParticleButton) {
-            addParticleButton.addEventListener('click', () => {
-                const radius = parseFloat(newParticleRadius.value);
-                const color = newParticleColor.value;
-                this.addCustomParticle(radius, color);
-            });
-        }
-    }
+	bindColorInputEvent() {
+		const connectionColorInput = document.getElementById("connectionColor");
+		if (connectionColorInput) {
+			connectionColorInput.addEventListener("input", (event) => {
+				CONNECTION_COLOR = event.target.value;
+				const connectionColorValue = document.getElementById(
+					"connectionColorValue",
+				);
+				if (connectionColorValue) {
+					connectionColorValue.textContent = CONNECTION_COLOR;
+				}
+			});
+		}
+	}
 
-    bindSliderEvents() {
-        const sliders = document.querySelectorAll('#controlsContent input[type="range"]');
-        sliders.forEach(slider => {
-            slider.addEventListener('input', (event) => {
-                const target = event.target;
-                const value = target.value;
-                const valueSpan = document.getElementById(`${target.id}Value`);
-                if (valueSpan) {
-                    valueSpan.textContent = value;
-                }
-                this.updateParticleSettings(target.id, value);
-            });
-        });
-    }
+	updateParticleSettings(settingId, value) {
+		switch (settingId) {
+			case "particleCount":
+				PARTICLE_COUNT = Number.parseInt(value);
+				this.createParticles();
+				break;
+			case "explosionRadius":
+				EXPLOSION_RADIUS = Number.parseInt(value);
+				break;
+			case "explosionForce":
+				EXPLOSION_FORCE = Number.parseFloat(value);
+				break;
+			case "attractConstant":
+				ATTRACT_CONSTANT = Number.parseFloat(value);
+				break;
+			case "gravity":
+				GRAVITY = Number.parseFloat(value);
+				break;
+			case "interactionRadius":
+				INTERACTION_RADIUS = Number.parseInt(value);
+				break;
+			case "initialVelocityRange":
+				INITIAL_VELOCITY = Number.parseFloat(value);
+				break;
+			case "dragConstant":
+				DRAG_CONSTANT = Number.parseFloat(value);
+				break;
+			case "elasticityConstant":
+				ELASTICITY_CONSTANT = Number.parseFloat(value);
+				break;
+			case "connectionOpacity":
+				CONNECTION_OPACITY = Number.parseFloat(value);
+				break;
+			case "maxHeatFactor":
+				MAX_HEAT_FACTOR = Number.parseFloat(value);
+				break;
+			case "minClusterOpacity":
+				MIN_CLUSTER_OPACITY = Number.parseFloat(value);
+				break;
+			case "opacityReductionFactor":
+				OPACITY_REDUCTION_FACTOR = Number.parseFloat(value);
+				break;
+			case "smoothingFactor":
+				SMOOTHING_FACTOR = Number.parseFloat(value);
+				break;
+		}
+	}
 
-    bindColorInputEvent() {
-        const connectionColorInput = document.getElementById('connectionColor');
-        if (connectionColorInput) {
-            connectionColorInput.addEventListener('input', (event) => {
-                CONNECTION_COLOR = event.target.value;
-                const connectionColorValue = document.getElementById('connectionColorValue');
-                if (connectionColorValue) {
-                    connectionColorValue.textContent = CONNECTION_COLOR;
-                }
-            });
-        }
-    }
+	drawConnections() {
+		this.ctx.beginPath();
+		for (let i = 0; i < this.particles.length; i++) {
+			for (let j = i + 1; j < this.particles.length; j++) {
+				const dx = this.particles[i].position.x - this.particles[j].position.x;
+				const dy = this.particles[i].position.y - this.particles[j].position.y;
+				const distance = Math.sqrt(dx * dx + dy * dy);
 
-    updateParticleSettings(settingId, value) {
-        switch (settingId) {
-            case 'particleCount':
-                PARTICLE_COUNT = parseInt(value);
-                this.createParticles();
-                break;
-            case 'explosionRadius':
-                EXPLOSION_RADIUS = parseInt(value);
-                break;
-            case 'explosionForce':
-                EXPLOSION_FORCE = parseFloat(value);
-                break;
-            case 'attractConstant':
-                ATTRACT_CONSTANT = parseFloat(value);
-                break;
-            case 'gravity':
-                GRAVITY = parseFloat(value);
-                break;
-            case 'interactionRadius':
-                INTERACTION_RADIUS = parseInt(value);
-                break;
-            case 'initialVelocityRange':
-                INITIAL_VELOCITY = parseFloat(value);
-                break;
-            case 'dragConstant':
-                DRAG_CONSTANT = parseFloat(value);
-                break;
-            case 'elasticityConstant':
-                ELASTICITY_CONSTANT = parseFloat(value);
-                break;
-            case 'connectionOpacity':
-                CONNECTION_OPACITY = parseFloat(value);
-                break;
-            case 'maxHeatFactor':
-                MAX_HEAT_FACTOR = parseFloat(value);
-                break;
-            case 'minClusterOpacity':
-                MIN_CLUSTER_OPACITY = parseFloat(value);
-                break;
-            case 'opacityReductionFactor':
-                OPACITY_REDUCTION_FACTOR = parseFloat(value);
-                break;
-            case 'smoothingFactor':
-                SMOOTHING_FACTOR = parseFloat(value);
-                break;
-        }
-    }
+				if (distance < INTERACTION_RADIUS) {
+					this.ctx.moveTo(
+						this.particles[i].position.x,
+						this.particles[i].position.y,
+					);
+					this.ctx.lineTo(
+						this.particles[j].position.x,
+						this.particles[j].position.y,
+					);
+				}
+			}
+		}
+		const opacity = Math.round(CONNECTION_OPACITY * 255)
+			.toString(16)
+			.padStart(2, "0");
+		this.ctx.strokeStyle = `${CONNECTION_COLOR}${opacity}`;
+		this.ctx.stroke();
+	}
 
-    drawConnections() {
-        this.ctx.beginPath();
-        for (let i = 0; i < this.particles.length; i++) {
-            for (let j = i + 1; j < this.particles.length; j++) {
-                const dx = this.particles[i].position.x - this.particles[j].position.x;
-                const dy = this.particles[i].position.y - this.particles[j].position.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+	updateParticles() {
+		const dt = 1 / 60; // Assuming 60 FPS, adjust if using a different frame rate
+		const grid = this.createSpatialGrid();
 
-                if (distance < INTERACTION_RADIUS) {
-                    this.ctx.moveTo(this.particles[i].position.x, this.particles[i].position.y);
-                    this.ctx.lineTo(this.particles[j].position.x, this.particles[j].position.y);
-                }
-            }
-        }
-        const opacity = Math.round(CONNECTION_OPACITY * 255).toString(16).padStart(2, '0');
-        this.ctx.strokeStyle = `${CONNECTION_COLOR}${opacity}`;
-        this.ctx.stroke();
-    }
+		for (const particle of this.particles) {
+			const nearbyParticles = this.getNearbyParticles(particle, grid);
 
-    updateParticles() {
-        const dt = 1 / 60; // Assuming 60 FPS, adjust if using a different frame rate
-        const grid = this.createSpatialGrid();
+			for (const otherParticle of nearbyParticles) {
+				if (particle !== otherParticle) {
+					this.applyAttraction(particle, otherParticle, dt);
+				}
+			}
 
-        for (const particle of this.particles) {
-            const nearbyParticles = this.getNearbyParticles(particle, grid);
+			particle.update({ x: this.canvas.width, y: this.canvas.height }, dt);
+		}
 
-            for (const otherParticle of nearbyParticles) {
-                if (particle !== otherParticle) {
-                    this.applyAttraction(particle, otherParticle, dt);
-                }
-            }
+		const uf = detectClusters(this.particles, INTERACTION_RADIUS);
+		applyClusterProperties(this.particles, uf);
+	}
 
-            particle.update({ x: this.canvas.width, y: this.canvas.height }, dt);
-        }
+	createSpatialGrid() {
+		const cellSize = INTERACTION_RADIUS;
+		const gridWidth = Math.max(1, Math.ceil(this.canvas.width / cellSize));
+		const gridHeight = Math.max(1, Math.ceil(this.canvas.height / cellSize));
+		const grid = Array(gridWidth)
+			.fill()
+			.map(() =>
+				Array(gridHeight)
+					.fill()
+					.map(() => []),
+			);
 
-        const uf = detectClusters(this.particles, INTERACTION_RADIUS);
-        applyClusterProperties(this.particles, uf);
-    }
+		for (const particle of this.particles) {
+			const cellX = Math.floor(particle.position.x / cellSize);
+			const cellY = Math.floor(particle.position.y / cellSize);
 
-    createSpatialGrid() {
-        const cellSize = INTERACTION_RADIUS;
-        const gridWidth = Math.max(1, Math.ceil(this.canvas.width / cellSize));
-        const gridHeight = Math.max(1, Math.ceil(this.canvas.height / cellSize));
-        const grid = Array(gridWidth).fill().map(() => Array(gridHeight).fill().map(() => []));
+			if (cellX >= 0 && cellX < gridWidth && cellY >= 0 && cellY < gridHeight) {
+				grid[cellX][cellY].push(particle);
+			}
+		}
 
-        for (const particle of this.particles) {
-            const cellX = Math.floor(particle.position.x / cellSize);
-            const cellY = Math.floor(particle.position.y / cellSize);
+		return grid;
+	}
 
-            if (cellX >= 0 && cellX < gridWidth && cellY >= 0 && cellY < gridHeight) {
-                grid[cellX][cellY].push(particle);
-            }
-        }
+	getNearbyParticles(particle, grid) {
+		const cellSize = INTERACTION_RADIUS;
+		const cellX = Math.floor(particle.position.x / cellSize);
+		const cellY = Math.floor(particle.position.y / cellSize);
+		const nearbyParticles = [];
 
-        return grid;
-    }
+		for (let dx = -1; dx <= 1; dx++) {
+			for (let dy = -1; dy <= 1; dy++) {
+				const x = cellX + dx;
+				const y = cellY + dy;
+				if (x >= 0 && x < grid.length && y >= 0 && y < grid[0].length) {
+					nearbyParticles.push(...grid[x][y]);
+				}
+			}
+		}
 
-    getNearbyParticles(particle, grid) {
-        const cellSize = INTERACTION_RADIUS;
-        const cellX = Math.floor(particle.position.x / cellSize);
-        const cellY = Math.floor(particle.position.y / cellSize);
-        const nearbyParticles = [];
+		return nearbyParticles;
+	}
 
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-                const x = cellX + dx;
-                const y = cellY + dy;
-                if (x >= 0 && x < grid.length && y >= 0 && y < grid[0].length) {
-                    nearbyParticles.push(...grid[x][y]);
-                }
-            }
-        }
+	applyAttraction(p1, p2, dt) {
+		const dx = p2.position.x - p1.position.x;
+		const dy = p2.position.y - p1.position.y;
+		const distSq = dx * dx + dy * dy;
+		const INTERACTION_RADIUS_SQ = INTERACTION_RADIUS * INTERACTION_RADIUS;
 
-        return nearbyParticles;
-    }
+		if (distSq > 0 && distSq < INTERACTION_RADIUS_SQ) {
+			const distance = Math.sqrt(distSq);
+			const smoothingDistance = SMOOTHING_FACTOR * INTERACTION_RADIUS;
+			const smoothedDistance = Math.max(distance, smoothingDistance);
+			const force =
+				(ATTRACT_CONSTANT * (p1.mass * p2.mass)) /
+				(smoothedDistance * smoothedDistance);
+			const forceX = (force * dx) / smoothedDistance;
+			const forceY = (force * dy) / smoothedDistance;
 
-    applyAttraction(p1, p2, dt) {
-        const dx = p2.position.x - p1.position.x;
-        const dy = p2.position.y - p1.position.y;
-        const distSq = dx * dx + dy * dy;
-        const INTERACTION_RADIUS_SQ = INTERACTION_RADIUS * INTERACTION_RADIUS;
+			p1.velocity.x += (forceX / p1.mass) * dt;
+			p1.velocity.y += (forceY / p1.mass) * dt;
+			p2.velocity.x -= (forceX / p2.mass) * dt;
+			p2.velocity.y -= (forceY / p2.mass) * dt;
+		}
+	}
 
-        if (distSq > 0 && distSq < INTERACTION_RADIUS_SQ) {
-            const distance = Math.sqrt(distSq);
-            const smoothingDistance = SMOOTHING_FACTOR * INTERACTION_RADIUS;
-            const smoothedDistance = Math.max(distance, smoothingDistance);
-            const force = ATTRACT_CONSTANT * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
-            const forceX = force * dx / smoothedDistance;
-            const forceY = force * dy / smoothedDistance;
+	applyMouseForce() {
+		if (!this.isMouseDown) return;
 
-            p1.velocity.x += forceX / p1.mass * dt;
-            p1.velocity.y += forceY / p1.mass * dt;
-            p2.velocity.x -= forceX / p2.mass * dt;
-            p2.velocity.y -= forceY / p2.mass * dt;
-        }
-    }
+		this.particles.forEach((particle) => {
+			const dx = particle.position.x - this.mousePosition.x;
+			const dy = particle.position.y - this.mousePosition.y;
+			const dist = Math.hypot(dx, dy);
+			if (dist < EXPLOSION_RADIUS) {
+				const normalizedDist = dist / EXPLOSION_RADIUS;
+				const forceFactor = 1 - Math.pow(normalizedDist, 4); // More explosive near the center
+				const force = EXPLOSION_FORCE * forceFactor;
+				particle.velocity.x += (dx / dist) * force;
+				particle.velocity.y += (dy / dist) * force;
+			}
+		});
+	}
 
-    applyMouseForce() {
-        if (!this.isMouseDown) return;
+	animate() {
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.particles.forEach(particle => {
-            const dx = particle.position.x - this.mousePosition.x;
-            const dy = particle.position.y - this.mousePosition.y;
-            const dist = Math.hypot(dx, dy);
-            if (dist < EXPLOSION_RADIUS) {
-                const normalizedDist = dist / EXPLOSION_RADIUS;
-                const forceFactor = 1 - Math.pow(normalizedDist, 4); // More explosive near the center
-                const force = EXPLOSION_FORCE * forceFactor;
-                particle.velocity.x += (dx / dist) * force;
-                particle.velocity.y += (dy / dist) * force;
-            }
-        });
-    }
+		this.updateParticles();
+		this.drawConnections();
 
-    animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		for (const particle of this.particles) {
+			this.ctx.beginPath();
+			this.ctx.arc(
+				particle.position.x,
+				particle.position.y,
+				particle.radius,
+				0,
+				Math.PI * 2,
+			);
+			this.ctx.fillStyle = particle.color;
+			this.ctx.fill();
+		}
 
-        this.updateParticles();
-        this.drawConnections();
+		this.applyMouseForce();
 
-        for (const particle of this.particles) {
-            this.ctx.beginPath();
-            this.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2);
-            this.ctx.fillStyle = particle.color;
-            this.ctx.fill();
-        }
+		requestAnimationFrame(() => this.animate());
+	}
 
-        this.applyMouseForce();
-
-        requestAnimationFrame(() => this.animate());
-    }
-
-    updateCustomPaletteDisplay() {
-        const customColorList = document.getElementById('customColorList');
-        if (customColorList) {
-            customColorList.innerHTML = PALETTES.custom.map((color, index) => `
+	updateCustomPaletteDisplay() {
+		const customColorList = document.getElementById("customColorList");
+		if (customColorList) {
+			customColorList.innerHTML = PALETTES.custom
+				.map(
+					(color, index) => `
                 <div style="display: flex; align-items: center; margin-bottom: 0.5vmin;">
                     <div style="width: 20px; height: 20px; background-color: ${color}; margin-right: 0.5vmin;"></div>
                     <button class="removeColor" data-index="${index}">Remove</button>
                 </div>
-            `).join('');
-        }
-    }
+            `,
+				)
+				.join("");
+		}
+	}
 
-    updatePaletteDropdown() {
-        const colorPaletteSelect = document.getElementById('colorPalette');
-        if (colorPaletteSelect) {
-            colorPaletteSelect.value = currentPalette;
-        }
-    }
+	updatePaletteDropdown() {
+		const colorPaletteSelect = document.getElementById("colorPalette");
+		if (colorPaletteSelect) {
+			colorPaletteSelect.value = currentPalette;
+		}
+	}
 
-    addExitZenModeButton() {
-        if (!document.getElementById('exitZenMode')) {
-            this.canvas.insertAdjacentHTML('beforebegin', EXIT_ZEN_MODE_TEMPLATE);
-            const exitZenMode = document.getElementById('exitZenMode');
-            exitZenMode.addEventListener('click', () => {
-                // Remove the button
-                document.getElementById('exitZenMode')?.remove();
-                
-                // Use the Next.js router we added to window
-                if (window.nextRouter) {
-                    window.nextRouter.push('/');
-                }
-            });
-        }
-    }
-
-    enterZenMode() {
-        this.isZenMode = true;
-        this.addExitZenModeButton();
-        // Hide nav and other elements
-        document.querySelector('nav')?.classList.add('hidden');
-        document.getElementById('githubInfo')?.classList.add('hidden');
-        // Add any other Zen mode-specific changes here
-    }
-
-    addCustomParticle(radius, color) {
-        const x = Math.random() * this.canvas.width;
-        const y = Math.random() * this.canvas.height;
-        // Convert hex color to rgba
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const rgba = `rgba(${r}, ${g}, ${b}, 0.6)`;
-        const particle = new Particle({ x, y }, radius, rgba);
-        particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY;
-        particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY;
-        this.particles.push(particle);
-    }
+	addCustomParticle(radius, color) {
+		const x = Math.random() * this.canvas.width;
+		const y = Math.random() * this.canvas.height;
+		// Convert hex color to rgba
+		const r = Number.parseInt(color.slice(1, 3), 16);
+		const g = Number.parseInt(color.slice(3, 5), 16);
+		const b = Number.parseInt(color.slice(5, 7), 16);
+		const rgba = `rgba(${r}, ${g}, ${b}, 0.6)`;
+		const particle = new Particle({ x, y }, radius, rgba);
+		particle.velocity.x = (Math.random() - 0.5) * INITIAL_VELOCITY;
+		particle.velocity.y = (Math.random() - 0.5) * INITIAL_VELOCITY;
+		this.particles.push(particle);
+	}
 }
 
 class UnionFind {
-    constructor(size) {
-        this.parent = Array.from({ length: size }, (_, i) => i);
-    }
+	constructor(size) {
+		this.parent = Array.from({ length: size }, (_, i) => i);
+	}
 
-    find(x) {
-        if (this.parent[x] !== x) {
-            this.parent[x] = this.find(this.parent[x]); // Path compression
-        }
-        return this.parent[x];
-    }
+	find(x) {
+		if (this.parent[x] !== x) {
+			this.parent[x] = this.find(this.parent[x]); // Path compression
+		}
+		return this.parent[x];
+	}
 
-    union(x, y) {
-        const rootX = this.find(x);
-        const rootY = this.find(y);
-        if (rootX !== rootY) {
-            this.parent[rootY] = rootX;
-        }
-    }
+	union(x, y) {
+		const rootX = this.find(x);
+		const rootY = this.find(y);
+		if (rootX !== rootY) {
+			this.parent[rootY] = rootX;
+		}
+	}
 }
 
 function detectClusters(particles, interactionRadius) {
-    const uf = new UnionFind(particles.length);
+	const uf = new UnionFind(particles.length);
 
-    for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-            const dx = particles[i].position.x - particles[j].position.x;
-            const dy = particles[i].position.y - particles[j].position.y;
-            if (dx * dx + dy * dy < interactionRadius * interactionRadius) {
-                uf.union(i, j);
-            }
-        }
-    }
+	for (let i = 0; i < particles.length; i++) {
+		for (let j = i + 1; j < particles.length; j++) {
+			const dx = particles[i].position.x - particles[j].position.x;
+			const dy = particles[i].position.y - particles[j].position.y;
+			if (dx * dx + dy * dy < interactionRadius * interactionRadius) {
+				uf.union(i, j);
+			}
+		}
+	}
 
-    return uf;
+	return uf;
 }
 
 function applyClusterProperties(particles, uf) {
-    const clusterSizes = new Map();
-    let maxClusterSize = 1;
+	const clusterSizes = new Map();
+	let maxClusterSize = 1;
 
-    for (let index = 0; index < particles.length; index++) {
-        const root = uf.find(index);
-        const size = (clusterSizes.get(root) || 0) + 1;
-        clusterSizes.set(root, size);
-        maxClusterSize = Math.max(maxClusterSize, size);
-    }
+	for (let index = 0; index < particles.length; index++) {
+		const root = uf.find(index);
+		const size = (clusterSizes.get(root) || 0) + 1;
+		clusterSizes.set(root, size);
+		maxClusterSize = Math.max(maxClusterSize, size);
+	}
 
-    particles.forEach((particle, index) => {
-        const root = uf.find(index);
-        const clusterSize = clusterSizes.get(root) || 1;
+	particles.forEach((particle, index) => {
+		const root = uf.find(index);
+		const clusterSize = clusterSizes.get(root) || 1;
 
-        const heatFactor = Math.min((clusterSize - 1) / (maxClusterSize - 1), MAX_HEAT_FACTOR);
+		const heatFactor = Math.min(
+			(clusterSize - 1) / (maxClusterSize - 1),
+			MAX_HEAT_FACTOR,
+		);
 
-        const rgbaMatch = particle.originalColor.match(/\d+/g);
-        if (rgbaMatch && rgbaMatch.length >= 4) {
-            const [r, g, b, a] = rgbaMatch.map(Number);
+		const rgbaMatch = particle.originalColor.match(/\d+/g);
+		if (rgbaMatch && rgbaMatch.length >= 4) {
+			const [r, g, b, a] = rgbaMatch.map(Number);
 
-            const newR = Math.round(r + (255 - r) * heatFactor);
-            const newG = Math.round(g + (255 - g) * heatFactor);
-            const newB = Math.round(b + (255 - b) * heatFactor);
+			const newR = Math.round(r + (255 - r) * heatFactor);
+			const newG = Math.round(g + (255 - g) * heatFactor);
+			const newB = Math.round(b + (255 - b) * heatFactor);
 
-            const newA = Math.max(MIN_CLUSTER_OPACITY, 1 - heatFactor * OPACITY_REDUCTION_FACTOR * a);
+			const newA = Math.max(
+				MIN_CLUSTER_OPACITY,
+				1 - heatFactor * OPACITY_REDUCTION_FACTOR * a,
+			);
 
-            particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
-        }
-        particle.clusterMass = clusterSize;
-    });
+			particle.color = `rgba(${newR}, ${newG}, ${newB}, ${newA})`;
+		}
+		particle.clusterMass = clusterSize;
+	});
 }
 
-window.particlesInit = function (canvas) {
-    new ParticleSystem(canvas);
+window.particlesInit = (canvas) => {
+	new ParticleSystem(canvas);
 };
-

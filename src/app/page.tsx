@@ -1,37 +1,36 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { getPosts } from '@/utils/posts';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 export default function Home() {
-    const posts = getPosts();
+    const [showModal, setShowModal] = useState(false);
+
+    useEffect(() => {
+        if (!localStorage.getItem('zenInstructionsSeen')) {
+            setShowModal(true);
+        }
+    }, []);
+
+    const handleDismiss = () => {
+        setShowModal(false);
+        localStorage.setItem('zenInstructionsSeen', 'true');
+    };
 
     return (
-        <main className="main-content">
-            <div className="flex justify-center mb-8">
-                <Image
-                    src="https://random-d.uk/api/randomimg"
-                    alt="Random Duck"
-                    width={300}
-                    height={300}
-                    className="rounded-lg"
-                />
-            </div>
-            <h1 className="text-4xl font-bold mb-6 text-center text-cyan-300">Recent Posts</h1>
-            <section className="space-y-6">
-                {posts.map((post) => (
-                    <Link 
-                        key={post.slug} 
-                        href={`/posts/${post.slug}`}
-                        className="block post-card group"
+        <main className="h-screen relative">
+            {/* The modal for particle instructions */}
+            {showModal && (
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-80 p-6 rounded-lg shadow-lg text-center max-w-md z-50">
+                    <p className="mb-4 text-gray-800">psst! click the mouse to push the particles around. see <b>particle settings</b> in the top right to edit physics</p>
+                    <button 
+                        onClick={handleDismiss} 
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        type="button"
                     >
-                        <h3 className="post-title">{post.title}</h3>
-                        <p className="post-date">{post.date}</p>
-                        <span className="read-more">
-                            Read more
-                        </span>
-                    </Link>
-                ))}
-            </section>
+                        Got it!
+                    </button>
+                </div>
+            )}
         </main>
     );
 }
