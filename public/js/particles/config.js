@@ -1,23 +1,19 @@
 // Configuration constants for the particle system
 
 export const RANGES = {
-	PARTICLE_COUNT: { min: 50, max: 2000, step: 10, default: 200 },
-	PARTICLE_SIZE: { min: 1, max: 10, step: 0.5, default: 3 },
-	DRAG: { min: 0, max: 1, step: 0.01, default: 0.01 },
+	PARTICLE_COUNT: { min: 50, max: 2000, step: 10, default: 500 },
+	PARTICLE_SIZE: { min: 1, max: 6, step: 0.5, default: 3 },
+	DRAG: { min: 0, max: 0.2, step: 0.005, default: 0.05 },
 	EXPLOSION_RADIUS: { min: 50, max: 500, step: 10, default: 200 },
-	EXPLOSION_FORCE: { min: 0, max: 100, step: 1, default: 25.0 },
-	ATTRACT_CONSTANT: { min: -2000, max: 2000, step: 10, default: -900 },
+	EXPLOSION_FORCE: { min: 0, max: 100, step: 1, default: 15.0 },
+	ATTRACT: { min: -2000, max: 2000, step: 10, default: -200 },
 	GRAVITY: { min: -0.5, max: 0.5, step: 0.01, default: 0 },
-	INTERACTION_RADIUS: { min: 10, max: 200, step: 5, default: 100 },
-	DRAG_CONSTANT: { min: 0, max: 1, step: 0.05, default: 0.13 },
-	ELASTICITY_CONSTANT: { min: 0, max: 1, step: 0.05, default: 0.3 },
-	INITIAL_VELOCITY: { min: 0, max: 100, step: 1, default: 0 },
-	CONNECTION_OPACITY: { min: 0, max: 1, step: 0.05, default: 0.05 },
+	INTERACTION_RADIUS: { min: 10, max: 300, step: 5, default: 100 },
+	SMOOTHING_FACTOR: { min: 0.01, max: 0.3, step: 0.01, default: 0.13 },
+	CONNECTION_OPACITY: { min: 0, max: 0.5, step: 0.01, default: 0.05 },
 	CONNECTION_COLOR: { default: "#64ffda" },
-	CONNECTION_WIDTH: { min: 0.1, max: 5, step: 0.1, default: 0.3 },
+	CONNECTION_WIDTH: { min: 0.1, max: 2, step: 0.1, default: 0.3 },
 	PARTICLE_COLOR: { default: "#64ffda" },
-	SMOOTHING_FACTOR: { min: 0.01, max: 1, step: 0.01, default: 0.3 },
-	MAX_HEAT_FACTOR: { min: 0, max: 2, step: 0.1, default: 1 },
 };
 
 // Generate default settings object from the RANGES
@@ -286,14 +282,14 @@ export const PARTICLE_CONTROLS_TEMPLATE = `
             </div>
         </div>
         <div class="control-group">
-            <label for="ATTRACT_CONSTANT">Attraction Force</label>
+            <label for="ATTRACT">Attraction Force</label>
             <div class="control-row">
-                <input type="range" id="ATTRACT_CONSTANT" class="slider-input"
-                    min="${RANGES.ATTRACT_CONSTANT.min}" 
-                    max="${RANGES.ATTRACT_CONSTANT.max}" 
-                    step="${RANGES.ATTRACT_CONSTANT.step}" 
-                    value="${RANGES.ATTRACT_CONSTANT.default}">
-                <span id="ATTRACT_CONSTANT_VALUE" class="value-display">${RANGES.ATTRACT_CONSTANT.default}</span>
+                <input type="range" id="ATTRACT" class="slider-input"
+                    min="${RANGES.ATTRACT.min}" 
+                    max="${RANGES.ATTRACT.max}" 
+                    step="${RANGES.ATTRACT.step}" 
+                    value="${RANGES.ATTRACT.default}">
+                <span id="ATTRACT_VALUE" class="value-display">${RANGES.ATTRACT.default}</span>
             </div>
         </div>
         <div class="control-group">
@@ -316,39 +312,6 @@ export const PARTICLE_CONTROLS_TEMPLATE = `
                     step="${RANGES.INTERACTION_RADIUS.step}" 
                     value="${RANGES.INTERACTION_RADIUS.default}">
                 <span id="INTERACTION_RADIUS_VALUE" class="value-display">${RANGES.INTERACTION_RADIUS.default}</span>
-            </div>
-        </div>
-        <div class="control-group">
-            <label for="DRAG_CONSTANT">Drag Force</label>
-            <div class="control-row">
-                <input type="range" id="DRAG_CONSTANT" class="slider-input"
-                    min="${RANGES.DRAG_CONSTANT.min}" 
-                    max="${RANGES.DRAG_CONSTANT.max}" 
-                    step="${RANGES.DRAG_CONSTANT.step}" 
-                    value="${RANGES.DRAG_CONSTANT.default}">
-                <span id="DRAG_CONSTANT_VALUE" class="value-display">${RANGES.DRAG_CONSTANT.default}</span>
-            </div>
-        </div>
-        <div class="control-group">
-            <label for="ELASTICITY_CONSTANT">Wall Elasticity</label>
-            <div class="control-row">
-                <input type="range" id="ELASTICITY_CONSTANT" class="slider-input"
-                    min="${RANGES.ELASTICITY_CONSTANT.min}" 
-                    max="${RANGES.ELASTICITY_CONSTANT.max}" 
-                    step="${RANGES.ELASTICITY_CONSTANT.step}" 
-                    value="${RANGES.ELASTICITY_CONSTANT.default}">
-                <span id="ELASTICITY_CONSTANT_VALUE" class="value-display">${RANGES.ELASTICITY_CONSTANT.default}</span>
-            </div>
-        </div>
-        <div class="control-group">
-            <label for="INITIAL_VELOCITY">Initial Velocity</label>
-            <div class="control-row">
-                <input type="range" id="INITIAL_VELOCITY" class="slider-input"
-                    min="${RANGES.INITIAL_VELOCITY.min}" 
-                    max="${RANGES.INITIAL_VELOCITY.max}" 
-                    step="${RANGES.INITIAL_VELOCITY.step}" 
-                    value="${RANGES.INITIAL_VELOCITY.default}">
-                <span id="INITIAL_VELOCITY_VALUE" class="value-display">${RANGES.INITIAL_VELOCITY.default}</span>
             </div>
         </div>
         <div class="control-group">
@@ -378,17 +341,6 @@ export const PARTICLE_CONTROLS_TEMPLATE = `
                     step="${RANGES.SMOOTHING_FACTOR.step}" 
                     value="${RANGES.SMOOTHING_FACTOR.default}">
                 <span id="SMOOTHING_FACTOR_VALUE" class="value-display">${RANGES.SMOOTHING_FACTOR.default}</span>
-            </div>
-        </div>
-        <div class="control-group">
-            <label for="MAX_HEAT_FACTOR">Maximum Heat</label>
-            <div class="control-row">
-                <input type="range" id="MAX_HEAT_FACTOR" class="slider-input"
-                    min="${RANGES.MAX_HEAT_FACTOR.min}" 
-                    max="${RANGES.MAX_HEAT_FACTOR.max}" 
-                    step="${RANGES.MAX_HEAT_FACTOR.step}" 
-                    value="${RANGES.MAX_HEAT_FACTOR.default}">
-                <span id="MAX_HEAT_FACTOR_VALUE" class="value-display">${RANGES.MAX_HEAT_FACTOR.default}</span>
             </div>
         </div>
         

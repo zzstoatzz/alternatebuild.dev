@@ -249,9 +249,10 @@ export class ParticleSystem {
 	applyAttraction() {
 		const settings = this.settingsManager.getAllSettings();
 		const interactionRadius = settings.INTERACTION_RADIUS;
-		const attractConstant = settings.ATTRACT_CONSTANT;
+		const attract = settings.ATTRACT;
+		const smoothingFactor = settings.SMOOTHING_FACTOR || 0.3;
 		
-		if (Math.abs(attractConstant) < 1e-6) return; // Skip if no attraction
+		if (Math.abs(attract) < 1e-6) return; // Skip if no attraction
 		
 		// Use grid to find nearby particles efficiently
 		for (const cellId in this.grid) {
@@ -291,12 +292,12 @@ export class ParticleSystem {
 							
 							const distance = Math.sqrt(distSq);
 							
-							// Calculate smoothing factor to avoid extreme forces at very small distances
-							const smoothingFactor = Math.max(0.01, Math.min(1, settings.SMOOTHING_FACTOR || 0.3));
+							// Apply smoothing to avoid extreme forces at very small distances
+							// This is crucial for stable repulsion
 							const smoothedDistance = Math.max(distance, smoothingFactor * interactionRadius);
 							
 							// Calculate force using inverse square law
-							const forceMagnitude = attractConstant * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
+							const forceMagnitude = attract * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
 							
 							// Calculate force components
 							const forceX = forceMagnitude * dx / smoothedDistance;
@@ -398,6 +399,9 @@ export class ParticleSystem {
 		this.ctx.globalAlpha = 1;
 	}
 
+	// Store mouse interaction effects and their lifetimes
+	mouseEffects = [];
+
 	animate(timestamp = 0) {
 		// Calculate time delta for smooth animation
 		const deltaTime = timestamp - this.lastTimestamp;
@@ -415,57 +419,8 @@ export class ParticleSystem {
 			// Draw connections between particles
 			this.drawConnections();
 
-			// Draw particles
-			const settings = this.settingsManager.getAllSettings();
-
-			// Visualize explosion radius if mouse is down
-			if (this.isMouseDown) {
-				this.ctx.save();
-				this.ctx.beginPath();
-				this.ctx.arc(
-					this.mouseX,
-					this.mouseY,
-					settings.EXPLOSION_RADIUS,
-					0,
-					Math.PI * 2,
-				);
-				this.ctx.strokeStyle = "rgba(255, 0, 0, 0.3)";
-				this.ctx.stroke();
-
-				// Draw force direction indicators
-				this.ctx.beginPath();
-				this.ctx.moveTo(this.mouseX, this.mouseY);
-				this.ctx.lineTo(
-					this.mouseX + settings.EXPLOSION_RADIUS * 0.5,
-					this.mouseY,
-				);
-				this.ctx.stroke();
-
-				this.ctx.beginPath();
-				this.ctx.moveTo(this.mouseX, this.mouseY);
-				this.ctx.lineTo(
-					this.mouseX - settings.EXPLOSION_RADIUS * 0.5,
-					this.mouseY,
-				);
-				this.ctx.stroke();
-
-				this.ctx.beginPath();
-				this.ctx.moveTo(this.mouseX, this.mouseY);
-				this.ctx.lineTo(
-					this.mouseX,
-					this.mouseY + settings.EXPLOSION_RADIUS * 0.5,
-				);
-				this.ctx.stroke();
-
-				this.ctx.beginPath();
-				this.ctx.moveTo(this.mouseX, this.mouseY);
-				this.ctx.lineTo(
-					this.mouseX,
-					this.mouseY - settings.EXPLOSION_RADIUS * 0.5,
-				);
-				this.ctx.stroke();
-				this.ctx.restore();
-			}
+			// Handle mouse effects
+			this.updateAndDrawMouseEffects(timestamp);
 
 			// Draw all particles
 			for (const particle of this.particles) {
@@ -475,6 +430,72 @@ export class ParticleSystem {
 
 		// Continue animation loop
 		this.animationFrameId = requestAnimationFrame((t) => this.animate(t));
+	}
+
+	updateAndDrawMouseEffects(timestamp) {
+		const settings = this.settingsManager.getAllSettings();
+		
+		// If mouse is down, create a new effect
+		if (this.isMouseDown) {
+			// Add a new effect at current mouse position
+			this.mouseEffects.push({
+				x: this.mouseX,
+				y: this.mouseY,
+				radius: settings.EXPLOSION_RADIUS,
+				startTime: timestamp,
+				duration: 800, // Effect lasts for 0.8 seconds (shorter duration)
+			});
+		}
+		
+		// Draw and update existing effects
+		this.ctx.save();
+		
+		for (let i = this.mouseEffects.length - 1; i >= 0; i--) {
+			const effect = this.mouseEffects[i];
+			const age = timestamp - effect.startTime;
+			
+			// Remove expired effects
+			if (age > effect.duration) {
+				this.mouseEffects.splice(i, 1);
+				continue;
+			}
+			
+			// Calculate effect progress (0 to 1)
+			const progress = age / effect.duration;
+			
+			// Ethereal ripple effect - simplified and more subtle
+			const rippleOpacity = Math.max(0, 0.2 * (1 - progress));
+			const rippleRadius = Math.max(5, effect.radius * (0.1 + progress * 0.6)); // Ensure radius is positive
+			
+			// Draw rippling waves with gradient
+			const gradient = this.ctx.createRadialGradient(
+				effect.x, effect.y, 0,
+				effect.x, effect.y, rippleRadius
+			);
+			
+			// More subtle ethereal gradient
+			gradient.addColorStop(0, `rgba(140, 240, 255, ${rippleOpacity * 0.05})`);
+			gradient.addColorStop(0.6, `rgba(100, 210, 255, ${rippleOpacity * 0.03})`);
+			gradient.addColorStop(1, `rgba(70, 130, 220, 0)`);
+			
+			this.ctx.globalAlpha = 1;
+			this.ctx.fillStyle = gradient;
+			
+			// Draw main ripple
+			this.ctx.beginPath();
+			this.ctx.arc(effect.x, effect.y, rippleRadius, 0, Math.PI * 2);
+			this.ctx.fill();
+			
+			// Draw a subtle ring
+			const ringRadius = Math.max(2, rippleRadius * 0.8); // Ensure radius is positive
+			this.ctx.beginPath();
+			this.ctx.arc(effect.x, effect.y, ringRadius, 0, Math.PI * 2);
+			this.ctx.lineWidth = 0.5;
+			this.ctx.strokeStyle = 'rgba(180, 240, 255, ' + (rippleOpacity * 0.3) + ')';
+			this.ctx.stroke();
+		}
+		
+		this.ctx.restore();
 	}
 
 	stop() {
