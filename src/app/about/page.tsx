@@ -60,8 +60,8 @@ export default function About() {
 
             <h2 className="project-section-title">projects & links</h2>
             <div className="project-grid">
-                {links.map((link, index) => (
-                    <LinkCard key={index} {...link} />
+                {links.map((link) => (
+                    <LinkCard key={link.title} {...link} />
                 ))}
             </div>
         </main>
