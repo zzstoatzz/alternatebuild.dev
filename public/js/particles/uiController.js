@@ -80,6 +80,13 @@ export class UIController {
 					padding: 12px !important;
 					max-height: 70vh !important;
 					overflow-y: auto !important;
+					-ms-overflow-style: none !important; /* IE and Edge */
+					scrollbar-width: none !important; /* Firefox */
+				}
+				
+				/* Hide scrollbar for Chrome, Safari and Opera */
+				.control-content::-webkit-scrollbar {
+					display: none !important;
 				}
 				
 				.control-group {
@@ -257,7 +264,7 @@ export class UIController {
 		const categories = {
 			'particles': ['PARTICLE_COUNT', 'PARTICLE_SIZE', 'DRAG'],
 			'connections': ['INTERACTION_RADIUS', 'CONNECTION_OPACITY', 'CONNECTION_WIDTH', 'CONNECTION_COLOR'],
-			'forces': ['EXPLOSION_RADIUS', 'EXPLOSION_FORCE', 'GRAVITY', 'ATTRACT_CONSTANT']
+			'forces': ['EXPLOSION_RADIUS', 'EXPLOSION_FORCE', 'GRAVITY', 'ATTRACT', 'SMOOTHING_FACTOR']
 		};
 		
 		for (const [category, keys] of Object.entries(categories)) {
@@ -383,6 +390,11 @@ export class UIController {
 				// Use reset function from parent particleSystem
 				if (window.particleSystem) {
 					window.particleSystem.settingsManager.resetToDefaults();
+					
+					// Update all sliders and displays to match default values
+					const defaults = window.particleSystem.settingsManager.getAllSettings();
+					this.updateUI(defaults);
+					
 					this.showSuccessMessage("settings reset to defaults");
 				}
 			});
