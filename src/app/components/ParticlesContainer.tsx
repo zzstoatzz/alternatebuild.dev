@@ -56,11 +56,13 @@ export function ParticlesContainer() {
             <canvas
                 id="particle-canvas"
                 ref={canvasRef}
-                className="fixed inset-0 w-full h-full pointer-events-none z-0"
+                className="fixed inset-0 w-full h-full z-10"
+                style={{ pointerEvents: 'auto' }}
             />
             <Script
-                src="/js/particles.js"
+                src="/js/particles/main.js"
                 strategy="afterInteractive"
+                type="module"
                 onLoad={() => {
                     console.log('Particles script loaded');
                     if (
