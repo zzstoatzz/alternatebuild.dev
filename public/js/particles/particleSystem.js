@@ -1,25 +1,26 @@
-import { Particle } from './particle.js';
+import { Particle } from "./particle.js";
 import { SettingsManager } from "./settingsManager.js";
 import { UIController } from "./uiController.js";
 import { PARTICLE_COLORS } from "./config.js";
 
 export class ParticleSystem {
-	constructor(canvas, gridSize = 20) {
+	constructor(canvas) {
 		this.canvas = canvas;
 		this.ctx = this.canvas.getContext("2d");
 		this.particles = [];
-		this.gridSize = gridSize;
 		this.grid = {};
 		this.mouseX = 0;
 		this.mouseY = 0;
 		this.isMouseDown = false;
 		this.selectedParticle = null;
 		this.animationFrameId = null;
+		this.deltaTime = 0; // Initialize deltaTime for use in physics
 		this.lastTimestamp = 0;
 		this.fpsLimit = 60;
 		this.fpsInterval = 1000 / this.fpsLimit;
+		this.mouseEffects = [];
 
-		// Make particle colors available globally
+		// Make particle colors available
 		this.PARTICLE_COLORS = PARTICLE_COLORS;
 		window.particleSystem = this; // Set this early to make colors available to particles
 
@@ -86,16 +87,16 @@ export class ParticleSystem {
 
 		// Inject CSS to make sure the canvas doesn't block events
 		const style = document.createElement("style");
-		style.textContent = 
-            '.particles-canvas {' +
-                'position: absolute;' +
-                'top: 0;' +
-                'left: 0;' +
-                'width: 100%;' +
-                'height: 100%;' +
-                'pointer-events: auto;' +
-                'z-index: 10;' +
-            '}';
+		style.textContent =
+			".particles-canvas {" +
+			"position: absolute;" +
+			"top: 0;" +
+			"left: 0;" +
+			"width: 100%;" +
+			"height: 100%;" +
+			"pointer-events: auto;" +
+			"z-index: 10;" +
+			"}";
 		document.head.appendChild(style);
 
 		// Document level mouse/touch handlers for better responsiveness
@@ -124,17 +125,22 @@ export class ParticleSystem {
 					// Check if we're touching particles area, but don't block nav elements
 					if (this.isPointInCanvas(touch.clientX, touch.clientY)) {
 						// Get all elements at the touch position
-						const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
+						const elementsAtPoint = document.elementsFromPoint(
+							touch.clientX,
+							touch.clientY,
+						);
 						// If any element is part of the navigation or settings UI, don't interact with particles
-						const isUIElement = elementsAtPoint.some(el => {
-							return el.closest('nav') || 
-								el.closest('.particle-controls') || 
-								el.closest('button') ||
-								el.tagName === 'BUTTON' || 
-								el.tagName === 'A' ||
-								el.closest('.z-50'); // Common high z-index nav elements
+						const isUIElement = elementsAtPoint.some((el) => {
+							return (
+								el.closest("nav") ||
+								el.closest(".particle-controls") ||
+								el.closest("button") ||
+								el.tagName === "BUTTON" ||
+								el.tagName === "A" ||
+								el.closest(".z-50")
+							); // Common high z-index nav elements
 						});
-						
+
 						if (!isUIElement) {
 							this.isMouseDown = true;
 							this.mouseX = touch.clientX;
@@ -210,24 +216,47 @@ export class ParticleSystem {
 		const settings = this.settingsManager.getAllSettings();
 		const radius = settings.EXPLOSION_RADIUS;
 		const force = settings.EXPLOSION_FORCE;
-
-		// Apply force to particles within radius
-		for (const particle of this.particles) {
-			const dx = particle.x - this.mouseX;
-			const dy = particle.y - this.mouseY;
-			const distance = Math.sqrt(dx * dx + dy * dy);
-
-			if (distance < radius) {
-				// Force decreases with distance
-				const strength = force * (1 - distance / radius);
-
-				// Normalize direction vector
-				const dirX = dx / distance;
-				const dirY = dy / distance;
-
-				// Apply force in the outward direction (explosion)
-				particle.vx += dirX * strength;
-				particle.vy += dirY * strength;
+		const radiusSq = radius * radius;
+		
+		// Use a reasonable cell size for mouse check, potentially larger than interaction radius
+		const cellSize = Math.max(50, settings.INTERACTION_RADIUS > 0 ? settings.INTERACTION_RADIUS : 50);
+		
+		const mouseCellX = Math.floor(this.mouseX / cellSize);
+		const mouseCellY = Math.floor(this.mouseY / cellSize);
+		// Adjust check radius based on cellSize
+		const checkRadiusCells = Math.ceil(radius / cellSize);
+		
+		// Track particles we've already checked
+		const checkedParticles = new Set();
+		
+		for (let nx = mouseCellX - checkRadiusCells; nx <= mouseCellX + checkRadiusCells; nx++) {
+			for (let ny = mouseCellY - checkRadiusCells; ny <= mouseCellY + checkRadiusCells; ny++) {
+				// Map check cell coords to main grid coords
+				const cellId = nx + ',' + ny;
+				const indices = this.grid[cellId];
+				
+				if (!indices) continue;
+				
+				for (const i of indices) {
+					if (checkedParticles.has(i)) continue;
+					
+					const particle = this.particles[i];
+					const dx = particle.x - this.mouseX;
+					const dy = particle.y - this.mouseY;
+					const distSq = dx * dx + dy * dy;
+					
+					if (distSq < radiusSq && distSq > 1e-6) {
+						const distance = Math.sqrt(distSq);
+						const strength = force * (1 - distance / radius);
+						const dirX = dx / distance;
+						const dirY = dy / distance;
+						
+						particle.vx += dirX * strength;
+						particle.vy += dirY * strength;
+					}
+					
+					checkedParticles.add(i);
+				}
 			}
 		}
 	}
@@ -235,25 +264,26 @@ export class ParticleSystem {
 	updateGrid() {
 		// Clear grid
 		this.grid = {};
-		
-		// Get current cell size from settings
+
+		// Get current cell size from settings with safety fallback
 		const settings = this.settingsManager.getAllSettings();
-		const cellSize = settings.INTERACTION_RADIUS;
-		
+		const cellSize =
+			settings.INTERACTION_RADIUS > 0 ? settings.INTERACTION_RADIUS : 50;
+
 		// Place particles in grid cells
 		for (let i = 0; i < this.particles.length; i++) {
 			const p = this.particles[i];
 			const cellX = Math.floor(p.x / cellSize);
 			const cellY = Math.floor(p.y / cellSize);
-			const cellId = `${cellX},${cellY}`;
-			
+			const cellId = cellX + ',' + cellY;
+
 			if (!this.grid[cellId]) {
 				this.grid[cellId] = [];
 			}
-			
+
 			this.grid[cellId].push(i);
-			
-			// Store the cell ID on the particle for quick removal
+
+			// Store the cell ID on the particle for quick reference
 			p.cellId = cellId;
 		}
 	}
@@ -263,69 +293,80 @@ export class ParticleSystem {
 		const interactionRadius = settings.INTERACTION_RADIUS;
 		const attract = settings.ATTRACT;
 		const smoothingFactor = settings.SMOOTHING_FACTOR || 0.3;
-		
-		if (Math.abs(attract) < 1e-6) return; // Skip if no attraction
-		
+
+		// Early exit if no attraction/repulsion or radius is invalid
+		if (Math.abs(attract) < 1e-6 || interactionRadius <= 0) return;
+
+		const interactionRadiusSq = interactionRadius * interactionRadius;
+		// Pre-calculate force scaling factor including deltaTime
+		const forceScale = attract * this.deltaTime;
+
 		// Use grid to find nearby particles efficiently
 		for (const cellId in this.grid) {
 			const indices = this.grid[cellId];
 			const cellParts = cellId.split(",");
 			const cellX = Number.parseInt(cellParts[0]);
 			const cellY = Number.parseInt(cellParts[1]);
-			
+
 			// Check own cell and neighboring cells
 			for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
 				for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
-					const neighborId = `${nx},${ny}`;
+					const neighborId = nx + ',' + ny;
 					const neighborIndices = this.grid[neighborId];
-					
+
 					if (!neighborIndices) continue;
-					
+
 					// Apply attraction between particles
 					for (const i of indices) {
 						const p1 = this.particles[i];
-						
+
 						for (const j of neighborIndices) {
-							// Don't attract to self
-							if (i === j) continue;
-							
+							// Critical optimization: Only process unique pairs with i < j
+							if (i >= j) continue;
+
 							const p2 = this.particles[j];
-							
+
 							// Check distance
 							const dx = p2.x - p1.x;
 							const dy = p2.y - p1.y;
 							const distSq = dx * dx + dy * dy;
-							
-							// Skip if particles are too far apart
-							if (distSq > interactionRadius * interactionRadius) continue;
-							
-							// Skip near-zero distances to avoid division by zero
-							if (distSq < 1e-6) continue;
-							
+
+							// Skip if particles are too far apart or too close
+							if (distSq >= interactionRadiusSq || distSq < 1e-6) continue;
+
 							const distance = Math.sqrt(distSq);
-							
+
 							// Apply smoothing to avoid extreme forces at very small distances
-							// This is crucial for stable repulsion
-							const smoothedDistance = Math.max(distance, smoothingFactor * interactionRadius);
-							
-							// Calculate force using inverse square law
-							const forceMagnitude = attract * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
-							
-							// Calculate force components
-							const forceX = forceMagnitude * dx / smoothedDistance;
-							const forceY = forceMagnitude * dy / smoothedDistance;
-							
+							const smoothedDistance = Math.max(
+								distance,
+								smoothingFactor * interactionRadius,
+							);
+							if (smoothedDistance < 1e-6) continue;
+
+							// Calculate force using inverse square law, with pre-calculated scale
+							const forceMagnitude =
+								(forceScale * (p1.mass * p2.mass)) /
+								(smoothedDistance * smoothedDistance);
+
+							// Efficiently combine magnitude and normalization
+							const G = forceMagnitude / distance;
+							const forceX = G * dx;
+							const forceY = G * dy;
+
 							// Skip if NaN (can happen with extreme values)
 							if (Number.isNaN(forceX) || Number.isNaN(forceY)) continue;
-							
-							// Apply forces (divided by mass for acceleration)
-							const dt = 1 / 60; // Assume 60fps for force calculation
-							p1.vx += forceX / p1.mass * dt;
-							p1.vy += forceY / p1.mass * dt;
-							
-							// Equal and opposite force on the other particle
-							p2.vx -= forceX / p2.mass * dt;
-							p2.vy -= forceY / p2.mass * dt;
+
+							// Apply accelerations (Force / mass)
+							const accX1 = forceX / p1.mass;
+							const accY1 = forceY / p1.mass;
+							const accX2 = -forceX / p2.mass;
+							const accY2 = -forceY / p2.mass;
+
+							// Update velocities for both particles
+							p1.vx += accX1;
+							p1.vy += accY1;
+							p2.vx += accX2;
+							p2.vy += accY2;
 						}
 					}
 				}
@@ -334,6 +375,9 @@ export class ParticleSystem {
 	}
 
 	updateParticles(deltaTime) {
+		// Store the deltaTime for use in physics calculations
+		this.deltaTime = deltaTime / 1000.0; // Convert to seconds
+		
 		// UpdateGrid for spatial partitioning
 		this.updateGrid();
 		
@@ -343,101 +387,145 @@ export class ParticleSystem {
 		// Apply mouse force
 		this.applyMouseForce();
 		
-		// Update each particle
+		// Update each particle with direct settings reference
+		const settings = this.settingsManager.getAllSettings();
 		for (const particle of this.particles) {
-			particle.update(deltaTime, this.canvas.width, this.canvas.height);
+			particle.update(this.deltaTime, this.canvas.width, this.canvas.height, settings);
 		}
 	}
 
 	drawConnections() {
 		const settings = this.settingsManager.getAllSettings();
-		if (settings.CONNECTION_OPACITY <= 0) return; // Skip if opacity is zero
-		
-		const interactionRadius = settings.INTERACTION_RADIUS;
-		const connectionColor = settings.CONNECTION_COLOR;
 		const connectionOpacity = settings.CONNECTION_OPACITY;
-		
+
+		// Early exit if no connections needed
+		if (connectionOpacity <= 0.001 || settings.INTERACTION_RADIUS <= 0) return;
+
+		const interactionRadius = settings.INTERACTION_RADIUS;
+		const interactionRadiusSq = interactionRadius * interactionRadius;
+		const connectionColor = settings.CONNECTION_COLOR;
+		const connectionWidth = settings.CONNECTION_WIDTH || 1;
+
 		this.ctx.strokeStyle = connectionColor;
-		this.ctx.lineWidth = settings.CONNECTION_WIDTH || 1;
-		
+		this.ctx.lineWidth = connectionWidth;
+
+		// Store lines by opacity to batch drawing
+		const linesByOpacity = {};
+
 		// Use grid to find nearby particles efficiently
 		for (const cellId in this.grid) {
 			const indices = this.grid[cellId];
 			const cellParts = cellId.split(",");
 			const cellX = Number.parseInt(cellParts[0]);
 			const cellY = Number.parseInt(cellParts[1]);
-			
+
 			// Check own cell and neighboring cells
 			for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
 				for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
-					const neighborId = `${nx},${ny}`;
+					const neighborId = nx + ',' + ny;
 					const neighborIndices = this.grid[neighborId];
-					
+
 					if (!neighborIndices) continue;
-					
+
 					// Connect particles within this cell and neighboring cells
 					for (const i of indices) {
 						const p1 = this.particles[i];
-						
+
 						for (const j of neighborIndices) {
-							// Don't connect to self
-							if (i === j) continue;
-							
+							// Only process unique pairs with i < j
+							if (i >= j) continue;
+
 							const p2 = this.particles[j];
-							
+
 							// Check distance
 							const dx = p2.x - p1.x;
 							const dy = p2.y - p1.y;
-							const distance = Math.sqrt(dx * dx + dy * dy);
-							
-							if (distance <= interactionRadius) {
-								// Calculate opacity based on distance
-								const opacity = connectionOpacity * (1 - distance / interactionRadius);
-								this.ctx.globalAlpha = opacity;
-								
-								// Draw connection
-								this.ctx.beginPath();
-								this.ctx.moveTo(p1.x, p1.y);
-								this.ctx.lineTo(p2.x, p2.y);
-								this.ctx.stroke();
+							const distSq = dx * dx + dy * dy;
+
+							if (distSq < interactionRadiusSq) {
+								const distance = Math.sqrt(distSq);
+								// Calculate opacity before deciding to draw
+								const opacity =
+									connectionOpacity * (1 - distance / interactionRadius);
+
+								if (opacity > 0.001) {
+									// Opacity threshold
+									// Quantize opacity for batching (e.g., nearest 0.05)
+									const opacityKey = Math.round(opacity * 20) / 20;
+									if (!linesByOpacity[opacityKey]) {
+										linesByOpacity[opacityKey] = [];
+									}
+									linesByOpacity[opacityKey].push([p1.x, p1.y, p2.x, p2.y]);
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-		
+
+		// Batch draw calls by opacity
+		for (const opacityKey in linesByOpacity) {
+			this.ctx.globalAlpha = Number.parseFloat(opacityKey);
+			this.ctx.beginPath();
+
+			for (const line of linesByOpacity[opacityKey]) {
+				this.ctx.moveTo(line[0], line[1]);
+				this.ctx.lineTo(line[2], line[3]);
+			}
+
+			this.ctx.stroke();
+		}
+
 		// Reset alpha
 		this.ctx.globalAlpha = 1;
 	}
 
-	// Store mouse interaction effects and their lifetimes
-	mouseEffects = [];
-
 	animate(timestamp = 0) {
+		if (!this.canvas) { // Safety check if canvas removed
+			this.stop();
+			return;
+		}
+		
 		// Calculate time delta for smooth animation
-		const deltaTime = timestamp - this.lastTimestamp;
+		const elapsed = timestamp - (this.lastTimestamp || timestamp); // Handle first frame
+		this.lastTimestamp = timestamp;
 
-		// Throttle to target FPS
-		if (deltaTime >= this.fpsInterval) {
-			this.lastTimestamp = timestamp - (deltaTime % this.fpsInterval);
+		// Time in seconds, capped to avoid spiral of death
+		const deltaTime = Math.min(elapsed, 100);
 
-			// Clear canvas
-			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		// Clear canvas
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-			// Update all particles
-			this.updateParticles(deltaTime);
+		// Update all particles
+		this.updateParticles(deltaTime);
 
-			// Draw connections between particles
-			this.drawConnections();
+		// Draw connections between particles
+		this.drawConnections();
 
-			// Handle mouse effects
-			this.updateAndDrawMouseEffects(timestamp);
+		// Handle mouse effects
+		this.updateAndDrawMouseEffects(timestamp);
 
-			// Draw all particles
-			for (const particle of this.particles) {
-				particle.draw(this.ctx);
+		// Batch particle drawing by color for efficiency
+		const particlesByColor = new Map();
+		for (const particle of this.particles) {
+			if (!particlesByColor.has(particle.color)) {
+				particlesByColor.set(particle.color, []);
 			}
+			particlesByColor.get(particle.color).push(particle);
+		}
+
+		// Draw particles by color batches
+		for (const [color, particles] of particlesByColor.entries()) {
+			this.ctx.fillStyle = color;
+			this.ctx.beginPath();
+			
+			for (const particle of particles) {
+				this.ctx.moveTo(particle.x + particle.radius, particle.y);
+				this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+			}
+			
+			this.ctx.fill();
 		}
 
 		// Continue animation loop
@@ -447,15 +535,16 @@ export class ParticleSystem {
 	updateAndDrawMouseEffects(timestamp) {
 		const settings = this.settingsManager.getAllSettings();
 		
-		// If mouse is down, create a new effect
-		if (this.isMouseDown) {
+		// Limit number of effects to avoid slowdown
+		const MAX_EFFECTS = 30;
+		if (this.isMouseDown && this.mouseEffects.length < MAX_EFFECTS) {
 			// Add a new effect at current mouse position
 			this.mouseEffects.push({
 				x: this.mouseX,
 				y: this.mouseY,
 				radius: settings.EXPLOSION_RADIUS,
 				startTime: timestamp,
-				duration: 800, // Effect lasts for 0.8 seconds (shorter duration)
+				duration: 600, // Shorter duration
 			});
 		}
 		
@@ -474,37 +563,25 @@ export class ParticleSystem {
 			
 			// Calculate effect progress (0 to 1)
 			const progress = age / effect.duration;
+			const easeOutQuad = 1 - (1 - progress) * (1 - progress); // Apply easing
 			
-			// Ethereal ripple effect - simplified and more subtle
-			const rippleOpacity = Math.max(0, 0.2 * (1 - progress));
-			const rippleRadius = Math.max(5, effect.radius * (0.1 + progress * 0.6)); // Ensure radius is positive
+			// More efficient ripple effect - simplified and more subtle
+			const currentOpacity = Math.max(0, 0.15 * (1 - progress));
+			const currentRadius = Math.max(1, effect.radius * easeOutQuad * 0.8);
 			
-			// Draw rippling waves with gradient
+			// Draw a single gradient ripple
 			const gradient = this.ctx.createRadialGradient(
 				effect.x, effect.y, 0,
-				effect.x, effect.y, rippleRadius
+				effect.x, effect.y, currentRadius
 			);
 			
-			// More subtle ethereal gradient
-			gradient.addColorStop(0, `rgba(140, 240, 255, ${rippleOpacity * 0.05})`);
-			gradient.addColorStop(0.6, `rgba(100, 210, 255, ${rippleOpacity * 0.03})`);
-			gradient.addColorStop(1, `rgba(70, 130, 220, 0)`);
+			gradient.addColorStop(0, 'rgba(140, 240, 255, ' + currentOpacity + ')');
+			gradient.addColorStop(1, 'rgba(70, 130, 220, 0)');
 			
-			this.ctx.globalAlpha = 1;
 			this.ctx.fillStyle = gradient;
-			
-			// Draw main ripple
 			this.ctx.beginPath();
-			this.ctx.arc(effect.x, effect.y, rippleRadius, 0, Math.PI * 2);
+			this.ctx.arc(effect.x, effect.y, currentRadius, 0, Math.PI * 2);
 			this.ctx.fill();
-			
-			// Draw a subtle ring
-			const ringRadius = Math.max(2, rippleRadius * 0.8); // Ensure radius is positive
-			this.ctx.beginPath();
-			this.ctx.arc(effect.x, effect.y, ringRadius, 0, Math.PI * 2);
-			this.ctx.lineWidth = 0.5;
-			this.ctx.strokeStyle = 'rgba(180, 240, 255, ' + (rippleOpacity * 0.3) + ')';
-			this.ctx.stroke();
 		}
 		
 		this.ctx.restore();

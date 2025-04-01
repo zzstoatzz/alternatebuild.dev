@@ -1,14 +1,14 @@
 // Configuration constants for the particle system
 
 export const RANGES = {
-	PARTICLE_COUNT: { min: 50, max: 2000, step: 10, default: 500 },
+	PARTICLE_COUNT: { min: 50, max: 2000, step: 10, default: 800 },
 	PARTICLE_SIZE: { min: 1, max: 6, step: 0.5, default: 3 },
 	DRAG: { min: 0, max: 0.2, step: 0.005, default: 0.05 },
 	EXPLOSION_RADIUS: { min: 50, max: 500, step: 10, default: 200 },
 	EXPLOSION_FORCE: { min: 0, max: 100, step: 1, default: 15.0 },
 	ATTRACT: { min: -1000, max: 1000, step: 1, default: -100 },
-	GRAVITY: { min: -0.5, max: 0.5, step: 0.01, default: 0 },
-	INTERACTION_RADIUS: { min: 10, max: 300, step: 5, default: 100 },
+	GRAVITY: { min: -100, max: 100, step: 0.5, default: 0 },
+	INTERACTION_RADIUS: { min: 10, max: 300, step: 5, default: 80 },
 	SMOOTHING_FACTOR: { min: 0.01, max: 0.3, step: 0.01, default: 0.13 },
 	CONNECTION_OPACITY: { min: 0, max: 0.5, step: 0.01, default: 0.05 },
 	CONNECTION_COLOR: { default: "#64ffda" },

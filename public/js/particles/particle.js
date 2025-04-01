@@ -28,49 +28,44 @@ export class Particle {
         }
     }
 
-    update(deltaTime, canvasWidth, canvasHeight) {
-        // Get settings from particle system if available
-        const gravity = window.particleSystem ? 
-            window.particleSystem.settingsManager.getSetting('GRAVITY') || 0 : 
-            0;
+    update(deltaTime, canvasWidth, canvasHeight, settings) {
+        // Use passed settings directly rather than global lookup
+        const gravity = settings ? settings.GRAVITY || 0 : 0;
+        const drag = settings ? settings.DRAG || 0.01 : 0.01;
         
-        const drag = window.particleSystem ? 
-            window.particleSystem.settingsManager.getSetting('DRAG') || 0.01 : 
-            0.01;
-        
-        // Apply gravity only if non-zero
+        // Apply gravity
         if (gravity !== 0) {
-            this.vy += gravity * deltaTime / 16; // Normalized for ~60fps
+            this.vy += gravity * deltaTime;
         }
         
-        // Apply drag - slows down particles based on their velocity
-        // Formula: F_drag = -coefficient * v
+        // Calculate efficient drag
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        if (speed > 0) {
-            const dragFactor = 1 - drag; // Convert drag to a multiplier (1 = no drag, 0 = full stop)
-            this.vx *= dragFactor;
-            this.vy *= dragFactor;
+        if (speed > 1e-6) {
+            const dragFactor = 1.0 - (drag * deltaTime * 60); 
+            this.vx *= Math.max(0, dragFactor);
+            this.vy *= Math.max(0, dragFactor);
         }
         
-        // Update position
-        this.x += this.vx;
-        this.y += this.vy;
+        // Scale velocity by deltaTime for consistent physics
+        this.x += this.vx * deltaTime * 60;
+        this.y += this.vy * deltaTime * 60;
         
-        // Boundary collision
+        // Boundary collision with energy loss
+        const restitution = 0.6;
         if (this.x - this.radius < 0) {
             this.x = this.radius;
-            this.vx *= -0.8; // Bounce with energy loss
+            this.vx *= -restitution;
         } else if (this.x + this.radius > canvasWidth) {
             this.x = canvasWidth - this.radius;
-            this.vx *= -0.8;
+            this.vx *= -restitution;
         }
         
         if (this.y - this.radius < 0) {
             this.y = this.radius;
-            this.vy *= -0.8;
+            this.vy *= -restitution;
         } else if (this.y + this.radius > canvasHeight) {
             this.y = canvasHeight - this.radius;
-            this.vy *= -0.8;
+            this.vy *= -restitution;
         }
     }
     

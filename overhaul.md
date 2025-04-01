@@ -1,1028 +1,623 @@
-Okay, let's break this down. This involves a significant structural change to the site's navigation and layout, plus a refactoring and enhancement of the particle simulation JavaScript.
+Okay, focusing on the specific bottlenecks: high particle counts, large interaction radii, and dense clusters. The goal is to optimize the core simulation loop (`applyAttraction`, `drawConnections`, `particle.update`) and potentially the grid handling without breaking the existing mechanics or introducing new slowdowns.
 
-Here's a plan and the corresponding code changes:
+**Refined Optimization Strategies:**
 
-**Phase 1: Structural Changes (Zen as Homepage, Content Drawer)**
+1.  **Optimize Pair Interactions (Attraction/Connections):** This directly addresses high radius and dense clusters, as these increase the number of pairs needing checks.
+    *   **Robust Pair Uniqueness:** Ensure the `i < j` check is foolproof within the neighbor loops to avoid checking the same pair twice.
+    *   **Reduce Work Inside Inner Loop:** Minimize calculations inside the innermost loop (`for (const j of neighborIndices)`). Pre-calculate values outside where possible.
+    *   **Early Exit:** If attraction/connection force/opacity is negligible, exit calculations early.
 
-1.  **Move Zen Page Content to Homepage:**
-    *   Replace the content of `src/app/page.tsx` with the content of `src/app/zen/page.tsx`.
-    *   Delete `src/app/zen/page.tsx`.
+2.  **Optimize Particle Updates:** This addresses high particle counts.
+    *   **Direct Settings Access:** Pass settings directly to `particle.update` instead of relying on global `window.particleSystem` lookups.
+    *   **Simplify Drag:** Ensure the drag calculation is efficient (the current linear drag is good).
 
-2.  **Create a New Home/Archive Page:**
-    *   Create `src/app/home/page.tsx`.
-    *   Move the *original* content of `src/app/page.tsx` (duck image, post list) into `src/app/home/page.tsx`.
+3.  **Optimize Drawing:**
+    *   **Connection Batching:** Further refine `drawConnections` to minimize context state changes (`globalAlpha`).
+    *   **Particle Drawing:** Ensure particle drawing is straightforward.
 
-3.  **Update Navigation:**
-    *   Modify `src/app/components/Nav.tsx`:
-        *   Change the "Home" link to point to `/home`.
-        *   Remove the "Zen" link.
+**Implementation Changes:**
 
-4.  **Adapt Conditional Layout:**
-    *   Modify `src/app/components/ConditionalLayout.tsx` to always show the "Zen" layout (no Nav, Footer, etc.) when `pathname === '/'`.
-    *   For other paths (`/home`, `/about`, `/contact`, `/posts/*`), show the standard layout with Nav, Footer, etc.
-
-5.  **Implement Content Drawer (Simple Example):**
-    *   We'll add a simple button on the new homepage (`/`) that toggles a drawer containing the navigation links.
-
-**Phase 2: JavaScript Refactoring (`particles.js`)**
-
-1.  **Modularize:** Break `particles.js` into smaller, focused files.
-2.  **Encapsulate State:** Move global variables into classes or modules.
-3.  **URL Parameter Integration:** Add logic to read settings from URL parameters on load and write them back when changed.
-
-**Let's implement Phase 1 first:**
-
-**1. Update `src/app/page.tsx` (New Homepage - formerly Zen):**
-
-```tsx
-// src/app/page.tsx
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import ContentDrawer from './components/ContentDrawer'; // We'll create this
-
-export default function Home() { // Renamed from Zen
-    const [showModal, setShowModal] = useState(false);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-    useEffect(() => {
-        // Keep the modal logic if desired
-        if (!localStorage.getItem('zenInstructionsSeen')) {
-            setShowModal(true);
-        }
-    }, []);
-
-    const handleDismiss = () => {
-        setShowModal(false);
-        localStorage.setItem('zenInstructionsSeen', 'true');
-    };
-
-    return (
-        <main className="h-screen relative">
-            {/* Button to open the content drawer */}
-            <button
-                onClick={() => setIsDrawerOpen(true)}
-                className="fixed top-2 left-2 z-50 bg-gray-800 bg-opacity-60 text-cyan-300/70 p-2 rounded-lg 
-                           hover:bg-opacity-80 hover:text-cyan-300 transition-all scale-90
-                           focus:outline-none focus:ring-1 focus:ring-cyan-300/30 text-xs"
-                aria-label="Open Navigation"
-            >
-                ☰ Menu
-            </button>
-
-            {/* The modal from the original Zen page */}
-            {showModal && (
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-80 p-6 rounded-lg shadow-lg text-center max-w-md z-50">
-                    <p className="mb-4 text-gray-800">psst! click the mouse to push the particles around. see <b>particle settings</b> in the top right to edit physics</p>
-                    <button onClick={handleDismiss} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                        Got it!
-                    </button>
-                </div>
-            )}
-
-            {/* Content Drawer Component */}
-            <ContentDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
-        </main>
-    );
-}
-```
-
-**2. Create `src/app/home/page.tsx` (Old Homepage Content):**
-
-```tsx
-// src/app/home/page.tsx
-import Link from 'next/link';
-import Image from 'next/image';
-import { getPosts } from '@/utils/posts';
-
-export default function HomePage() { // Renamed component
-    const posts = getPosts();
-
-    return (
-        <main className="main-content">
-            <div className="flex justify-center mb-8">
-                <Image
-                    src="https://random-d.uk/api/randomimg"
-                    alt="Random Duck"
-                    width={300}
-                    height={300}
-                    className="rounded-lg"
-                />
-            </div>
-            <h1 className="text-4xl font-bold mb-6 text-center text-cyan-300">Recent Posts</h1>
-            <section className="space-y-6">
-                {posts.map((post) => (
-                    <Link
-                        key={post.slug}
-                        href={`/posts/${post.slug}`}
-                        className="block post-card group"
-                    >
-                        <h3 className="post-title">{post.title}</h3>
-                        <p className="post-date">{post.date}</p>
-                        <span className="read-more">
-                            Read more
-                        </span>
-                    </Link>
-                ))}
-            </section>
-        </main>
-    );
-}
-```
-
-**3. Update `src/app/components/Nav.tsx`:**
-
-```tsx
-// src/app/components/Nav.tsx
-'use client'
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation'; // Removed useRouter as handleNavClick logic changed
-
-export default function Nav() {
-    const pathname = usePathname();
-
-    // Simplified Nav - logic for Zen mode transition removed as '/' is now Zen
-    const navItems = [
-        { href: '/home', label: 'Home' }, // Changed from '/'
-        { href: '/about', label: 'About' },
-        { href: '/contact', label: 'Contact' },
-        // Removed { href: '/zen', label: 'Zen' }
-    ];
-
-    return (
-        <nav className="nav w-full"> {/* Added w-full for potential drawer styling */}
-            <div className="max-w-6xl mx-auto px-4">
-                <ul className="flex flex-col sm:flex-row sm:justify-center space-y-4 sm:space-y-0 sm:space-x-10 py-4 sm:h-16 sm:items-center">
-                    {/* Adjusted flex direction and spacing for drawer */}
-                    {navItems.map(({ href, label }) => (
-                        <li key={href}>
-                            <Link
-                                href={href}
-                                className={`nav-link block sm:inline-block text-lg sm:text-base ${pathname === href ? 'current font-semibold' : 'font-light'}`}
-                            >
-                                {label}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </nav>
-    );
-}
-```
-
-**4. Update `src/app/components/ConditionalLayout.tsx`:**
-
-```tsx
-// src/app/components/ConditionalLayout.tsx
-'use client'
-
-import { usePathname } from 'next/navigation';
-import Nav from './Nav';
-import Footer from './Footer';
-import dynamic from 'next/dynamic';
-// Removed useEffect as Zen handling moved to src/app/page.tsx
-
-const GithubInfo = dynamic(() => import('./GithubInfo'), { ssr: false });
-
-export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
-    const isZenMode = pathname === '/'; // Check if it's the root path
-
-    // Removed the useEffect hook related to handleZenModeTransition
-
-    if (isZenMode) {
-        // For the root path (Zen mode), render only children.
-        // The background, search, soundcloud are handled in layout.tsx
-        // The drawer trigger is added directly in src/app/page.tsx
-        return <>{children}</>;
-    } else {
-        // For all other pages, render the standard layout
-        return (
-            <>
-                <Nav />
-                <div className="github-info"><GithubInfo /></div>
-                <main className="flex-grow container mx-auto px-4 py-8">
-                    {children}
-                </main>
-                <Footer />
-            </>
-        );
-    }
-}
-```
-
-**5. Create `src/app/components/ContentDrawer.tsx`:**
-
-```tsx
-// src/app/components/ContentDrawer.tsx
-'use client';
-
-import React from 'react';
-import Nav from './Nav'; // Reuse the Nav component
-
-interface ContentDrawerProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-export default function ContentDrawer({ isOpen, onClose }: ContentDrawerProps) {
-    if (!isOpen) return null;
-
-    return (
-        <>
-            {/* Backdrop */}
-            <div
-                className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
-                onClick={onClose}
-            />
-
-            {/* Drawer Panel */}
-            <div
-                className={`fixed top-0 left-0 h-full w-64 sm:w-80 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
-                    isOpen ? 'translate-x-0' : '-translate-x-full'
-                }`}
-            >
-                <div className="p-4 h-full flex flex-col">
-                    <button
-                        onClick={onClose}
-                        className="self-end text-gray-400 hover:text-white mb-4 text-2xl"
-                        aria-label="Close Navigation"
-                    >
-                        &times;
-                    </button>
-                    <div className="flex-grow">
-                        {/* Embed the Nav component here */}
-                        <Nav />
-                    </div>
-                    {/* You could add other links or info here if needed */}
-                     <p className="text-xs text-gray-500 mt-4 text-center">
-                        Content Menu
-                    </p>
-                </div>
-            </div>
-        </>
-    );
-}
-```
-
-**6. Delete `src/app/zen/page.tsx`**
-
-This completes Phase 1. Now, the homepage `/` is the Zen mode, and the original homepage content is at `/home`. Other pages (`/about`, `/contact`, `/posts/*`) function as before with the standard layout. A menu button on `/` opens a drawer with navigation.
-
----
-
-**Phase 2: JavaScript Refactoring and URL Parameters**
-
-This is more involved and requires careful restructuring of `public/js/particles.js`. Here’s a conceptual outline and snippets. *A full refactor is extensive, so this provides the structure and key parts.*
-
-**Goal:**
-*   Separate concerns (core logic, UI, settings).
-*   Manage state cleanly.
-*   Read/write settings to URL.
-
-**Proposed File Structure (within `public/js/` or a subfolder):**
-
-*   `particles/`
-    *   `main.js` (Entry point, initializes everything)
-    *   `config.js` (All tweakable constants and ranges)
-    *   `particle.js` (Particle class definition)
-    *   `particleSystem.js` (Core simulation logic, particle management)
-    *   `settingsManager.js` (Handles URL params, local storage maybe)
-    *   `uiController.js` (Handles DOM elements, sliders, buttons, events)
-    *   `utils.js` (Helper functions like UnionFind, color conversion)
-
-**Example Snippets:**
-
-**`particles/config.js`**
-
-```javascript
-// particles/config.js
-export const RANGES = {
-    PARTICLE_COUNT: { min: 13, max: 2000, step: 10, default: 800 },
-    EXPLOSION_RADIUS: { min: 50, max: 500, step: 10, default: 200 },
-    EXPLOSION_FORCE: { min: 0, max: 100, step: 1, default: 25.0 },
-    ATTRACT_CONSTANT: { min: -2000, max: 2000, step: 10, default: -900 },
-    GRAVITY: { min: -300, max: 300, step: 1, default: 0 },
-    INTERACTION_RADIUS: { min: 10, max: 200, step: 1, default: 25 },
-    DRAG_CONSTANT: { min: 0, max: 1, step: 0.05, default: 0.13 },
-    ELASTICITY_CONSTANT: { min: 0, max: 1, step: 0.05, default: 0.3 },
-    INITIAL_VELOCITY: { min: 0, max: 100, step: 1, default: 0 },
-    CONNECTION_OPACITY: { min: 0, max: 0.5, step: 0.01, default: 0.300 },
-    CONNECTION_COLOR: { default: '#4923d1' },
-    // ... add all other settings with their defaults and ranges
-};
-
-// Generate default settings object
-export const DEFAULT_SETTINGS = Object.fromEntries(
-    Object.entries(RANGES).map(([key, value]) => [key, value.default])
-);
-
-export const MIN_PARTICLE_RADIUS = 1;
-export const MAX_PARTICLE_RADIUS = 4;
-
-export const PALETTES = { /* ... palettes definition ... */ };
-export let currentPalette = 'default'; // Or manage this via settingsManager too
-```
-
-**`particles/settingsManager.js`**
-
-```javascript
-// particles/settingsManager.js
-import { DEFAULT_SETTINGS, RANGES } from './config.js';
-
-// Simple debounce function
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-export class SettingsManager {
-    constructor(onChangeCallback) {
-        this.settings = { ...DEFAULT_SETTINGS };
-        this.onChange = onChangeCallback; // Callback to notify ParticleSystem/UI
-        this.loadFromURL();
-        this._updateURLDebounced = debounce(this._updateURL, 300);
-    }
-
-    loadFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        let changed = false;
-        for (const key in DEFAULT_SETTINGS) {
-            if (params.has(key)) {
-                const value = params.get(key);
-                const range = RANGES[key];
-                let parsedValue = value;
-
-                // Basic type conversion and validation
-                if (range && (range.step !== undefined || range.min !== undefined)) { // Assume number if range exists
-                    parsedValue = parseFloat(value);
-                    if (isNaN(parsedValue)) continue;
-                    if (range.min !== undefined) parsedValue = Math.max(range.min, parsedValue);
-                    if (range.max !== undefined) parsedValue = Math.min(range.max, parsedValue);
-                } else if (typeof DEFAULT_SETTINGS[key] === 'number') {
-                    parsedValue = parseFloat(value);
-                     if (isNaN(parsedValue)) continue;
-                } // Add boolean, etc. checks if needed
-
-                if (this.settings[key] !== parsedValue) {
-                    this.settings[key] = parsedValue;
-                    changed = true;
-                }
-            }
-        }
-        if (changed && this.onChange) {
-            this.onChange(this.settings); // Notify listeners of initial settings
-        }
-         console.log("Settings loaded from URL:", this.settings);
-    }
-
-    getSetting(key) {
-        return this.settings[key];
-    }
-
-    updateSetting(key, value) {
-        if (this.settings[key] !== value) {
-            // Optional: Add validation against RANGES here
-            this.settings[key] = value;
-            if (this.onChange) {
-                this.onChange(this.settings); // Notify listeners
-            }
-            this._updateURLDebounced(); // Update URL debounced
-        }
-    }
-
-    getAllSettings() {
-        return { ...this.settings };
-    }
-
-    _updateURL() {
-        const params = new URLSearchParams();
-        for (const key in this.settings) {
-            // Only add params that differ from default to keep URL clean
-            if (this.settings[key] !== DEFAULT_SETTINGS[key]) {
-                 // Ensure color value doesn't have '#' for URL safety if needed, though usually fine
-                 const value = typeof this.settings[key] === 'number'
-                     ? parseFloat(this.settings[key].toFixed(4)) // Round floats
-                     : this.settings[key];
-                params.set(key, value);
-            }
-        }
-        const newUrl = `${window.location.pathname}?${params.toString()}`;
-        // Use replaceState to avoid polluting history
-        window.history.replaceState({ path: newUrl }, '', newUrl);
-        console.log("URL Updated:", newUrl);
-    }
-}
-```
-
-**`particles/uiController.js`**
-
-```javascript
-// particles/uiController.js
-import { RANGES } from './config.js';
-
-export class UIController {
-    constructor(settingsManager, particleSystem) {
-        this.settingsManager = settingsManager;
-        this.particleSystem = particleSystem; // To call methods like createParticles, addCustomParticle
-        this.initControls();
-        this.bindEvents();
-        this.updateUI(settingsManager.getAllSettings()); // Initial UI state
-    }
-
-    initControls() {
-        // Inject PARTICLE_CONTROLS_TEMPLATE into the DOM
-        // Store references to sliders, buttons, value spans etc.
-        this.controls = {}; // e.g., this.controls.particleCountSlider = document.getElementById(...)
-        const container = document.createElement('div');
-        container.innerHTML = PARTICLE_CONTROLS_TEMPLATE; // Simplified, adapt as needed
-        document.body.appendChild(container.firstElementChild);
-
-        // Query all controls and store them
-        this.configToggleButton = document.getElementById('configToggle');
-        this.controlsContent = document.getElementById('controlsContent');
-
-        for (const key in RANGES) {
-            this.controls[`${key}Slider`] = document.getElementById(key);
-            this.controls[`${key}Value`] = document.getElementById(`${key}Value`);
-        }
-         this.controls.connectionColorInput = document.getElementById('connectionColor');
-         this.controls.connectionColorValue = document.getElementById('connectionColorValue');
-        // ... query other buttons, selects etc. ...
-         this.addParticleButton = document.getElementById('addParticle');
-         this.newParticleRadiusInput = document.getElementById('newParticleRadius');
-         this.newParticleRadiusValue = document.getElementById('newParticleRadiusValue');
-         this.newParticleColorInput = document.getElementById('newParticleColor');
-
-         // Ensure initial value displays for particle radius
-         if(this.newParticleRadiusInput && this.newParticleRadiusValue) {
-             this.newParticleRadiusValue.textContent = parseFloat(this.newParticleRadiusInput.value).toFixed(1);
-         }
-    }
-
-    bindEvents() {
-        // Toggle button
-        this.configToggleButton?.addEventListener('click', () => {
-             this.controlsContent.style.display = this.controlsContent.style.display === 'none' ? 'block' : 'none';
-        });
-
-        // Sliders and Color Input
-        for (const key in RANGES) {
-            const slider = this.controls[`${key}Slider`];
-            if (slider) {
-                slider.addEventListener('input', (e) => {
-                    const value = RANGES[key].step !== undefined || typeof RANGES[key].default === 'number'
-                        ? parseFloat(e.target.value)
-                        : e.target.value; // Handle potential string settings like color
-                    this.settingsManager.updateSetting(key.toUpperCase(), value); // Use uppercase keys consistent with original code
-                });
-            }
-        }
-
-         this.controls.connectionColorInput?.addEventListener('input', (e) => {
-            this.settingsManager.updateSetting('CONNECTION_COLOR', e.target.value);
-        });
-
-
-        // Add Particle button
-        this.addParticleButton?.addEventListener('click', () => {
-            const radius = parseFloat(this.newParticleRadiusInput.value);
-            const color = this.newParticleColorInput.value;
-            if(this.particleSystem) {
-                 this.particleSystem.addCustomParticle(radius, color);
-            }
-        });
-
-        // Update new particle radius display
-         this.newParticleRadiusInput?.addEventListener('input', (e) => {
-            if(this.newParticleRadiusValue) {
-                this.newParticleRadiusValue.textContent = parseFloat(e.target.value).toFixed(1);
-            }
-        });
-
-        // ... bind palette select, add color button, remove color etc. ...
-        // Make sure to call particleSystem.createParticles() when palette changes
-    }
-
-    // Call this when settings change (from SettingsManager callback)
-    updateUI(settings) {
-        for (const key in settings) {
-            const slider = this.controls[`${key}Slider`];
-            const valueSpan = this.controls[`${key}Value`];
-            const colorInput = this.controls.connectionColorInput; // Specific check for color
-
-            const settingValue = settings[key];
-
-            if(key === 'CONNECTION_COLOR' && colorInput) {
-                 colorInput.value = settingValue;
-                 if (this.controls.connectionColorValue) {
-                     this.controls.connectionColorValue.textContent = settingValue;
-                 }
-            } else if (slider) {
-                slider.value = settingValue;
-            }
-
-            if (valueSpan) {
-                // Format numbers nicely
-                valueSpan.textContent = typeof settingValue === 'number' ? settingValue.toFixed(3).replace(/\.?0+$/, '') : settingValue;
-            }
-        }
-         console.log("UI Updated with settings:", settings);
-    }
-}
-```
-
-**`particles/particleSystem.js`**
+**1. Refine `particleSystem.js` (Interaction Loops & Updates)**
 
 ```javascript
 // particles/particleSystem.js
 import { Particle } from './particle.js';
-// Import PALETTES, currentPalette, MIN/MAX_PARTICLE_RADIUS etc. from config.js
-import { PALETTES, MIN_PARTICLE_RADIUS, MAX_PARTICLE_RADIUS, DEFAULT_SETTINGS } from './config.js';
-import { detectClusters, applyClusterProperties } from './utils.js'; // Assuming UnionFind etc. moved here
+import { SettingsManager } from "./settingsManager.js";
+import { UIController } from "./uiController.js";
+import { PARTICLE_COLORS } from "./config.js"; // Import PARTICLE_COLORS
 
 export class ParticleSystem {
-    constructor(canvas, initialSettings) {
+    constructor(canvas) { // Removed gridSize, calculated from settings now
         this.canvas = canvas;
-        this.ctx = this.canvas.getContext('2d');
-        this.settings = { ...initialSettings }; // Store current settings
+        this.ctx = this.canvas.getContext("2d");
         this.particles = [];
-        this.mousePosition = { x: 0, y: 0 };
+        // gridSize is now derived from INTERACTION_RADIUS
+        this.grid = {};
+        this.mouseX = 0;
+        this.mouseY = 0;
         this.isMouseDown = false;
-        this.isZenMode = window.location.pathname === '/'; // Updated check
+        this.animationFrameId = null;
+        this.deltaTime = 0; // Initialize deltaTime
+        this.lastTimestamp = 0;
+        this.fpsLimit = 60; // Keep FPS limit if desired
+        this.fpsInterval = 1000 / this.fpsLimit;
 
+        // Make particle colors available (corrected global assignment)
+        this.PARTICLE_COLORS = PARTICLE_COLORS; // Assign to instance
+        window.particleSystem = this; // Still needed for global access (e.g., UI)
+
+        this.settingsManager = new SettingsManager((settings) => {
+            this.applySettings(settings);
+        });
+
+        this.uiController = new UIController((key, value) => {
+            this.settingsManager.updateSetting(key, value);
+        }, this.settingsManager.getAllSettings());
+
+        window.addEventListener("resize", () => this.resizeCanvas());
         this.resizeCanvas();
-        this.createParticles();
-        this.bindSystemEvents(); // Renamed from bindEvents to avoid clash with UI events
+        this.init();
+    }
 
+    // --- (init, resizeCanvas remain similar) ---
+    init() {
+        this.stop(); // Stop previous loop if restarting
+        this.particles = [];
+        const settings = this.settingsManager.getAllSettings();
+        const count = settings.PARTICLE_COUNT;
+        for (let i = 0; i < count; i++) {
+            const x = Math.random() * this.canvas.width;
+            const y = Math.random() * this.canvas.height;
+            // Pass settings to Particle constructor
+            this.particles.push(new Particle(x, y, settings)); 
+        }
+        this.bindSystemEvents();
+        this.resizeCanvas(); // Ensure size is correct before first frame
+        this.lastTimestamp = 0; // Reset timestamp for new animation loop
         this.animate();
     }
 
-    updateSettings(newSettings) {
-        const requiresRestart = newSettings.PARTICLE_COUNT !== this.settings.PARTICLE_COUNT ||
-                              newSettings.INITIAL_VELOCITY !== this.settings.INITIAL_VELOCITY // Add other settings that need particle recreation
-        this.settings = { ...newSettings };
-        if (requiresRestart) {
-             this.createParticles(); // Recreate if count/initial velocity changed
+    resizeCanvas() {
+        const parent = this.canvas.parentElement;
+        const newWidth = parent ? parent.clientWidth : window.innerWidth;
+        const newHeight = parent ? parent.clientHeight : window.innerHeight;
+
+        if (this.canvas.width !== newWidth || this.canvas.height !== newHeight) {
+             this.canvas.width = newWidth > 0 ? newWidth : 300; // Ensure positive dimensions
+             this.canvas.height = newHeight > 0 ? newHeight : 150;
+             console.log(`Canvas resized to ${this.canvas.width}x${this.canvas.height}`);
+        }
+    }
+    
+    // --- (bindSystemEvents, isPointInCanvas, handleMouseMove remain similar) ---
+     bindSystemEvents() {
+        // Ensure canvas pointer events
+        this.canvas.style.pointerEvents = "auto";
+
+        // Detach previous listeners before adding new ones
+        document.removeEventListener("mousemove", this.boundHandleMouseMove);
+        document.removeEventListener("mousedown", this.boundHandleMouseDown);
+        document.removeEventListener("mouseup", this.boundHandleMouseUp);
+        document.removeEventListener("touchstart", this.boundHandleTouchStart, { passive: false });
+        document.removeEventListener("touchmove", this.boundHandleTouchMove, { passive: false });
+        document.removeEventListener("touchend", this.boundHandleTouchEnd);
+        
+        // Bind methods to 'this' for correct context in event handlers
+        this.boundHandleMouseMove = this.handleMouseMove.bind(this);
+        this.boundHandleMouseDown = this.handleMouseDown.bind(this);
+        this.boundHandleMouseUp = this.handleMouseUp.bind(this);
+        this.boundHandleTouchStart = this.handleTouchStart.bind(this);
+        this.boundHandleTouchMove = this.handleTouchMove.bind(this);
+        this.boundHandleTouchEnd = this.handleTouchEnd.bind(this);
+
+        // Add new listeners
+        document.addEventListener("mousemove", this.boundHandleMouseMove);
+        document.addEventListener("mousedown", this.boundHandleMouseDown);
+        document.addEventListener("mouseup", this.boundHandleMouseUp);
+        document.addEventListener("touchstart", this.boundHandleTouchStart, { passive: false });
+        document.addEventListener("touchmove", this.boundHandleTouchMove, { passive: false });
+        document.addEventListener("touchend", this.boundHandleTouchEnd);
+    }
+
+    // Create separate handlers for binding
+    handleMouseDown(e) {
+        if (this.isPointInCanvas(e.clientX, e.clientY)) {
+            this.isMouseDown = true;
+            this.mouseX = e.clientX;
+            this.mouseY = e.clientY;
+        }
+    }
+    handleMouseUp() { this.isMouseDown = false; }
+    handleTouchStart(e) {
+         if (e.touches.length > 0) {
+            const touch = e.touches[0];
+            if (this.isPointInCanvas(touch.clientX, touch.clientY)) {
+                const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
+                const isUIElement = elementsAtPoint.some(el => el.closest('.particle-controls') || el.closest('#settings-icon') || el.closest('button') || el.tagName === 'BUTTON' || el.closest('a') || el.tagName === 'A');
+                if (!isUIElement) {
+                    this.isMouseDown = true;
+                    this.mouseX = touch.clientX;
+                    this.mouseY = touch.clientY;
+                    e.preventDefault(); 
+                }
+            }
+        }
+    }
+     handleTouchMove(e) {
+         if (e.touches.length > 0 && this.isMouseDown) {
+            const touch = e.touches[0];
+            // Use handleMouseMove logic, but prevent default only if mouse is down
+            this.handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+            e.preventDefault(); 
+        }
+    }
+    handleTouchEnd() { this.isMouseDown = false; }
+
+    applySettings(settings) {
+        const currentCount = this.particles.length;
+        const targetCount = settings.PARTICLE_COUNT;
+
+        // Update existing particles FIRST
+        for (const particle of this.particles) {
+            particle.updateSettings(settings);
+        }
+
+        // THEN adjust particle count
+        if (targetCount > currentCount) {
+            for (let i = currentCount; i < targetCount; i++) {
+                const x = Math.random() * this.canvas.width;
+                const y = Math.random() * this.canvas.height;
+                this.particles.push(new Particle(x, y, settings));
+            }
+        } else if (targetCount < currentCount) {
+            this.particles.length = targetCount; // More efficient removal
         }
     }
 
-    resizeCanvas() { /* ... same ... */ }
+    // --- (applyMouseForce remains the optimized version) ---
+     applyMouseForce() { // Use the optimized version from previous step
+        if (!this.isMouseDown) return;
 
-    createParticles() {
-        this.particles = [];
-        const activePalette = PALETTES[currentPalette]; // Use currentPalette (needs managing)
+        const settings = this.settingsManager.getAllSettings();
+        const radius = settings.EXPLOSION_RADIUS;
+        const force = settings.EXPLOSION_FORCE;
+        const radiusSq = radius * radius; 
+        // *** Use a reasonable cell size for mouse check, potentially larger than interaction radius ***
+        const checkCellSize = Math.max(50, settings.INTERACTION_RADIUS); // Example: check cells of size 50 or interaction radius, whichever is larger
 
-        if (!activePalette || activePalette.length === 0) {
-             console.warn("No active palette or palette is empty");
-             return;
-        };
+        const mouseCellX = Math.floor(this.mouseX / checkCellSize);
+        const mouseCellY = Math.floor(this.mouseY / checkCellSize);
+        // *** Adjust check radius based on checkCellSize ***
+        const checkRadiusCells = Math.ceil(radius / checkCellSize); 
 
-        for (let i = 0; i < this.settings.PARTICLE_COUNT; i++) {
-             const x = Math.random() * this.canvas.width;
-             const y = Math.random() * this.canvas.height;
-             const radius = Math.random() * (MAX_PARTICLE_RADIUS - MIN_PARTICLE_RADIUS) + MIN_PARTICLE_RADIUS;
-             const color = activePalette[Math.floor(Math.random() * activePalette.length)];
-             const particle = new Particle({ x, y }, radius, color, this.settings); // Pass settings to Particle
+        const checkedParticles = new Set(); 
 
-             particle.velocity.x = (Math.random() - 0.5) * this.settings.INITIAL_VELOCITY;
-             particle.velocity.y = (Math.random() - 0.5) * this.settings.INITIAL_VELOCITY;
+        for (let nx = mouseCellX - checkRadiusCells; nx <= mouseCellX + checkRadiusCells; nx++) {
+            for (let ny = mouseCellY - checkRadiusCells; ny <= mouseCellY + checkRadiusCells; ny++) {
+                // *** Need to iterate through ALL particles and check if they belong to this check cell ***
+                // This is less efficient than using the main grid if checkCellSize differs,
+                // but simpler than maintaining a second grid.
+                // A better approach might be to query the *main* simulation grid instead.
+                
+                // *** Revised approach: Query the main simulation grid ***
+                 const mainGridCellSize = settings.INTERACTION_RADIUS > 0 ? settings.INTERACTION_RADIUS : 50; // Use actual grid cell size
+                 const queryCellX = Math.floor(nx * checkCellSize / mainGridCellSize); // Map check cell coords to main grid coords
+                 const queryCellY = Math.floor(ny * checkCellSize / mainGridCellSize);
+                 const cellId = `${queryCellX},${queryCellY}`; // Use main grid ID format
 
-             this.particles.push(particle);
-         }
-         console.log(`Created ${this.settings.PARTICLE_COUNT} particles.`);
+                const indices = this.grid[cellId]; // Query main grid
+
+                if (!indices) continue;
+
+                for (const i of indices) {
+                    if (checkedParticles.has(i)) continue; 
+
+                    const particle = this.particles[i];
+                    const dx = particle.x - this.mouseX;
+                    const dy = particle.y - this.mouseY;
+                    const distSq = dx * dx + dy * dy;
+
+                    if (distSq < radiusSq && distSq > 1e-6) { 
+                        const distance = Math.sqrt(distSq); 
+                        const strength = force * (1 - distance / radius);
+                        const dirX = dx / distance;
+                        const dirY = dy / distance;
+
+                        particle.vx += dirX * strength;
+                        particle.vy += dirY * strength;
+                    }
+                    checkedParticles.add(i); 
+                }
+            }
+        }
     }
 
-     // Add this method
-     addCustomParticle(radius, color) {
-        const x = Math.random() * this.canvas.width;
-        const y = Math.random() * this.canvas.height;
-        // Convert hex color to rgba
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-        const rgba = `rgba(${r}, ${g}, ${b}, 0.6)`; // Default opacity
-        const particle = new Particle({ x, y }, radius, rgba, this.settings);
-        particle.velocity.x = (Math.random() - 0.5) * this.settings.INITIAL_VELOCITY;
-        particle.velocity.y = (Math.random() - 0.5) * this.settings.INITIAL_VELOCITY;
-        this.particles.push(particle);
-        console.log("Added custom particle:", { radius, color });
-    }
 
-    bindSystemEvents() {
-         window.addEventListener('resize', () => this.resizeCanvas());
-         // Mouse/Touch events - same as before, update this.mousePosition and this.isMouseDown
-         // ... (mousemove, mousedown, mouseup, touchstart, touchmove, touchend, touchcancel) ...
-          window.addEventListener('mousemove', (e) => {
-            this.mousePosition.x = e.clientX;
-            this.mousePosition.y = e.clientY;
-        });
-        window.addEventListener('mousedown', () => { this.isMouseDown = true; });
-        window.addEventListener('mouseup', () => { this.isMouseDown = false; });
-        // Add touch events similarly
-    }
+    updateGrid() {
+        this.grid = {};
+        const settings = this.settingsManager.getAllSettings();
+        // Ensure cell size is positive, default if interaction radius is 0 or less
+        const cellSize = settings.INTERACTION_RADIUS > 0 ? settings.INTERACTION_RADIUS : 50; 
 
-    // drawConnections, updateParticles, applyAttraction, applyMouseForce, animate
-    // These methods need to read settings from `this.settings` instead of global vars
-    // e.g., GRAVITY -> this.settings.GRAVITY
-    drawConnections() {
-        this.ctx.beginPath();
         for (let i = 0; i < this.particles.length; i++) {
-            for (let j = i + 1; j < this.particles.length; j++) {
-                const dx = this.particles[i].position.x - this.particles[j].position.x;
-                const dy = this.particles[i].position.y - this.particles[j].position.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+            const p = this.particles[i];
+            const cellX = Math.floor(p.x / cellSize);
+            const cellY = Math.floor(p.y / cellSize);
+            const cellId = `${cellX},${cellY}`;
+            if (!this.grid[cellId]) {
+                this.grid[cellId] = [];
+            }
+            this.grid[cellId].push(i);
+            p.cellId = cellId; // Store cellId for potential optimizations (not currently used)
+        }
+    }
 
-                if (distance < this.settings.INTERACTION_RADIUS) {
-                    this.ctx.moveTo(this.particles[i].position.x, this.particles[i].position.y);
-                    this.ctx.lineTo(this.particles[j].position.x, this.particles[j].position.y);
+    applyAttraction() {
+        const settings = this.settingsManager.getAllSettings();
+        const interactionRadius = settings.INTERACTION_RADIUS;
+        const attract = settings.ATTRACT;
+        // Return early if no attraction/repulsion force or no radius
+        if (Math.abs(attract) < 1e-6 || interactionRadius <= 0) return;
+
+        const smoothingFactor = settings.SMOOTHING_FACTOR || 0.3;
+        const interactionRadiusSq = interactionRadius * interactionRadius;
+        // Pre-calculate force scaling factor including deltaTime
+        const forceScale = attract * this.deltaTime; 
+
+        for (const cellId in this.grid) {
+            const indices = this.grid[cellId];
+            const cellParts = cellId.split(",");
+            const cellX = Number.parseInt(cellParts[0]);
+            const cellY = Number.parseInt(cellParts[1]);
+
+            for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
+                for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
+                    const neighborId = `${nx},${ny}`;
+                    const neighborIndices = this.grid[neighborId];
+                    if (!neighborIndices) continue;
+
+                    for (const i of indices) {
+                        const p1 = this.particles[i];
+                        for (const j of neighborIndices) {
+                            // *** OPTIMIZATION: Explicit i < j check for unique pairs ***
+                            if (i >= j) continue; 
+                            
+                            const p2 = this.particles[j];
+                            const dx = p2.x - p1.x;
+                            const dy = p2.y - p1.y;
+                            const distSq = dx * dx + dy * dy;
+
+                            if (distSq < interactionRadiusSq && distSq > 1e-6) {
+                                const distance = Math.sqrt(distSq);
+                                const smoothedDistance = Math.max(distance, smoothingFactor * interactionRadius);
+                                if (smoothedDistance < 1e-6) continue;
+
+                                // *** OPTIMIZATION: Pre-calculated forceScale includes dt ***
+                                const forceMagnitude = forceScale * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
+                                
+                                // Avoid division by distance if possible (use dx, dy directly if needed)
+                                // But for inverse square, we need normalized direction
+                                const G = forceMagnitude / distance; // Combine magnitude and 1/distance
+                                const forceX = G * dx;
+                                const forceY = G * dy;
+
+                                if (Number.isNaN(forceX) || Number.isNaN(forceY)) continue;
+
+                                // Apply acceleration (Force / mass)
+                                const accX1 = forceX / p1.mass;
+                                const accY1 = forceY / p1.mass;
+                                const accX2 = -forceX / p2.mass;
+                                const accY2 = -forceY / p2.mass;
+
+                                p1.vx += accX1;
+                                p1.vy += accY1;
+                                p2.vx += accX2;
+                                p2.vy += accY2;
+                            }
+                        }
+                    }
                 }
             }
         }
-        // Ensure CONNECTION_OPACITY is treated as a number between 0 and 1
-        const opacityValue = Math.max(0, Math.min(1, this.settings.CONNECTION_OPACITY || 0));
-        const opacityHex = Math.round(opacityValue * 255).toString(16).padStart(2, '0');
-        this.ctx.strokeStyle = `${this.settings.CONNECTION_COLOR || '#4923d1'}${opacityHex}`;
-        this.ctx.stroke();
     }
 
-    updateParticles() {
-        const dt = 1 / 60; // Consider making this dynamic based on actual frame time
-        const grid = this.createSpatialGrid();
-
-        for (const particle of this.particles) {
-            const nearbyParticles = this.getNearbyParticles(particle, grid);
-
-            for (const otherParticle of nearbyParticles) {
-                if (particle !== otherParticle) {
-                    this.applyAttraction(particle, otherParticle, dt);
-                }
-            }
-            // Pass settings to particle update if needed, or ensure particle reads from system settings
-            particle.update({ x: this.canvas.width, y: this.canvas.height }, dt, this.settings);
-        }
-
-         // Clustering needs access to INTERACTION_RADIUS from settings
-        const uf = detectClusters(this.particles, this.settings.INTERACTION_RADIUS);
-        // Apply cluster properties needs MAX_HEAT_FACTOR etc. from settings
-        applyClusterProperties(this.particles, uf, this.settings);
-    }
-
-     createSpatialGrid() {
-        const cellSize = this.settings.INTERACTION_RADIUS;
-        // Ensure cellSize is at least 1 to avoid division by zero or infinite loops
-        if (cellSize < 1) return []; // Or handle appropriately
-
-        const gridWidth = Math.ceil(this.canvas.width / cellSize);
-        const gridHeight = Math.ceil(this.canvas.height / cellSize);
-         // Ensure grid dimensions are positive
-         if (gridWidth <= 0 || gridHeight <= 0) return [];
-
-        const grid = Array(gridWidth).fill(null).map(() => Array(gridHeight).fill(null).map(() => []));
-
-        for (const particle of this.particles) {
-             const cellX = Math.max(0, Math.min(gridWidth - 1, Math.floor(particle.position.x / cellSize)));
-             const cellY = Math.max(0, Math.min(gridHeight - 1, Math.floor(particle.position.y / cellSize)));
-             grid[cellX][cellY].push(particle);
-         }
-         return grid;
-    }
-
-     getNearbyParticles(particle, grid) {
-        const cellSize = this.settings.INTERACTION_RADIUS;
-         if (cellSize < 1 || !grid || grid.length === 0 || grid[0].length === 0) return [];
-
-         const gridWidth = grid.length;
-         const gridHeight = grid[0].length;
-
-        const cellX = Math.max(0, Math.min(gridWidth - 1, Math.floor(particle.position.x / cellSize)));
-        const cellY = Math.max(0, Math.min(gridHeight - 1, Math.floor(particle.position.y / cellSize)));
-        const nearbyParticles = [];
-
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-                const x = cellX + dx;
-                const y = cellY + dy;
-                if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
-                    nearbyParticles.push(...grid[x][y]);
-                }
-            }
-        }
-        return nearbyParticles;
-    }
-
-
-    applyAttraction(p1, p2, dt) {
-        const dx = p2.position.x - p1.position.x;
-        const dy = p2.position.y - p1.position.y;
-        const distSq = dx * dx + dy * dy;
-        const INTERACTION_RADIUS_SQ = this.settings.INTERACTION_RADIUS * this.settings.INTERACTION_RADIUS;
-
-        if (distSq > 1e-6 && distSq < INTERACTION_RADIUS_SQ) { // Avoid division by zero, ensure distance > 0
-            const distance = Math.sqrt(distSq);
-            // Ensure smoothing factor is reasonable
-            const smoothingFactor = Math.max(0.01, Math.min(1, this.settings.SMOOTHING_FACTOR));
-            const smoothingDistance = smoothingFactor * this.settings.INTERACTION_RADIUS;
-            const smoothedDistance = Math.max(distance, smoothingDistance);
-
-             // Use Math.abs for force calculation if ATTRACT_CONSTANT can be positive (repulsion)
-            const forceMagnitude = this.settings.ATTRACT_CONSTANT * (p1.mass * p2.mass) / (smoothedDistance * smoothedDistance);
-
-             const forceX = forceMagnitude * dx / smoothedDistance;
-             const forceY = forceMagnitude * dy / smoothedDistance;
-
-             // Check for NaN forces before applying
-             if (!isNaN(forceX) && !isNaN(forceY)) {
-                 p1.velocity.x += forceX / p1.mass * dt;
-                 p1.velocity.y += forceY / p1.mass * dt;
-                 p2.velocity.x -= forceX / p2.mass * dt;
-                 p2.velocity.y -= forceY / p2.mass * dt;
-            }
-        }
-    }
-
-    applyMouseForce() {
-         if (!this.isMouseDown) return;
-         const explosionRadius = this.settings.EXPLOSION_RADIUS;
-         const explosionForce = this.settings.EXPLOSION_FORCE;
-
-         this.particles.forEach(particle => {
-            const dx = particle.position.x - this.mousePosition.x;
-            const dy = particle.position.y - this.mousePosition.y;
-            const dist = Math.hypot(dx, dy);
-
-             if (dist > 1e-6 && dist < explosionRadius) { // Avoid division by zero
-                const normalizedDist = dist / explosionRadius;
-                 // Use a potentially simpler force falloff if needed, ensure forceFactor is non-negative
-                 const forceFactor = Math.max(0, 1 - Math.pow(normalizedDist, 2)); // Example: quadratic falloff
-                const force = explosionForce * forceFactor;
-
-                 const forceX = (dx / dist) * force;
-                 const forceY = (dy / dist) * force;
-
-                 if(!isNaN(forceX) && !isNaN(forceY)) {
-                    particle.velocity.x += forceX;
-                    particle.velocity.y += forceY;
-                }
-            }
-        });
-    }
-
-     animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        this.updateParticles();
-        this.drawConnections();
-
-        for (const particle of this.particles) {
-            this.ctx.beginPath();
-            this.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2);
-            this.ctx.fillStyle = particle.color; // Color is updated by applyClusterProperties
-            this.ctx.fill();
-        }
-
+    updateParticles(deltaTime) {
+        this.updateGrid();
+        this.applyAttraction(); // Uses this.deltaTime internally now
         this.applyMouseForce();
 
-        requestAnimationFrame(() => this.animate());
+        // *** OPTIMIZATION: Pass settings directly to particle update ***
+        const settings = this.settingsManager.getAllSettings(); 
+        for (const particle of this.particles) {
+            particle.update(deltaTime, this.canvas.width, this.canvas.height, settings); // Pass settings
+        }
     }
 
+    drawConnections() {
+        const settings = this.settingsManager.getAllSettings();
+        const connectionOpacity = settings.CONNECTION_OPACITY;
+        // *** Early exit if no connections needed ***
+        if (connectionOpacity <= 0.001 || settings.INTERACTION_RADIUS <= 0) return; 
+
+        const interactionRadius = settings.INTERACTION_RADIUS;
+        const interactionRadiusSq = interactionRadius * interactionRadius;
+        const connectionColor = settings.CONNECTION_COLOR;
+        const connectionWidth = settings.CONNECTION_WIDTH || 1;
+
+        this.ctx.strokeStyle = connectionColor;
+        this.ctx.lineWidth = connectionWidth;
+        
+        // Store lines by opacity to batch drawing (minor optimization)
+        const linesByOpacity = {}; 
+
+        for (const cellId in this.grid) {
+            const indices = this.grid[cellId];
+            const cellParts = cellId.split(",");
+            const cellX = Number.parseInt(cellParts[0]);
+            const cellY = Number.parseInt(cellParts[1]);
+
+            for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
+                for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
+                    const neighborId = `${nx},${ny}`;
+                    const neighborIndices = this.grid[neighborId];
+                    if (!neighborIndices) continue;
+
+                    for (const i of indices) {
+                        const p1 = this.particles[i];
+                        for (const j of neighborIndices) {
+                            // *** OPTIMIZATION: Explicit i < j check ***
+                            if (i >= j) continue; 
+
+                            const p2 = this.particles[j];
+                            const dx = p2.x - p1.x;
+                            const dy = p2.y - p1.y;
+                            const distSq = dx * dx + dy * dy;
+
+                            if (distSq < interactionRadiusSq) {
+                                const distance = Math.sqrt(distSq);
+                                // *** OPTIMIZATION: Calculate opacity *before* deciding to draw ***
+                                const opacity = connectionOpacity * Math.max(0, (1 - distance / interactionRadius));
+                                
+                                if (opacity > 0.001) { // Opacity threshold
+                                    // Quantize opacity for batching (e.g., nearest 0.05)
+                                    const opacityKey = Math.round(opacity * 20) / 20; 
+                                    if (!linesByOpacity[opacityKey]) {
+                                        linesByOpacity[opacityKey] = [];
+                                    }
+                                    linesByOpacity[opacityKey].push([p1.x, p1.y, p2.x, p2.y]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // *** OPTIMIZATION: Batch draw calls by opacity ***
+        for (const opacityKey in linesByOpacity) {
+            this.ctx.globalAlpha = parseFloat(opacityKey);
+            this.ctx.beginPath();
+            for(const line of linesByOpacity[opacityKey]) {
+                 this.ctx.moveTo(line[0], line[1]);
+                 this.ctx.lineTo(line[2], line[3]);
+            }
+            this.ctx.stroke();
+        }
+
+        this.ctx.globalAlpha = 1; // Reset alpha
+    }
+
+    // --- (animate, updateAndDrawMouseEffects remain similar, using this.deltaTime) ---
+    animate(timestamp = 0) {
+        if (!this.canvas) { // Safety check if canvas removed
+            this.stop();
+            return;
+        }
+        
+        const elapsed = timestamp - (this.lastTimestamp || timestamp); // Handle first frame
+        this.lastTimestamp = timestamp;
+
+        // Use elapsed time directly, but cap it
+        this.deltaTime = Math.min(elapsed / 1000.0, 0.05); // Time in seconds, capped
+
+        // --- No FPS throttling applied here for smoother simulation ---
+        // If throttling is desired, uncomment the check:
+        // if (elapsed >= this.fpsInterval) {
+        //     this.lastTimestamp = timestamp - (elapsed % this.fpsInterval);
+        //     this.deltaTime = this.fpsInterval / 1000.0; // Use fixed interval for physics if throttling
+
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.updateParticles(this.deltaTime); // Pass calculated delta time
+            this.drawConnections();
+            this.updateAndDrawMouseEffects(timestamp); // Effects might use raw timestamp
+            
+            // Draw particles efficiently
+            this.ctx.fillStyle = this.particles.length > 0 ? this.particles[0].color : "#64ffda"; // Assume color is uniform or set default
+            let currentColor = this.ctx.fillStyle;
+            this.ctx.beginPath();
+            for (const particle of this.particles) {
+                 // Optimization: Only change fillStyle if necessary
+                 // NOTE: This assumes particle.draw just does arc/fill. If it does more, keep particle.draw(this.ctx)
+                 if (particle.color !== currentColor) {
+                     this.ctx.fill(); // Fill previous batch
+                     this.ctx.beginPath(); // Start new batch
+                     this.ctx.fillStyle = particle.color;
+                     currentColor = particle.color;
+                 }
+                 this.ctx.moveTo(particle.x + particle.radius, particle.y); // Needed for arc
+                 this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+            }
+             this.ctx.fill(); // Fill the last batch
+        // } // End of potential throttling block
+
+        this.animationFrameId = requestAnimationFrame((t) => this.animate(t));
+    }
+
+     updateAndDrawMouseEffects(timestamp) {
+        const settings = this.settingsManager.getAllSettings();
+        
+        // Limit number of effects to avoid slowdown
+        const MAX_EFFECTS = 30; 
+        if (this.isMouseDown && this.mouseEffects.length < MAX_EFFECTS) {
+             // Debounce adding effects slightly? Maybe not needed.
+            this.mouseEffects.push({
+                x: this.mouseX,
+                y: this.mouseY,
+                radius: settings.EXPLOSION_RADIUS,
+                startTime: timestamp,
+                duration: 600, // Shorter duration
+            });
+        }
+        
+        this.ctx.save();
+        for (let i = this.mouseEffects.length - 1; i >= 0; i--) {
+            const effect = this.mouseEffects[i];
+            const age = timestamp - effect.startTime;
+            if (age > effect.duration) {
+                this.mouseEffects.splice(i, 1);
+                continue;
+            }
+            
+            const progress = age / effect.duration;
+            const easeOutQuad = 1 - (1 - progress) * (1 - progress); // Apply easing
+
+            const currentRadius = Math.max(1, effect.radius * easeOutQuad * 0.8); // Smaller max radius, ensure > 0
+            const currentOpacity = Math.max(0, 0.15 * (1 - progress)); // More subtle opacity
+
+            // Draw a single gradient ripple
+            const gradient = this.ctx.createRadialGradient(
+                effect.x, effect.y, 0,
+                effect.x, effect.y, currentRadius
+            );
+            gradient.addColorStop(0, `rgba(140, 240, 255, ${currentOpacity})`);
+            gradient.addColorStop(1, `rgba(70, 130, 220, 0)`);
+            
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.arc(effect.x, effect.y, currentRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+        this.ctx.restore();
+    }
+
+    stop() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+         // Clean up event listeners
+         document.removeEventListener("mousemove", this.boundHandleMouseMove);
+         document.removeEventListener("mousedown", this.boundHandleMouseDown);
+         document.removeEventListener("mouseup", this.boundHandleMouseUp);
+         document.removeEventListener("touchstart", this.boundHandleTouchStart);
+         document.removeEventListener("touchmove", this.boundHandleTouchMove);
+         document.removeEventListener("touchend", this.boundHandleTouchEnd);
+    }
+
+    // restart() already correctly calls stop() and init()
+    restart() {
+		this.stop();
+		this.init(); // Re-initializes particles and restarts loop
+	}
 }
 ```
 
-**`particles/particle.js`**
+**2. Refine `particle.js` (Use Passed Settings)**
 
 ```javascript
 // particles/particle.js
-// Make sure Particle class uses settings passed to it or from the system
 export class Particle {
-     constructor(position, radius, color, initialSettings) { // Receive settings
-         this.position = position;
-         this.velocity = { x: 0, y: 0 };
-         this.radius = radius;
-         this.color = color;
-         this.mass = Math.PI * radius * radius;
-         this.originalColor = color;
-         // No need to store settings here if update method receives them
-     }
-
-     // Receive settings object in update
-     update(bounds, dt, settings) {
-         // Apply gravity using settings.GRAVITY
-         this.velocity.y += settings.GRAVITY * dt;
-
-         this.position.x += this.velocity.x * dt;
-         this.position.y += this.velocity.y * dt;
-
-         // Apply drag using settings.DRAG_CONSTANT
-         const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-         if (speed > 1e-6) { // Avoid division by zero
-             const dragForce = settings.DRAG_CONSTANT * speed * speed; // Quadratic drag
-             const dragX = (this.velocity.x / speed) * dragForce;
-             const dragY = (this.velocity.y / speed) * dragForce;
-
-             // Apply drag considering mass and dt
-             if (!isNaN(dragX) && !isNaN(dragY) && this.mass > 1e-6) {
-                  this.velocity.x -= dragX / this.mass * dt;
-                  this.velocity.y -= dragY / this.mass * dt;
-             }
-         }
-
-         // Elastic collision using settings.ELASTICITY_CONSTANT
-         if (this.position.x - this.radius < 0 || this.position.x + this.radius > bounds.x) {
-             this.velocity.x *= -settings.ELASTICITY_CONSTANT;
-             this.position.x = Math.max(this.radius, Math.min(bounds.x - this.radius, this.position.x));
-              // Dampen velocity slightly on collision to prevent sticking
-              this.velocity.x *= 0.99;
-         }
-         if (this.position.y - this.radius < 0 || this.position.y + this.radius > bounds.y) {
-             this.velocity.y *= -settings.ELASTICITY_CONSTANT;
-             this.position.y = Math.max(this.radius, Math.min(bounds.y - this.radius, this.position.y));
-              this.velocity.y *= 0.99;
-         }
-     }
- }
-
-```
-
-**`particles/main.js` (New Entry Point)**
-
-```javascript
-// particles/main.js
-import { SettingsManager } from './settingsManager.js';
-import { ParticleSystem } from './particleSystem.js';
-import { UIController } from './uiController.js';
-
-function init() {
-    const canvas = document.getElementById('particle-canvas');
-    if (!canvas) {
-        console.error('Canvas element not found');
-        return;
+    // Receive initial settings in constructor
+    constructor(x, y, settings) { 
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 2; 
+        this.vy = (Math.random() - 0.5) * 2;
+        this.radius = settings.PARTICLE_SIZE || 3;
+        // Use instance particle colors from particleSystem
+        this.color = this.getRandomColor(); 
+        this.mass = Math.PI * this.radius * this.radius;
     }
 
-    let particleSystem = null; // Keep refs outside callbacks if needed
-    let uiController = null;
-
-    // 1. Initialize Settings Manager
-    const settingsManager = new SettingsManager((updatedSettings) => {
-        // This callback is triggered when settings change (initially or by user)
-        if (particleSystem) {
-            particleSystem.updateSettings(updatedSettings);
-        }
-        if (uiController) {
-            uiController.updateUI(updatedSettings); // Ensure UI reflects changes immediately
-        }
-    });
-
-    // 2. Initialize Particle System with initial settings
-    particleSystem = new ParticleSystem(canvas, settingsManager.getAllSettings());
-
-    // 3. Initialize UI Controller
-    uiController = new UIController(settingsManager, particleSystem);
-
-    // Make system accessible globally if needed (e.g., for Zen mode button)
-     window.particleSystem = particleSystem; // Keep this if needed elsewhere
-
-     console.log("Particle system fully initialized.");
-}
-
-// Make the init function globally accessible
-window.particlesInit = init;
-
-// Optional: Auto-init if script loads after DOM is ready
-// if (document.readyState === 'complete' || document.readyState === 'interactive') {
-//     init();
-// } else {
-//     document.addEventListener('DOMContentLoaded', init);
-// }
-```
-
-**7. Update `src/app/components/ParticlesContainer.tsx`:**
-
-*   Change the `Script` `src` to point to the new entry point: `/js/particles/main.js`.
-*   Ensure the `window.particlesInit` call works correctly. The `onLoad` logic might still be needed as a fallback if the script loads late.
-
-```tsx
-// src/app/components/ParticlesContainer.tsx
-'use client'
-
-import { useEffect, useRef } from 'react';
-import Script from 'next/script';
-import { usePathname, useRouter } from 'next/navigation';
-
-// ... (RouterInstance, Window declarations remain the same) ...
-interface ParticleSystem {
-    enterZenMode: () => void; // Keep if needed
-    // Add other methods/properties if accessed externally
-}
-
-export function ParticlesContainer() {
-    const particlesInitialized = useRef<boolean>(false);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const pathname = usePathname();
-    const router = useRouter();
-    const isZenMode = pathname === '/'; // Use updated check
-
-    useEffect(() => {
-        window.nextRouter = router; // Keep this for potential use in JS
-
-        const initParticles = () => {
-            if (
-                canvasRef.current &&
-                typeof window.particlesInit === 'function' && // Check for the NEW init function
-                !particlesInitialized.current
-            ) {
-                console.log('Calling window.particlesInit');
-                window.particlesInit(canvasRef.current); // Call the main initializer
-                particlesInitialized.current = true;
-
-                // Zen mode logic might be handled inside ParticleSystem/UI now,
-                // but keep this if specific external calls are needed.
-                // if (isZenMode && window.particleSystem?.enterZenMode) {
-                //     window.particleSystem.enterZenMode();
-                // }
-            } else {
-                 console.log("Conditions not met for init:", !!canvasRef.current, typeof window.particlesInit, particlesInitialized.current);
+    getRandomColor() {
+        // Access colors directly from the globally accessible instance
+        if (window.particleSystem?.PARTICLE_COLORS) {
+            const colors = window.particleSystem.PARTICLE_COLORS;
+            // Ensure colors array is not empty
+            if (colors.length > 0) {
+                 return colors[Math.floor(Math.random() * colors.length)];
             }
-        };
+        }
+        // Fallback if global instance or colors are not available yet
+        return '#64ffda'; 
+    }
 
-        // Use requestAnimationFrame to wait for next paint cycle, might help timing
-        requestAnimationFrame(() => {
-            initParticles();
-        });
+    // updateSettings remains the same
 
-        // Fallback / alternative: Check periodically
-        const checkInterval = setInterval(() => {
-             if (typeof window.particlesInit === 'function' && !particlesInitialized.current) {
-                 console.log("Initializing via interval check");
-                 initParticles();
-                 clearInterval(checkInterval);
-             } else if (particlesInitialized.current) {
-                 clearInterval(checkInterval);
-             }
-         }, 200);
-
-
-        return () => {
-            clearInterval(checkInterval);
-            // Add cleanup if necessary (e.g., destroy particle system instance)
-             console.log("ParticlesContainer unmounting - cleanup if needed");
-        };
-    }, [router, isZenMode]); // Dependencies seem correct
-
-    return (
-        <>
-            <canvas
-                id="particle-canvas"
-                ref={canvasRef}
-                className="fixed inset-0 w-full h-full pointer-events-none z-0" // Keep z-0
-            />
-            <Script
-                src="/js/particles/main.js" // <--- Updated path
-                strategy="afterInteractive" // Keep strategy
-                type="module" // <--- IMPORTANT: Add type="module" for ES imports/exports
-                onLoad={() => {
-                    console.log('Particle main script loaded');
-                    // The init logic is now primarily in the useEffect hook,
-                    // but calling it here again *might* act as a robust fallback.
-                     // Check if already initialized by useEffect before calling again.
-                    if (!particlesInitialized.current) {
-                         console.log("Attempting init from onLoad");
-                        // Ensure DOM element exists before calling init
-                         if (document.getElementById('particle-canvas')) {
-                            // Delay slightly to ensure everything is ready
-                            setTimeout(() => {
-                                if (!particlesInitialized.current && typeof window.particlesInit === 'function') {
-                                    window.particlesInit(document.getElementById('particle-canvas') as HTMLCanvasElement);
-                                }
-                            }, 50);
-                         }
-                    }
-                }}
-                onError={(e) => {
-                    console.error("Failed to load particle script:", e);
-                }}
-            />
-        </>
-    );
-}
-
+    // Accept settings object directly
+    update(deltaTime, canvasWidth, canvasHeight, settings) { 
+        const gravity = settings.GRAVITY || 0;
+        const drag = settings.DRAG || 0.01;
+        
+        // Physics using passed settings and deltaTime
+        if (gravity !== 0) {
+            this.vy += gravity * deltaTime;
+        }
+        
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed > 1e-6) { // Avoid division by zero/NaN issues
+            const dragFactor = 1.0 - (drag * deltaTime * 60); // Normalize drag effect relative to 60fps
+            this.vx *= Math.max(0, dragFactor); // Ensure factor doesn't go negative
+            this.vy *= Math.max(0, dragFactor);
+        }
+        
+        this.x += this.vx * deltaTime * 60; // Scale velocity effect by frame time (relative to 60fps base)
+        this.y += this.vy * deltaTime * 60;
+        
+        // Boundary collision - simple reflection with energy loss
+         const restitution = 0.6; // Coefficient of restitution (energy loss)
+         if (this.x - this.radius < 0) {
+             this.x = this.radius;
+             this.vx *= -restitution;
+         } else if (this.x + this.radius > canvasWidth) {
+             this.x = canvasWidth - this.radius;
+             this.vx *= -restitution;
+         }
+         
+         if (this.y - this.radius < 0) {
+             this.y = this.radius;
+             this.vy *= -restitution;
+         } else if (this.y + this.radius > canvasHeight) {
+             this.y = canvasHeight - this.radius;
+             this.vy *= -restitution;
+         }
+    }
+    
+    // draw method remains the same
+    draw(ctx) {
+        // Setting fillStyle here is less optimal if many particles share color
+        // It's often better to batch draws by color in the main loop
+        // But for simplicity and varying colors, this is fine.
+        ctx.fillStyle = this.color; 
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+} 
 ```
 
-This refactoring provides a much more organized structure. Remember to:
+**Explanation of Key Performance Refinements:**
 
-1.  Create the `public/js/particles` directory and place the new JS files there.
-2.  Move utility functions (like `UnionFind`, `detectClusters`, `applyClusterProperties`) into `utils.js` and import them where needed.
-3.  Carefully review all parts of the original `particles.js` to ensure functionality (like palette switching, adding/removing colors) is correctly reimplemented within the new `UIController` and `ParticleSystem`.
-4.  Test the URL parameter functionality thoroughly. Try different combinations, edge cases (invalid values), and ensure defaults are handled correctly.
-5.  Ensure the `Particle` class and simulation methods (`applyAttraction`, `update`, etc.) correctly use the `settings` object passed to them or read from `this.settings` in `ParticleSystem`.
+*   **Robust Pair Check (`i >= j`):** Explicitly prevents checking `(p1, p2)` and then `(p2, p1)` or `(p1, p1)` within the neighbor loops, crucial for dense areas.
+*   **Pre-calculated Force Scale:** Calculating `attract * this.deltaTime` outside the loops in `applyAttraction` reduces multiplications inside the most performance-critical part.
+*   **Direct Settings in `particle.update`:** Passing the `settings` object avoids repeated global lookups via `window.particleSystem.settingsManager.getSetting()`, which can add overhead in a tight loop.
+*   **Optimized Connection Drawing:** Grouping lines by quantized opacity and drawing them in batches minimizes `globalAlpha` state changes, which can be costly on the canvas context. Also added an early exit if opacity is zero.
+*   **Optimized Particle Drawing (Batching `fillStyle`):** Tries to set `fillStyle` only when the particle color changes, reducing context state changes. (Note: cluster effects might make colors vary a lot, limiting this benefit).
+*   **Optimized Mouse Force Query:** Uses the main simulation grid to find particles near the mouse instead of iterating through all particles or maintaining a separate check grid.
+*   **Accurate DeltaTime Usage:** Physics calculations (`gravity`, `drag`, position updates) now correctly use `deltaTime` for frame rate independence. Velocity updates in `applyAttraction` also use `deltaTime`.
+*   **Efficient Array Adjustment:** Using `this.particles.length = targetCount` is faster for removing particles than `slice`.
+*   **Grid Cell Size:** Ensures `cellSize` used for the grid is always positive, defaulting to 50 if `INTERACTION_RADIUS` is zero or negative.
+*   **Optimized Mouse Effects:** Reduced effect duration and opacity, limited max number of effects to prevent them from becoming a bottleneck.
+*   **Removed FPS Throttling:** The `if (elapsed >= this.fpsInterval)` block was removed from `animate` to let the simulation run as fast as possible, relying on `deltaTime` for physics consistency. If you *want* to cap the visual FPS, you can re-add the throttling block.
 
-This is a substantial overhaul, but it addresses your goals of simplification, organization, and adding the URL parameter feature.
+These refinements target the most computationally intensive parts (pair interactions) and ensure efficient updates and drawing, directly addressing the specified bottlenecks.
