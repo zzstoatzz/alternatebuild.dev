@@ -12,28 +12,37 @@ export default function Home() {
     }, []);
 
     const handleDismiss = () => {
-        console.log('Dismiss button clicked');
         setShowModal(false);
         localStorage.setItem('zenInstructionsSeen', 'true');
     };
 
+    // Completely block all background activity if modal is shown
+    if (showModal) {
+        return (
+            <div 
+                className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[9999]" 
+                style={{ 
+                    touchAction: 'none',
+                    pointerEvents: 'auto'
+                }}
+            >
+                <div className="bg-white p-6 rounded-lg shadow-xl text-center w-[90%] max-w-md">
+                    <p className="mb-6 text-gray-800 text-lg">psst! click the mouse to push the particles around. see <b>particle settings</b> in the top right to edit physics</p>
+                    <button 
+                        onClick={handleDismiss} 
+                        className="w-full py-4 bg-blue-500 text-white text-xl font-bold rounded-lg hover:bg-blue-600 active:bg-blue-700"
+                        type="button"
+                    >
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <main className="h-screen relative">
-            {/* The modal for particle instructions */}
-            {showModal && (
-                <div className="fixed inset-0 z-[999]" style={{ touchAction: 'manipulation' }}>
-                    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-80 p-6 rounded-lg shadow-lg text-center max-w-[90%] md:max-w-md">
-                        <p className="mb-4 text-gray-800">psst! click the mouse to push the particles around. see <b>particle settings</b> in the top right to edit physics</p>
-                        <button 
-                            onClick={handleDismiss} 
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700"
-                            type="button"
-                        >
-                            Got it!
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* Main content only rendered when modal is closed */}
         </main>
     );
 }
