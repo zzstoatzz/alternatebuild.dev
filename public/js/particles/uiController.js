@@ -29,18 +29,32 @@ export class UIController {
 				
 				.particle-controls {
 					background: rgba(16, 20, 24, 0.8) !important;
-					border-radius: 8px !important;
+					border-radius: 12px !important;
 					backdrop-filter: blur(10px) !important;
 					box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
 					border: 1px solid rgba(100, 255, 218, 0.15) !important;
 					font-family: 'Fira Code', monospace !important;
-					max-width: 280px !important;
+					max-width: 90% !important;
+					width: 280px !important;
 					overflow: hidden !important;
 					transition: all 0.3s ease !important;
+					position: fixed !important;
+					top: 20px !important;
+					right: 20px !important;
+					z-index: 9999 !important;
+					transform: translateY(0) !important;
+				}
+				
+				@media (max-width: 640px) {
+					.particle-controls {
+						top: 10px !important;
+						right: 10px !important;
+						width: 90% !important;
+					}
 				}
 				
 				.control-header {
-					padding: 8px 12px !important;
+					padding: 12px 16px !important;
 					background: rgba(30, 34, 40, 0.9) !important;
 					display: flex !important;
 					justify-content: space-between !important;
@@ -50,7 +64,7 @@ export class UIController {
 				
 				.control-header h3 {
 					margin: 0 !important;
-					font-size: 12px !important;
+					font-size: 14px !important;
 					font-weight: 500 !important;
 					color: #64ffda !important;
 					letter-spacing: 0.5px !important;
@@ -62,23 +76,24 @@ export class UIController {
 					color: #64ffda !important;
 					cursor: pointer !important;
 					font-family: 'Fira Code', monospace !important;
-					font-size: 14px !important;
-					padding: 0 !important;
-					width: 24px !important;
-					height: 24px !important;
+					font-size: 18px !important;
+					padding: 8px !important;
+					width: 36px !important;
+					height: 36px !important;
 					display: flex !important;
 					align-items: center !important;
 					justify-content: center !important;
 					transition: transform 0.3s ease !important;
+					border-radius: 50% !important;
 				}
 				
 				.toggle-button:hover {
-					opacity: 0.8 !important;
+					background: rgba(100, 255, 218, 0.1) !important;
 				}
 				
 				.control-content {
-					padding: 12px !important;
-					max-height: 70vh !important;
+					padding: 16px !important;
+					max-height: 60vh !important;
 					overflow-y: auto !important;
 					-ms-overflow-style: none !important; /* IE and Edge */
 					scrollbar-width: none !important; /* Firefox */
@@ -90,16 +105,16 @@ export class UIController {
 				}
 				
 				.control-group {
-					margin-bottom: 12px !important;
-					padding-bottom: 12px !important;
+					margin-bottom: 16px !important;
+					padding-bottom: 16px !important;
 					border-bottom: 1px solid rgba(100, 255, 218, 0.05) !important;
 				}
 				
 				.control-group label {
 					display: block !important;
-					font-size: 10px !important;
+					font-size: 12px !important;
 					color: rgba(255, 255, 255, 0.7) !important;
-					margin-bottom: 4px !important;
+					margin-bottom: 8px !important;
 					font-family: 'Fira Code', monospace !important;
 					letter-spacing: 0.5px !important;
 					text-transform: lowercase !important;
@@ -108,22 +123,22 @@ export class UIController {
 				.slider-row {
 					display: flex !important;
 					align-items: center !important;
-					gap: 8px !important;
+					gap: 12px !important;
 				}
 				
 				.slider-input {
 					flex: 1 !important;
-					height: 4px !important;
+					height: 6px !important;
 					background: rgba(100, 255, 218, 0.1) !important;
-					border-radius: 2px !important;
+					border-radius: 3px !important;
 					appearance: none !important;
 					outline: none !important;
 				}
 				
 				.slider-input::-webkit-slider-thumb {
 					appearance: none !important;
-					width: 12px !important;
-					height: 12px !important;
+					width: 20px !important;
+					height: 20px !important;
 					border-radius: 50% !important;
 					background: #64ffda !important;
 					cursor: pointer !important;
@@ -131,22 +146,27 @@ export class UIController {
 					transition: all 0.2s !important;
 				}
 				
-				.slider-input::-webkit-slider-thumb:hover {
-					transform: scale(1.2) !important;
-					box-shadow: 0 0 10px rgba(100, 255, 218, 0.5) !important;
+				.slider-input::-moz-range-thumb {
+					width: 20px !important;
+					height: 20px !important;
+					border-radius: 50% !important;
+					background: #64ffda !important;
+					cursor: pointer !important;
+					border: none !important;
+					transition: all 0.2s !important;
 				}
 				
 				.value-display {
 					min-width: 40px !important;
 					text-align: right !important;
-					font-size: 10px !important;
+					font-size: 12px !important;
 					color: #64ffda !important;
 					font-family: 'Fira Code', monospace !important;
 				}
 				
 				.button-row {
 					display: flex !important;
-					gap: 8px !important;
+					gap: 10px !important;
 					margin-top: 16px !important;
 				}
 				
@@ -156,9 +176,9 @@ export class UIController {
 					border: 1px solid rgba(100, 255, 218, 0.2) !important;
 					color: #64ffda !important;
 					font-family: 'Fira Code', monospace !important;
-					font-size: 10px !important;
-					padding: 6px 12px !important;
-					border-radius: 4px !important;
+					font-size: 12px !important;
+					padding: 10px 16px !important;
+					border-radius: 6px !important;
 					cursor: pointer !important;
 					transition: all 0.2s !important;
 					text-transform: lowercase !important;
@@ -173,8 +193,8 @@ export class UIController {
 				.color-picker {
 					border: none !important;
 					background: transparent !important;
-					width: 24px !important;
-					height: 24px !important;
+					width: 30px !important;
+					height: 30px !important;
 					cursor: pointer !important;
 					padding: 0 !important;
 					border-radius: 50% !important;
@@ -200,6 +220,34 @@ export class UIController {
 				.success-message.show {
 					opacity: 1 !important;
 				}
+				
+				.settings-icon {
+					position: fixed !important;
+					top: 20px !important;
+					right: 20px !important;
+					width: 48px !important;
+					height: 48px !important;
+					color: #64ffda !important;
+					display: flex !important;
+					align-items: center !important;
+					justify-content: center !important;
+					font-size: 28px !important;
+					cursor: pointer !important;
+					z-index: 9998 !important;
+					transition: all 0.2s ease !important;
+					text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+				}
+				
+				.settings-icon:hover {
+					transform: rotate(30deg) !important;
+				}
+				
+				@media (max-width: 640px) {
+					.settings-icon {
+						top: 10px !important;
+						right: 10px !important;
+					}
+				}
 			`;
 			document.head.appendChild(additionalStyles);
 		}
@@ -219,11 +267,20 @@ export class UIController {
 			successMsg.id = "success-message";
 			successMsg.className = "success-message";
 			document.body.appendChild(successMsg);
+			
+			// Create always visible settings icon
+			const settingsIcon = document.createElement("div");
+			settingsIcon.id = "settings-icon";
+			settingsIcon.className = "settings-icon";
+			settingsIcon.innerHTML = "⚙";
+			document.body.appendChild(settingsIcon);
 		}
 
 		// Store references to sliders, buttons, value displays
 		this.configToggleButton = document.getElementById("configToggle");
 		this.controlsContent = document.getElementById("controlsContent");
+		this.particleControls = document.querySelector(".particle-controls");
+		this.settingsIcon = document.getElementById("settings-icon");
 
 		// Get all sliders and their value displays
 		for (const key in RANGES) {
@@ -234,14 +291,19 @@ export class UIController {
 		// Special controls
 		this.resetDefaultsButton = document.getElementById("resetDefaults");
 		this.generateShareLinkButton = document.getElementById("generateShareLink");
+		
+		// Start with controls hidden
+		if (this.particleControls) {
+			this.particleControls.style.display = "none";
+		}
 	}
 
 	generateControlsTemplate() {
 		return `
-			<div class="particle-controls" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+			<div class="particle-controls">
 				<div class="control-header">
 					<h3>particle settings</h3>
-					<button id="configToggle" class="toggle-button">−</button>
+					<button id="configToggle" class="toggle-button">×</button>
 				</div>
 				<div id="controlsContent" class="control-content">
 					${this.generateControlGroups()}
@@ -344,6 +406,12 @@ export class UIController {
 			// Add handlers to the new element
 			newInput.addEventListener('input', handleChange);
 			newInput.addEventListener('change', handleChange);
+			newInput.addEventListener('touchstart', (e) => {
+				e.stopPropagation(); // Prevent canvas interaction while using slider
+			}, { passive: true });
+			newInput.addEventListener('touchmove', (e) => {
+				e.stopPropagation(); // Prevent canvas interaction while using slider
+			}, { passive: true });
 		}
 		
 		// Set up special controls: color picker
@@ -364,23 +432,40 @@ export class UIController {
 			
 			newColorPicker.addEventListener('input', handleColorChange);
 			newColorPicker.addEventListener('change', handleColorChange);
+			newColorPicker.addEventListener('touchstart', (e) => {
+				e.stopPropagation(); // Prevent canvas interaction while using color picker
+			}, { passive: true });
 		}
 		
-		// Config toggle button
-		const configToggle = document.getElementById("configToggle");
-		const controlsContent = document.getElementById("controlsContent");
+		// Settings icon (always visible) for opening
+		if (this.settingsIcon) {
+			this.settingsIcon.addEventListener('click', () => {
+				this.showControlPanel();
+			});
+			
+			this.settingsIcon.addEventListener('touchend', (e) => {
+				e.preventDefault();
+				this.showControlPanel();
+			}, { passive: false });
+		}
 		
-		if (configToggle && controlsContent) {
+		// Config toggle button in the panel (close button)
+		const configToggle = document.getElementById("configToggle");
+		
+		if (configToggle && this.particleControls) {
 			// Clone to remove existing listeners
 			const newToggle = configToggle.cloneNode(true);
 			configToggle.parentNode.replaceChild(newToggle, configToggle);
 			
 			newToggle.addEventListener('click', () => {
-				const isVisible = controlsContent.style.display !== "none";
-				controlsContent.style.display = isVisible ? "none" : "block";
-				newToggle.textContent = isVisible ? "+" : "−";
-				newToggle.style.transform = isVisible ? "rotate(0deg)" : "rotate(0deg)";
+				this.hideControlPanel();
 			});
+			
+			// Also add touch event
+			newToggle.addEventListener('touchend', (e) => {
+				e.preventDefault();
+				this.hideControlPanel();
+			}, { passive: false });
 		}
 		
 		// Reset button
@@ -398,6 +483,18 @@ export class UIController {
 					this.showSuccessMessage("settings reset to defaults");
 				}
 			});
+			
+			// Also add touch event
+			resetButton.addEventListener('touchend', (e) => {
+				e.preventDefault();
+				// Same reset logic
+				if (window.particleSystem) {
+					window.particleSystem.settingsManager.resetToDefaults();
+					const defaults = window.particleSystem.settingsManager.getAllSettings();
+					this.updateUI(defaults);
+					this.showSuccessMessage("settings reset to defaults");
+				}
+			}, { passive: false });
 		}
 		
 		// Share link button
@@ -411,6 +508,16 @@ export class UIController {
 					this.showSuccessMessage("link copied to clipboard");
 				}
 			});
+			
+			// Also add touch event
+			shareButton.addEventListener('touchend', (e) => {
+				e.preventDefault();
+				if (window.particleSystem) {
+					const shareLink = window.particleSystem.settingsManager.generateShareLink();
+					this.copyToClipboard(shareLink);
+					this.showSuccessMessage("link copied to clipboard");
+				}
+			}, { passive: false });
 		}
 		
 		// Randomize colors button
@@ -423,6 +530,53 @@ export class UIController {
 					this.showSuccessMessage("colors randomized");
 				}
 			});
+			
+			// Also add touch event
+			randomizeButton.addEventListener('touchend', (e) => {
+				e.preventDefault();
+				if (window.particleSystem) {
+					window.particleSystem.restart();
+					this.showSuccessMessage("colors randomized");
+				}
+			}, { passive: false });
+		}
+		
+		// Close when clicking outside
+		document.addEventListener('click', (e) => {
+			if (this.particleControls && this.particleControls.style.display !== "none") {
+				// Check if click is outside the controls and not on the settings icon
+				if (!this.particleControls.contains(e.target) && e.target !== this.settingsIcon) {
+					this.hideControlPanel();
+				}
+			}
+		});
+		
+		// Also handle touch outside
+		document.addEventListener('touchend', (e) => {
+			if (this.particleControls && this.particleControls.style.display !== "none") {
+				// Check if touch is outside the controls and not on the settings icon
+				if (!this.particleControls.contains(e.target) && e.target !== this.settingsIcon) {
+					this.hideControlPanel();
+				}
+			}
+		}, { passive: true });
+	}
+	
+	showControlPanel() {
+		if (this.particleControls) {
+			this.particleControls.style.display = "block";
+			if (this.settingsIcon) {
+				this.settingsIcon.style.display = "none";
+			}
+		}
+	}
+	
+	hideControlPanel() {
+		if (this.particleControls) {
+			this.particleControls.style.display = "none";
+			if (this.settingsIcon) {
+				this.settingsIcon.style.display = "flex";
+			}
 		}
 	}
 

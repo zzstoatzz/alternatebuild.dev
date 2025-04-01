@@ -1,23 +1,45 @@
 import React from 'react';
 import Link from 'next/link';
-import ProjectCard from '@/app/components/ProjectCard';
+import LinkCard from '@/app/components/LinkCard';
 
-const projects = [
+const links = [
     {
         title: "marvin",
         description: "Structured LLM outputs with native and pydantic types.",
         link: "https://github.com/prefecthq/marvin",
+        source: "github",
     },
     {
         title: "prefect",
         description: "pythonic, functional orchestrator and observability tool.",
         link: "https://github.com/prefecthq/prefect",
+        source: "github",
     },
     {
         title: "raggy",
         description: "Document parsing, embedding and querying for LLMs.",
         link: "https://github.com/zzstoatzz/raggy",
+        source: "github",
     },
+    {
+        title: "blog",
+        description: "writing about programming and other things",
+        link: "https://blog.alternatebuild.dev",
+        source: "bearblog",
+    },
+    {
+        title: "mcp registry on atproto",
+        description: "a registry of mcp projects on atproto",
+        link: "https://mcproto.alternatebuild.dev",
+        source: "my website",
+    },
+    {
+        title: "bsky intro app",
+        description: "a simple app to introduce you to bsky primitives",
+        link: "https://bskydemo.alternatebuild.dev",
+        source: "my website",
+    },
+
 ];
 
 export default function About() {
@@ -36,10 +58,10 @@ export default function About() {
                 </p>
             </div>
 
-            <h2 className="project-section-title">Featured Projects</h2>
+            <h2 className="project-section-title">projects & links</h2>
             <div className="project-grid">
-                {projects.map((project, index) => (
-                    <ProjectCard key={index} {...project} />
+                {links.map((link, index) => (
+                    <LinkCard key={index} {...link} />
                 ))}
             </div>
         </main>
