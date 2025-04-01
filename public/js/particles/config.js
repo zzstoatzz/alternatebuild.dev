@@ -1,7 +1,7 @@
 // Configuration constants for the particle system
 
 export const RANGES = {
-	PARTICLE_COUNT: { min: 50, max: 2000, step: 10, default: 800 },
+	PARTICLE_COUNT: { min: 50, max: 3000, step: 10, default: 800 },
 	PARTICLE_SIZE: { min: 1, max: 6, step: 0.5, default: 3 },
 	DRAG: { min: 0, max: 0.2, step: 0.005, default: 0.05 },
 	EXPLOSION_RADIUS: { min: 50, max: 500, step: 10, default: 200 },
