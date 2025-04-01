@@ -97,6 +97,9 @@ export class UIController {
 					overflow-y: auto !important;
 					-ms-overflow-style: none !important; /* IE and Edge */
 					scrollbar-width: none !important; /* Firefox */
+					-webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+					overscroll-behavior: contain !important; /* Prevent scrolling propagation */
+					touch-action: pan-y !important; /* Allow vertical touch scrolling */
 				}
 				
 				/* Hide scrollbar for Chrome, Safari and Opera */

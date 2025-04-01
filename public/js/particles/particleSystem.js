@@ -82,21 +82,20 @@ export class ParticleSystem {
 	bindSystemEvents() {
 		// Ensure the canvas has pointer events enabled
 		this.canvas.style.pointerEvents = "auto";
-		this.canvas.style.zIndex = "10";
+		this.canvas.style.zIndex = "10"; // Lower z-index to allow navigation to be on top
 
 		// Inject CSS to make sure the canvas doesn't block events
 		const style = document.createElement("style");
-		style.textContent = `
-            .particles-canvas {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: auto;
-                z-index: 10;
-            }
-        `;
+		style.textContent = 
+            '.particles-canvas {' +
+                'position: absolute;' +
+                'top: 0;' +
+                'left: 0;' +
+                'width: 100%;' +
+                'height: 100%;' +
+                'pointer-events: auto;' +
+                'z-index: 10;' +
+            '}';
 		document.head.appendChild(style);
 
 		// Document level mouse/touch handlers for better responsiveness
@@ -116,17 +115,32 @@ export class ParticleSystem {
 			this.isMouseDown = false;
 		});
 
-		// Touch events for mobile
+		// Touch events for mobile - modified to work better with navigation
 		document.addEventListener(
 			"touchstart",
 			(e) => {
 				if (e.touches.length > 0) {
 					const touch = e.touches[0];
+					// Check if we're touching particles area, but don't block nav elements
 					if (this.isPointInCanvas(touch.clientX, touch.clientY)) {
-						this.isMouseDown = true;
-						this.mouseX = touch.clientX;
-						this.mouseY = touch.clientY;
-						e.preventDefault(); // Prevent scrolling
+						// Get all elements at the touch position
+						const elementsAtPoint = document.elementsFromPoint(touch.clientX, touch.clientY);
+						// If any element is part of the navigation or settings UI, don't interact with particles
+						const isUIElement = elementsAtPoint.some(el => {
+							return el.closest('nav') || 
+								el.closest('.particle-controls') || 
+								el.closest('button') ||
+								el.tagName === 'BUTTON' || 
+								el.tagName === 'A' ||
+								el.closest('.z-50'); // Common high z-index nav elements
+						});
+						
+						if (!isUIElement) {
+							this.isMouseDown = true;
+							this.mouseX = touch.clientX;
+							this.mouseY = touch.clientY;
+							e.preventDefault(); // Only prevent default when interacting with particles
+						}
 					}
 				}
 			},
@@ -136,15 +150,13 @@ export class ParticleSystem {
 		document.addEventListener(
 			"touchmove",
 			(e) => {
-				if (e.touches.length > 0) {
+				if (e.touches.length > 0 && this.isMouseDown) {
 					const touch = e.touches[0];
-					if (this.isPointInCanvas(touch.clientX, touch.clientY)) {
-						this.handleMouseMove({
-							clientX: touch.clientX,
-							clientY: touch.clientY,
-						});
-						e.preventDefault(); // Prevent scrolling
-					}
+					this.handleMouseMove({
+						clientX: touch.clientX,
+						clientY: touch.clientY,
+					});
+					e.preventDefault(); // Only prevent scrolling if already interacting with particles
 				}
 			},
 			{ passive: false },

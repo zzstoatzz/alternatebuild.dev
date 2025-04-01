@@ -20,7 +20,7 @@ export default function NavigationDrawer() {
         <>
             <button
                 onClick={toggleDrawer}
-                className="fixed top-2 left-1/2 transform -translate-x-1/2 z-50 bg-gray-800 bg-opacity-60 text-cyan-300/70 p-2 rounded-lg 
+                className="fixed top-2 left-1/2 transform -translate-x-1/2 z-[100] bg-gray-800 bg-opacity-60 text-cyan-300/70 p-2 rounded-lg 
                        hover:bg-opacity-80 hover:text-cyan-300 transition-all
                        focus:outline-none focus:ring-1 focus:ring-cyan-300/30 text-xs"
                 aria-label="Toggle Navigation"
@@ -31,7 +31,7 @@ export default function NavigationDrawer() {
 
             {/* Backdrop - always present but with opacity transition */}
             <div
-                className={`fixed inset-0 bg-black z-40 transition-opacity duration-300 ease-in-out ${
+                className={`fixed inset-0 bg-black z-[90] transition-opacity duration-300 ease-in-out ${
                     isOpen ? 'bg-opacity-50 pointer-events-auto' : 'bg-opacity-0 pointer-events-none'
                 }`}
                 onClick={closeDrawer}
@@ -42,7 +42,7 @@ export default function NavigationDrawer() {
 
             {/* Drawer Panel - always present but with transform transition */}
             <div
-                className={`fixed top-0 left-1/2 -translate-x-1/2 w-64 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg z-50 rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out ${
+                className={`fixed top-0 left-1/2 -translate-x-1/2 w-64 bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg z-[100] rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out ${
                     isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full'
                 }`}
             >
