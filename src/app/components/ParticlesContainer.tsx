@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 // Define minimal router type for our needs
 interface RouterInstance {
@@ -12,24 +12,14 @@ interface RouterInstance {
 declare global {
     interface Window {
         particlesInit: (canvas: HTMLCanvasElement) => void;
-        handleZenModeTransition: () => void;
-        particleSystem: ParticleSystem;
         nextRouter: RouterInstance;
     }
-}
-
-interface ParticleSystem {
-    enterZenMode: () => void;
-    mousePosition: { x: number; y: number };
-    isMouseDown: boolean;
 }
 
 export function ParticlesContainer() {
     const particlesInitialized = useRef<boolean>(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const pathname = usePathname();
     const router = useRouter();
-    const isZenMode = pathname === '/zen';
 
     useEffect(() => {
         window.nextRouter = router;
@@ -46,14 +36,8 @@ export function ParticlesContainer() {
                 canvas.height = window.innerHeight;
                 window.particlesInit(canvas);
                 particlesInitialized.current = true;
-
-                if (isZenMode && window.particleSystem?.enterZenMode) {
-                    window.particleSystem.enterZenMode();
-                }
             }
         };
-
-        window.onkeydown = null;
 
         const checkParticlesInit = setInterval(() => {
             if (typeof window.particlesInit === 'function') {
@@ -65,7 +49,7 @@ export function ParticlesContainer() {
         return () => {
             clearInterval(checkParticlesInit);
         };
-    }, [router, isZenMode]);
+    }, [router]);
 
     return (
         <>
@@ -89,10 +73,6 @@ export function ParticlesContainer() {
                         canvas.height = window.innerHeight;
                         window.particlesInit(canvas);
                         particlesInitialized.current = true;
-                        
-                        if (isZenMode && window.particleSystem?.enterZenMode) {
-                            window.particleSystem.enterZenMode();
-                        }
                     }
                 }}
             />

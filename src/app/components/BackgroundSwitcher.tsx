@@ -13,7 +13,7 @@ export default function BackgroundSwitcher() {
     const [showCustomUrl, setShowCustomUrl] = useState(false);
     const pathname = usePathname();
     
-    if (pathname === '/zen') return null;
+    if (pathname === '/') return null;
 
     const handleTypeChange = (value: BackgroundType) => {
         setBackground({ ...background, type: value });
@@ -23,12 +23,14 @@ export default function BackgroundSwitcher() {
     return (
         <div className="fixed top-4 left-4 z-50">
             <button
+                type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className="bg-gray-800 bg-opacity-60 text-cyan-300/70 p-1.5 rounded-lg 
                     hover:bg-opacity-80 hover:text-cyan-300 transition-all scale-90
                     focus:outline-none focus:ring-1 focus:ring-cyan-300/30"
+                aria-label="Toggle background settings"
             >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
             </button>
@@ -37,8 +39,9 @@ export default function BackgroundSwitcher() {
                 <div className="mt-2 bg-gray-800 bg-opacity-80 backdrop-blur-sm p-4 rounded-lg shadow-lg min-w-[300px]">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm text-cyan-300 mb-1">Background Type</label>
+                            <label htmlFor="background-type" className="block text-sm text-cyan-300 mb-1">Background Type</label>
                             <select
+                                id="background-type"
                                 value={background.type}
                                 onChange={(e) => handleTypeChange(e.target.value as BackgroundType)}
                                 className="w-full bg-gray-700 text-white rounded p-2"
@@ -50,8 +53,9 @@ export default function BackgroundSwitcher() {
 
                         {background.type === 'solid' && (
                             <div>
-                                <label className="block text-sm text-cyan-300 mb-1">Color</label>
+                                <label htmlFor="background-color" className="block text-sm text-cyan-300 mb-1">Color</label>
                                 <input
+                                    id="background-color"
                                     type="color"
                                     value={background.color}
                                     onChange={(e) => setBackground({ ...background, color: e.target.value })}
@@ -63,9 +67,10 @@ export default function BackgroundSwitcher() {
                         {background.type === 'image' && (
                             <div className="space-y-4">
                                 <div className="grid grid-cols-3 gap-2">
-                                    {DEFAULT_IMAGES.map((url, index) => (
+                                    {DEFAULT_IMAGES.map((url) => (
                                         <button
-                                            key={index}
+                                            type="button"
+                                            key={url}
                                             onClick={() => {
                                                 setBackground({ ...background, imageUrl: url });
                                                 setShowCustomUrl(false);
@@ -75,7 +80,7 @@ export default function BackgroundSwitcher() {
                                         >
                                             <Image
                                                 src={url}
-                                                alt={`Background ${index + 1}`}
+                                                alt="Background option"
                                                 fill
                                                 className="object-cover"
                                             />
@@ -85,6 +90,7 @@ export default function BackgroundSwitcher() {
                                 
                                 <div>
                                     <button
+                                        type="button"
                                         onClick={() => setShowCustomUrl(!showCustomUrl)}
                                         className="text-sm text-cyan-300 hover:text-cyan-400 transition-colors"
                                     >
