@@ -25,6 +25,19 @@ export class SettingsManager {
 		const params = new URLSearchParams(window.location.search);
 		let changed = false;
 
+		// Handle legacy PARTICLE_SIZE parameter conversion to AVERAGE_PARTICLE_SIZE
+		if (params.has("PARTICLE_SIZE") && !params.has("AVERAGE_PARTICLE_SIZE")) {
+			const value = params.get("PARTICLE_SIZE");
+			params.delete("PARTICLE_SIZE");
+			params.set("AVERAGE_PARTICLE_SIZE", value);
+			// Replace URL without reloading to avoid confusion
+			window.history.replaceState(
+				{ path: window.location.pathname + "?" + params.toString() },
+				"",
+				window.location.pathname + "?" + params.toString()
+			);
+		}
+
 		for (const key in DEFAULT_SETTINGS) {
 			if (params.has(key)) {
 				const value = params.get(key);

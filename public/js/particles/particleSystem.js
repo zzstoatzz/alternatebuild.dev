@@ -194,11 +194,11 @@ export class ParticleSystem {
 	}
 
 	applySettings(settings) {
-		// Update each particle with new settings
+		// Update existing particles 
 		for (const particle of this.particles) {
 			particle.updateSettings(settings);
 		}
-
+		
 		// If particle count has changed, adjust particle array size
 		const currentCount = this.particles.length;
 		const targetCount = settings.PARTICLE_COUNT;
@@ -208,6 +208,7 @@ export class ParticleSystem {
 			for (let i = currentCount; i < targetCount; i++) {
 				const x = Math.random() * this.canvas.width;
 				const y = Math.random() * this.canvas.height;
+				// New particles get created with randomized size based on current settings
 				this.particles.push(new Particle(x, y, settings));
 			}
 		} else if (targetCount < currentCount) {

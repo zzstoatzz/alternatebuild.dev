@@ -325,9 +325,9 @@ export class UIController {
 	generateControlGroups() {
 		let html = '';
 		
-		// Group controls by category
+		// Group controls by category with updated names and added ELASTICITY
 		const categories = {
-			'particles': ['PARTICLE_COUNT', 'PARTICLE_SIZE', 'DRAG'],
+			'particles': ['PARTICLE_COUNT', 'AVERAGE_PARTICLE_SIZE', 'DRAG', 'ELASTICITY'],
 			'connections': ['INTERACTION_RADIUS', 'CONNECTION_OPACITY', 'CONNECTION_WIDTH', 'CONNECTION_COLOR'],
 			'forces': ['EXPLOSION_RADIUS', 'EXPLOSION_FORCE', 'GRAVITY', 'ATTRACT', 'SMOOTHING_FACTOR']
 		};
@@ -339,10 +339,13 @@ export class UIController {
 				const range = RANGES[key];
 				if (!range) continue;
 				
+				// Generate label based on key with better formatting
+				const labelText = key.toLowerCase().replace(/_/g, ' ');
+				
 				if (key === 'CONNECTION_COLOR') {
 					html += `
 						<div class="control-group">
-							<label for="${key}">${key.toLowerCase().replace(/_/g, ' ')}</label>
+							<label for="${key}">${labelText}</label>
 							<div class="slider-row">
 								<input type="color" id="${key}" class="color-picker" value="${range.default}">
 								<span id="${key}_VALUE" class="value-display">${range.default}</span>
@@ -352,7 +355,7 @@ export class UIController {
 				} else {
 					html += `
 						<div class="control-group">
-							<label for="${key}">${key.toLowerCase().replace(/_/g, ' ')}</label>
+							<label for="${key}">${labelText}</label>
 							<div class="slider-row">
 								<input type="range" id="${key}" class="slider-input" 
 									min="${range.min}" max="${range.max}" step="${range.step}" value="${range.default}">

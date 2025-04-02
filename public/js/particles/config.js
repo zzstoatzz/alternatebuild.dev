@@ -2,12 +2,13 @@
 
 export const RANGES = {
 	PARTICLE_COUNT: { min: 50, max: 3000, step: 10, default: 800 },
-	PARTICLE_SIZE: { min: 1, max: 6, step: 0.5, default: 3 },
+	AVERAGE_PARTICLE_SIZE: { min: 1, max: 6, step: 0.1, default: 2.5 },
 	DRAG: { min: 0, max: 0.2, step: 0.005, default: 0.05 },
 	EXPLOSION_RADIUS: { min: 50, max: 500, step: 10, default: 200 },
 	EXPLOSION_FORCE: { min: 0, max: 100, step: 1, default: 15.0 },
 	ATTRACT: { min: -1000, max: 1000, step: 1, default: -100 },
 	GRAVITY: { min: -100, max: 100, step: 0.5, default: 0 },
+	ELASTICITY: { min: 0.1, max: 1.0, step: 0.05, default: 0.8 },
 	INTERACTION_RADIUS: { min: 10, max: 300, step: 5, default: 80 },
 	SMOOTHING_FACTOR: { min: 0.01, max: 0.3, step: 0.01, default: 0.13 },
 	CONNECTION_OPACITY: { min: 0, max: 0.5, step: 0.01, default: 0.05 },
@@ -20,6 +21,11 @@ export const RANGES = {
 export const DEFAULT_SETTINGS = Object.fromEntries(
 	Object.entries(RANGES).map(([key, value]) => [key, value.default]),
 );
+
+// Define constants for randomized size
+export const MIN_RANDOM_SIZE = 0.5; // Absolute minimum size
+export const MAX_RANDOM_SIZE = 10.0; // Absolute maximum size
+export const SIZE_VARIATION_FACTOR = 0.6; // e.g., 0.6 means size can vary +/- 60% from average
 
 // Particle color presets
 export const PARTICLE_COLORS = [
@@ -238,14 +244,14 @@ export const PARTICLE_CONTROLS_TEMPLATE = `
             </div>
         </div>
         <div class="control-group">
-            <label for="PARTICLE_SIZE">Particle Size</label>
+            <label for="AVERAGE_PARTICLE_SIZE">Average Particle Size</label>
             <div class="control-row">
-                <input type="range" id="PARTICLE_SIZE" class="slider-input"
-                    min="${RANGES.PARTICLE_SIZE.min}" 
-                    max="${RANGES.PARTICLE_SIZE.max}" 
-                    step="${RANGES.PARTICLE_SIZE.step}" 
-                    value="${RANGES.PARTICLE_SIZE.default}">
-                <span id="PARTICLE_SIZE_VALUE" class="value-display">${RANGES.PARTICLE_SIZE.default}</span>
+                <input type="range" id="AVERAGE_PARTICLE_SIZE" class="slider-input"
+                    min="${RANGES.AVERAGE_PARTICLE_SIZE.min}" 
+                    max="${RANGES.AVERAGE_PARTICLE_SIZE.max}" 
+                    step="${RANGES.AVERAGE_PARTICLE_SIZE.step}" 
+                    value="${RANGES.AVERAGE_PARTICLE_SIZE.default}">
+                <span id="AVERAGE_PARTICLE_SIZE_VALUE" class="value-display">${RANGES.AVERAGE_PARTICLE_SIZE.default}</span>
             </div>
         </div>
         <div class="control-group">
@@ -257,6 +263,17 @@ export const PARTICLE_CONTROLS_TEMPLATE = `
                     step="${RANGES.DRAG.step}" 
                     value="${RANGES.DRAG.default}">
                 <span id="DRAG_VALUE" class="value-display">${RANGES.DRAG.default}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="ELASTICITY">Elasticity</label>
+            <div class="control-row">
+                <input type="range" id="ELASTICITY" class="slider-input"
+                    min="${RANGES.ELASTICITY.min}" 
+                    max="${RANGES.ELASTICITY.max}" 
+                    step="${RANGES.ELASTICITY.step}" 
+                    value="${RANGES.ELASTICITY.default}">
+                <span id="ELASTICITY_VALUE" class="value-display">${RANGES.ELASTICITY.default}</span>
             </div>
         </div>
         <div class="control-group">
