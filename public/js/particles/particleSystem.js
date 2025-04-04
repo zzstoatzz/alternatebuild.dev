@@ -241,7 +241,7 @@ export class ParticleSystem {
 		for (let nx = mouseCellX - checkRadiusCells; nx <= mouseCellX + checkRadiusCells; nx++) {
 			for (let ny = mouseCellY - checkRadiusCells; ny <= mouseCellY + checkRadiusCells; ny++) {
 				// Map check cell coords to main grid coords - use the same cell format as updateGrid
-				const cellId = nx + ',' + ny;
+				const cellId = `${nx},${ny}`;
 				const indices = this.grid[cellId];
 				
 				if (!indices) continue;
@@ -284,7 +284,7 @@ export class ParticleSystem {
 			const p = this.particles[i];
 			const cellX = Math.floor(p.x / cellSize);
 			const cellY = Math.floor(p.y / cellSize);
-			const cellId = cellX + ',' + cellY;
+			const cellId = `${cellX},${cellY}`;
 
 			if (!this.grid[cellId]) {
 				this.grid[cellId] = [];
@@ -320,7 +320,7 @@ export class ParticleSystem {
 			// Check own cell and neighboring cells
 			for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
 				for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
-					const neighborId = nx + ',' + ny;
+					const neighborId = `${nx},${ny}`;
 					const neighborIndices = this.grid[neighborId];
 
 					if (!neighborIndices) continue;
@@ -431,7 +431,7 @@ export class ParticleSystem {
 			// Check own cell and neighboring cells
 			for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
 				for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
-					const neighborId = nx + ',' + ny;
+					const neighborId = `${nx},${ny}`;
 					const neighborIndices = this.grid[neighborId];
 
 					if (!neighborIndices) continue;
@@ -545,7 +545,7 @@ export class ParticleSystem {
 		const settings = this.settingsManager.getAllSettings();
 		
 		// Limit number of effects to avoid slowdown
-		const MAX_EFFECTS = 30;
+		const MAX_EFFECTS = 20; // Reduced from 30
 		if (this.isMouseDown && this.mouseEffects.length < MAX_EFFECTS) {
 			// mouse coordinates are already in canvas space
 			this.mouseEffects.push({
@@ -553,7 +553,7 @@ export class ParticleSystem {
 				y: this.mouseY,
 				radius: settings.EXPLOSION_RADIUS,
 				startTime: timestamp,
-				duration: 600, // Shorter duration for better performance
+				duration: 500, // Reduced from 600
 			});
 		}
 		
@@ -564,19 +564,16 @@ export class ParticleSystem {
 			const effect = this.mouseEffects[i];
 			const age = timestamp - effect.startTime;
 			
-			// Remove expired effects
 			if (age > effect.duration) {
 				this.mouseEffects.splice(i, 1);
 				continue;
 			}
 			
-			// Calculate effect progress (0 to 1)
 			const progress = age / effect.duration;
-			const easeOutQuad = 1 - (1 - progress) * (1 - progress); // Apply easing
+			const easeOutQuad = 1 - (1 - progress) * (1 - progress);
 			
-			// More efficient ripple effect - simplified and more subtle
-			const currentOpacity = Math.max(0, 0.15 * (1 - progress));
-			const currentRadius = Math.max(1, effect.radius * easeOutQuad * 0.8);
+			const currentOpacity = Math.max(0, 0.1 * (1 - progress));
+			const currentRadius = Math.max(1, effect.radius * easeOutQuad * 0.7);
 			
 			// Draw a single gradient ripple
 			const gradient = this.ctx.createRadialGradient(
@@ -584,8 +581,8 @@ export class ParticleSystem {
 				effect.x, effect.y, currentRadius
 			);
 			
-			gradient.addColorStop(0, 'rgba(140, 240, 255, ' + currentOpacity + ')');
-			gradient.addColorStop(1, 'rgba(70, 130, 220, 0)');
+			gradient.addColorStop(0, `rgba(120, 220, 255, ${currentOpacity})`);
+			gradient.addColorStop(1, 'rgba(60, 120, 220, 0)');
 			
 			this.ctx.fillStyle = gradient;
 			this.ctx.beginPath();
