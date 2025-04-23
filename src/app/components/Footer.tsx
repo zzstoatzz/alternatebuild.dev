@@ -69,7 +69,16 @@ export default function Footer() {
                         </a>
                     ))}
                 </div>
-                <p className="text-xs text-gray-500">&copy; {new Date().getFullYear()} zzstoatzz</p>
+                <p className="text-xs text-gray-500 mb-2">&copy; {new Date().getFullYear()} zzstoatzz</p>
+                
+                <a 
+                    href="https://github.com/zzstoatzz/alternatebuild.dev"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-gray-500 hover:text-cyan-400 transition-colors duration-300"
+                >
+                    This site is open source
+                </a>
             </div>
         </footer>
     );

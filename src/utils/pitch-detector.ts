@@ -87,7 +87,6 @@ export class PitchDetector {
 			this.analyser = this.audioContext.createAnalyser();
 			this.analyser.fftSize = this.bufferSize * 2; // Typically related to bufferSize
 
-			// Modern approach using AudioWorkletNode (preferred in 2025)
 			if (this.audioContext.audioWorklet) {
 				try {
 					console.log(
