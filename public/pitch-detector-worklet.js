@@ -24,6 +24,7 @@ class PitchDetectorProcessor extends AudioWorkletProcessor {
   /**
    * Called by the system to process audio blocks.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   process(inputs, _outputs, _parameters) {
     // Use the first input and first channel - assumes mono input
     const inputChannel = inputs[0]?.[0];
