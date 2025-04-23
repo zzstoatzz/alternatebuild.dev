@@ -120,33 +120,66 @@ const TunerPage: FC = () => {
 				</div>
 			)}
 
-			<div className="text-center h-56 flex flex-col justify-center items-center p-6 bg-gray-800 rounded-lg shadow-inner w-full max-w-md">
+			<div className="text-center flex flex-col justify-center items-center p-6 bg-gray-800 rounded-lg shadow-inner w-full max-w-md min-h-[24rem]">
 				{isListening ? (
 					<>
-						{frequency !== null ? (
-							<p className="text-lg text-gray-400 mb-1">
-								Frequency: <span className="font-bold text-gray-100">{frequency.toFixed(1)}</span> Hz
-							</p>
-						) : null}
-						
-						<p className="text-sm text-gray-500 mb-3">
-						   Clarity: {(clarity * 100).toFixed(0)}%
-						</p>
-						
-						{noteDetails ? (
-							<div className="text-6xl font-bold text-cyan-300">
-								<span className="align-top text-4xl mr-1">{noteDetails.note}</span>
-								<span>{noteDetails.octave}</span>
-								<p className={`text-xl font-normal mt-2 ${getCentsColor(noteDetails.centsOff)}`}>
-								   Cents: <span className="font-semibold">{noteDetails.centsOff > 0 ? '+' : ''}{noteDetails.centsOff}</span>
+						<div className="h-12 mb-2">
+							{frequency !== null ? (
+								<p className="text-lg text-gray-400">
+									Frequency: <span className="font-bold text-gray-100">{frequency.toFixed(1)}</span> Hz
 								</p>
-							</div>
-						) : (
-							<p className="text-2xl text-gray-500 animate-pulse h-[96px] flex items-center">Listening...</p> // Maintain height
-						)}
+							) : null}
+							<p className="text-sm text-gray-500">
+							   Clarity: {(clarity * 100).toFixed(0)}%
+							</p>
+						</div>
+
+						<div className="w-48 h-24 relative mb-4">
+							<svg viewBox="0 0 100 50" className="w-full h-full absolute bottom-0 left-0 overflow-visible" aria-labelledby="gaugeTitle" role="img">
+								<title id="gaugeTitle">Tuning Accuracy Gauge</title>
+								<path 
+									d="M 10 50 A 40 40 0 0 1 90 50" 
+									stroke="#4a5568" // gray-600
+									strokeWidth="3"
+									fill="none"
+								/>
+								<line x1="50" y1="5" x2="50" y2="10" stroke="#a0aec0" strokeWidth="1" />
+								
+								{noteDetails && clarity >= MIN_CLARITY_THRESHOLD && (
+									<line
+										x1="50" 
+										y1="50" // Base of the needle at the bottom center
+										x2="50"
+										y2="10" // Tip of the needle
+										stroke={getCentsColor(noteDetails.centsOff).replace('text-', '').split('-')[0] === 'green' ? '#48bb78' : getCentsColor(noteDetails.centsOff).replace('text-', '').split('-')[0] === 'yellow' ? '#ecc94b' : '#f56565'} // Use color from getCentsColor
+										strokeWidth="2"
+										style={{
+											transformOrigin: '50px 50px', // Rotate around the base
+											// Clamp cents to +/- 50, map to +/- 90 degrees
+											transform: `rotate(${Math.max(-50, Math.min(50, noteDetails.centsOff)) * (90 / 50)}deg)`,
+											transition: 'transform 0.1s ease-out' // Smooth transition
+										}}
+									/>
+								)}
+							</svg>
+						</div>
+
+						<div className="h-32">
+							{noteDetails ? (
+								<div className="text-6xl font-bold text-cyan-300">
+									<span className="align-top text-4xl mr-1">{noteDetails.note}</span>
+									<span>{noteDetails.octave}</span>
+									<p className={`text-xl font-normal mt-2 ${getCentsColor(noteDetails.centsOff)}`}>
+									   Cents: <span className="font-semibold">{noteDetails.centsOff > 0 ? '+' : ''}{noteDetails.centsOff}</span>
+									</p>
+								</div>
+							) : (
+								<p className="text-2xl text-gray-500 animate-pulse h-full flex items-center justify-center">Listening...</p>
+							)}
+						</div>
 					</>
 				) : (
-					<p className='text-xl text-gray-500 h-[96px] flex items-center'>Click &quot;Start Tuning&quot; to begin</p> // Maintain height
+					<p className='text-xl text-gray-500 h-full flex items-center justify-center'>Click &quot;Start Tuning&quot; to begin</p>
 				)}
 			</div>
 
