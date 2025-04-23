@@ -91,7 +91,7 @@ const TunerPage: FC = () => {
 
 	return (
 		<div className="mx-auto max-w-2xl px-4 py-16 font-sans text-gray-200 flex flex-col items-center min-h-[calc(100vh-10rem)]">
-			<h1 className="text-3xl font-bold text-cyan-400 mb-8">Browser Guitar Tuner</h1>
+			<h1 className="text-3xl font-bold text-cyan-400 mb-8">12-tone equal temperament tuner</h1>
 			
 			<div className="mb-8">
 				{!isListening ? (
