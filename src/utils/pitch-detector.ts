@@ -75,11 +75,6 @@ export class PitchDetector {
 				latencyHint: "interactive",
 			});
 
-			// Log the actual sample rate being used
-			console.log(
-				`AudioContext created with sample rate: ${this.audioContext.sampleRate} Hz`,
-			);
-
 			// Create source node
 			this.source = this.audioContext.createMediaStreamSource(this.stream);
 
@@ -89,11 +84,7 @@ export class PitchDetector {
 
 			if (this.audioContext.audioWorklet) {
 				try {
-					console.log(
-						`Attempting to load AudioWorklet from: ${this.audioWorkletPath}`,
-					);
 					await this.audioContext.audioWorklet.addModule(this.audioWorkletPath);
-					console.log("AudioWorklet module loaded successfully.");
 
 					this.workletNode = new AudioWorkletNode(
 						this.audioContext,
@@ -111,7 +102,6 @@ export class PitchDetector {
 
 					this.workletNode.port.onmessage = (event) => {
 						if (event.data.frequency !== undefined) {
-							// console.log('Worklet message:', event.data);
 							callback(event.data.frequency, event.data.clarity);
 						}
 					};
@@ -125,7 +115,6 @@ export class PitchDetector {
 					this.source.connect(this.analyser);
 					this.analyser.connect(this.workletNode);
 					this.workletNode.connect(this.audioContext.destination); // Connect to output to avoid issues
-					console.log("AudioWorklet pipeline connected.");
 				} catch (e) {
 					console.warn(
 						"AudioWorklet setup failed, falling back to ScriptProcessor",
@@ -190,7 +179,6 @@ export class PitchDetector {
 		this.source.connect(this.analyser);
 		this.analyser.connect(this.processor);
 		this.processor.connect(this.audioContext.destination);
-		console.log("ScriptProcessor pipeline connected.");
 	}
 
 	/**
@@ -198,7 +186,6 @@ export class PitchDetector {
 	 */
 	stop(): void {
 		if (!this.isRunning) return;
-		console.log("Stopping pitch detection...");
 
 		this.isRunning = false; // Signal processing loops to stop
 
@@ -238,7 +225,6 @@ export class PitchDetector {
 			this.audioContext
 				.close()
 				.then(() => {
-					console.log("AudioContext closed.");
 				})
 				.catch((e) => {
 					console.error("Error closing AudioContext:", e);

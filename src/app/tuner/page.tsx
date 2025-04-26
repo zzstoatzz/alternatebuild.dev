@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, type FC } from "react";
 import { PitchDetector, frequencyToNoteDetails } from '@/utils/pitch-detector';
 
 const MIN_CLARITY_THRESHOLD = 0.7; // Minimum clarity to display note
+const MAX_SEMITONE_JUMP = 3.0; // Max jump in semitones to accept for smoothing
 
 const TunerPage: FC = () => {
 	const [frequency, setFrequency] = useState<number | null>(null);
@@ -14,23 +15,51 @@ const TunerPage: FC = () => {
 	
 	// Ref to hold the PitchDetector instance
 	const pitchDetectorRef = useRef<PitchDetector | null>(null);
+	// Ref to store the last stable frequency used for note display
+	const stableFrequencyRef = useRef<number | null>(null);
 
 	// Callback function passed to the detector
 	const handlePitchUpdate = useCallback((detectedFrequency: number | null, detectedClarity: number) => {
+		// Always update the raw frequency and clarity display
 		setFrequency(detectedFrequency);
 		setClarity(detectedClarity);
 		
 		if (detectedFrequency && detectedClarity >= MIN_CLARITY_THRESHOLD) {
-			const details = frequencyToNoteDetails(detectedFrequency);
-			setNoteDetails(details);
+			let updateNote = false;
+
+			if (stableFrequencyRef.current === null) {
+				// If no stable frequency yet, accept the first valid one
+				updateNote = true;
+			} else {
+				// Calculate difference from last stable frequency in semitones
+				const diffSemitones = Math.abs(12 * Math.log2(detectedFrequency / stableFrequencyRef.current));
+				
+				if (diffSemitones < MAX_SEMITONE_JUMP) {
+					// If the jump is small enough, accept it
+					updateNote = true;
+				} else {
+					// Large jump detected, likely an error or harmonic - ignore for note display
+				}
+			}
+
+			if (updateNote) {
+				const details = frequencyToNoteDetails(detectedFrequency);
+				setNoteDetails(details);
+				stableFrequencyRef.current = detectedFrequency; // Update stable frequency
+			} 
+			// If !updateNote, we keep the existing noteDetails and stableFrequencyRef
+
 		} else {
-			setNoteDetails(null); // Clear note if below threshold or no frequency
+			// If clarity is too low or frequency is null, clear the note and stable frequency
+			setNoteDetails(null);
+			stableFrequencyRef.current = null;
 		}
-	}, []); // No dependencies needed as it only calls setters
+	}, []); // No dependencies needed
 
 	const handleStart = useCallback(async () => {
 		setError(null); // Clear previous errors
 		if (pitchDetectorRef.current) return; // Already started
+		stableFrequencyRef.current = null; // Reset stable frequency on start
 
 		try {
 			// Configure and create the detector instance
@@ -42,10 +71,8 @@ const TunerPage: FC = () => {
 				audioWorkletPath: '/pitch-detector-worklet.js' 
 			});
 			
-			console.log('Starting pitch detector...');
 			await pitchDetectorRef.current.start(handlePitchUpdate);
 			setIsListening(true);
-			console.log('Pitch detector started successfully.');
 		} catch (err) {
 			console.error('Error starting pitch detector:', err);
 			setError(`Error starting tuner: ${err.message || 'Unknown error'}`);
@@ -59,7 +86,6 @@ const TunerPage: FC = () => {
 	}, [handlePitchUpdate]); // Dependency on the stable callback
 
 	const handleStop = useCallback(() => {
-		console.log('Attempting to stop pitch detector...');
 		pitchDetectorRef.current?.stop();
 		pitchDetectorRef.current = null;
 		
@@ -69,14 +95,13 @@ const TunerPage: FC = () => {
 		setNoteDetails(null);
 		setClarity(0);
 		setError(null);
-		console.log('Pitch detector stopped and state reset.');
+		stableFrequencyRef.current = null; // Reset stable frequency on stop
 	}, []); // No dependencies needed as it only accesses ref and setters
 
 	// Cleanup on unmount
 	useEffect(() => {
 		// Return the cleanup function
 		return () => {
-			console.log('TunerPage unmounting, ensuring detector is stopped.');
 			handleStop(); // Use the stable handleStop function
 		};
 	}, [handleStop]); // Depend on the stable handleStop callback
