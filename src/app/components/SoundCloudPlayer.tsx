@@ -9,19 +9,6 @@ interface SoundCloudWidget {
     isPaused: (callback: (isPaused: boolean) => void) => void;
 }
 
-const MinimizeIndicator = ({ onMinimize }: { onMinimize: () => void }) => (
-    <div
-        className="absolute left-0 right-0 top-0 h-24 opacity-10 hover:opacity-30 cursor-pointer 
-            flex items-center justify-center transition-opacity"
-        onClick={onMinimize}
-    >
-        <div className="animate-bounce-subtle flex flex-col items-center pointer-events-none">
-            <span className="block transform rotate-90 text-2xl tracking-widest font-thin">›</span>
-            <span className="block transform rotate-90 text-2xl tracking-widest font-thin -mt-3">›</span>
-        </div>
-    </div>
-);
-
 export default function SoundCloudPlayer() {
     const [isMinimized, setIsMinimized] = useState(true);
     const [shouldShow] = useState(true); // Remove setShouldShow since it's not used
@@ -105,39 +92,53 @@ export default function SoundCloudPlayer() {
                     ${shouldShow ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'}
                     ${isMinimized ? 'h-12 w-12 cursor-pointer' : 'h-[465px] w-[320px]'}`}
                 onClick={() => isMinimized ? setIsMinimized(false) : null}
+                onKeyDown={(e) => { if (isMinimized && (e.key === 'Enter' || e.key === ' ')) setIsMinimized(false); }}
+                role="button"
+                aria-expanded={!isMinimized}
+                tabIndex={isMinimized ? 0 : -1}
             >
                 <div className={`bg-black bg-opacity-80 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden h-full
                     ${isPlaying ? 'animate-glow bg-blue-500/5' : 'transition-[box-shadow,background-color] duration-75'}`}>
                     <div
                         className="h-12 px-4 flex items-center justify-between bg-black bg-opacity-40 cursor-pointer relative z-10"
-                        onClick={(e) => {
-                            if (!isMinimized) {
-                                e.stopPropagation();
-                                setIsMinimized(true);
-                            }
-                        }}
                     >
                         <div className="w-full h-full flex items-center justify-between text-xl transition-colors group">
                             {isMinimized ? (
                                 <span className="text-cyan-300 group-hover:text-cyan-400">♪</span>
                             ) : (
                                 <>
+                                    <span className="text-cyan-300">♪</span>
+
                                     <button
+                                        type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setIsMinimized(true);
                                         }}
-                                        className="text-cyan-300 group-hover:text-cyan-400"
+                                        className="text-cyan-300 hover:text-cyan-100 p-1 rounded"
+                                        aria-label="Minimize Player"
                                     >
-                                        ♪
+                                        <svg 
+                                            xmlns="http://www.w3.org/2000/svg" 
+                                            fill="none" 
+                                            viewBox="0 0 24 24" 
+                                            strokeWidth={1.5} 
+                                            stroke="currentColor" 
+                                            className="w-5 h-5"
+                                            aria-hidden="true"
+                                        >
+                                          <title>Minimize Player</title>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                        </svg>
                                     </button>
 
                                     <button
+                                        type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setShowUsernameModal(true);
                                         }}
-                                        className="text-xs text-gray-500 opacity-40 hover:opacity-60 relative z-[60]"
+                                        className="text-xs text-gray-400 hover:text-gray-200 relative z-[60] transition-colors"
                                         style={{ width: 'fit-content' }}
                                     >
                                         change user
@@ -150,6 +151,7 @@ export default function SoundCloudPlayer() {
                     <div className={`w-full transition-all duration-200 ${isMinimized ? 'opacity-0 h-0' : 'opacity-100 h-[calc(100%-3rem)]'}`}>
                         <div className="relative z-20 h-full">
                             <iframe
+                                title={`${username}'s SoundCloud Player`}
                                 width="100%"
                                 height="100%"
                                 scrolling="no"
@@ -158,7 +160,6 @@ export default function SoundCloudPlayer() {
                                 src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${username}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`}
                             />
                         </div>
-                        {!isMinimized && <MinimizeIndicator onMinimize={() => setIsMinimized(true)} />}
                     </div>
                 </div>
             </div>
@@ -167,11 +168,19 @@ export default function SoundCloudPlayer() {
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
                     onClick={() => setShowUsernameModal(false)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') setShowUsernameModal(false); }}
+                    role="dialog"
+                    aria-modal="true"
+                    tabIndex={-1}
+                    aria-labelledby="modal-title"
                 >
                     <div
                         className="bg-black bg-opacity-80 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4"
                         onClick={e => e.stopPropagation()}
+                        onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowUsernameModal(false); } }}
+                        role="document"
                     >
+                        <h2 id="modal-title" className="sr-only">Change SoundCloud User</h2>
                         <input
                             type="text"
                             defaultValue={username}
@@ -185,10 +194,9 @@ export default function SoundCloudPlayer() {
                             }}
                             className="w-full bg-transparent border-b border-cyan-300/30 text-cyan-300 text-sm px-2 py-1 focus:outline-none focus:border-cyan-300"
                             placeholder="Enter SoundCloud username"
-                            autoFocus
                         />
                         <div className="text-xs text-gray-500 mt-2 text-center opacity-50">
-                            Press Enter to save, Esc or click outside to cancel
+                            type a soundcloud username and hit Enter   (e.g. larryfisherman)
                         </div>
                     </div>
                 </div>
