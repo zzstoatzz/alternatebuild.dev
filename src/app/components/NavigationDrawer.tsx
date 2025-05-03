@@ -65,6 +65,7 @@ export default function NavigationDrawer() {
                                     { href: '/', label: 'home' },
                                     { href: '/about', label: 'about' },
                                     { href: '/contact', label: 'contact' },
+                                    { href: '/tuner', label: 'tuner' },
                                 ].map(({ href, label }) => (
                                     <li key={href} className={pathname === href ? "opacity-50" : ""}>
                                         <Link

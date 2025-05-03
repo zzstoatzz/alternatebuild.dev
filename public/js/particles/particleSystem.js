@@ -3,6 +3,15 @@ import { SettingsManager } from "./settingsManager.js";
 import { UIController } from "./uiController.js";
 import { PARTICLE_COLORS } from "./config.js";
 
+// Define fixed cell size for the spatial grid
+const FIXED_CELL_SIZE = 75; // Adjust this value based on testing/density
+
+// --- Glow Cluster Constants ---
+const STRENGTH_INCREASE_RATE = 0.5; // How fast strength builds up per second
+const MAX_STRENGTH = 5.0;           // Maximum cluster strength value
+const STRENGTH_DECAY_RATE = 0.1;    // How fast strength decays per second when alone
+// --- End Glow Cluster Constants ---
+
 export class ParticleSystem {
 	constructor(canvas) {
 		this.canvas = canvas;
@@ -225,27 +234,29 @@ export class ParticleSystem {
 		const force = settings.EXPLOSION_FORCE;
 		const radiusSq = radius * radius;
 		
-		// Use a reasonable cell size for mouse check, potentially larger than interaction radius
-		const cellSize = Math.max(50, settings.INTERACTION_RADIUS > 0 ? settings.INTERACTION_RADIUS : 50);
+		// Use the FIXED_CELL_SIZE for grid calculations
+		const cellSize = FIXED_CELL_SIZE;
 		
-		// mouseX and mouseY are now in canvas coordinates (we fixed this in handleMouseMove)
+		// mouseX and mouseY are now in canvas coordinates
 		const mouseCellX = Math.floor(this.mouseX / cellSize);
 		const mouseCellY = Math.floor(this.mouseY / cellSize);
 		
-		// Adjust check radius based on cellSize
+		// Adjust check radius based on cellSize and EXPLOSION_RADIUS (this calculation remains correct)
 		const checkRadiusCells = Math.ceil(radius / cellSize);
 		
 		// Track particles we've already checked
 		const checkedParticles = new Set();
 		
+		// Iterate through the correct range of cells using the fixed cell size coords
 		for (let nx = mouseCellX - checkRadiusCells; nx <= mouseCellX + checkRadiusCells; nx++) {
 			for (let ny = mouseCellY - checkRadiusCells; ny <= mouseCellY + checkRadiusCells; ny++) {
 				// Map check cell coords to main grid coords - use the same cell format as updateGrid
 				const cellId = `${nx},${ny}`;
-				const indices = this.grid[cellId];
+				const indices = this.grid[cellId]; // Lookup uses the grid built with FIXED_CELL_SIZE
 				
 				if (!indices) continue;
 				
+				// Process particles within the explosion radius
 				for (const i of indices) {
 					if (checkedParticles.has(i)) continue;
 					
@@ -274,10 +285,8 @@ export class ParticleSystem {
 		// Clear grid
 		this.grid = {};
 
-		// Get current cell size from settings with safety fallback
-		const settings = this.settingsManager.getAllSettings();
-		const cellSize =
-			settings.INTERACTION_RADIUS > 0 ? settings.INTERACTION_RADIUS : 50;
+		// Use the globally defined fixed cell size
+		const cellSize = FIXED_CELL_SIZE;
 
 		// Place particles in grid cells
 		for (let i = 0; i < this.particles.length; i++) {
@@ -306,6 +315,11 @@ export class ParticleSystem {
 		// Early exit if no attraction/repulsion or radius is invalid
 		if (Math.abs(attract) < 1e-6 || interactionRadius <= 0) return;
 
+		// Use FIXED_CELL_SIZE for grid cell dimensions
+		const cellSize = FIXED_CELL_SIZE;
+		// Calculate how many cells to check based on interactionRadius
+		const checkRadiusCells = Math.ceil(interactionRadius / cellSize);
+
 		const interactionRadiusSq = interactionRadius * interactionRadius;
 		// Pre-calculate force scaling factor including deltaTime
 		const forceScale = attract * this.deltaTime;
@@ -317,9 +331,9 @@ export class ParticleSystem {
 			const cellX = Number.parseInt(cellParts[0]);
 			const cellY = Number.parseInt(cellParts[1]);
 
-			// Check own cell and neighboring cells
-			for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
-				for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
+			// Check own cell and neighboring cells within the calculated radius
+			for (let nx = cellX - checkRadiusCells; nx <= cellX + checkRadiusCells; nx++) {
+				for (let ny = cellY - checkRadiusCells; ny <= cellY + checkRadiusCells; ny++) {
 					const neighborId = `${nx},${ny}`;
 					const neighborIndices = this.grid[neighborId];
 
@@ -343,6 +357,18 @@ export class ParticleSystem {
 							// Skip if particles are too far apart or too close
 							if (distSq >= interactionRadiusSq || distSq < 1e-6) continue;
 
+							// --- START Glow Cluster Logic ---
+							// Increment strength for both particles
+							p1.clusterStrength += STRENGTH_INCREASE_RATE * this.deltaTime;
+							p2.clusterStrength += STRENGTH_INCREASE_RATE * this.deltaTime;
+							// Cap strength
+							p1.clusterStrength = Math.min(p1.clusterStrength, MAX_STRENGTH);
+							p2.clusterStrength = Math.min(p2.clusterStrength, MAX_STRENGTH);
+							// Set flags for decay calculation in updateParticles
+							p1.wasNear = true;
+							p2.wasNear = true;
+							// --- END Glow Cluster Logic ---
+							
 							const distance = Math.sqrt(distSq);
 
 							// Apply smoothing to avoid extreme forces at very small distances
@@ -387,6 +413,21 @@ export class ParticleSystem {
 		// Store the deltaTime for use in physics calculations
 		this.deltaTime = deltaTime / 1000.0; // Convert to seconds
 		
+		// --- START Glow Cluster Decay & Factor Calculation ---
+		// Iterate before grid update/attraction to use previous frame's `wasNear` state
+		for (const particle of this.particles) {
+			if (!particle.wasNear) { // If not near anything last frame
+				particle.clusterStrength -= STRENGTH_DECAY_RATE * this.deltaTime;
+				particle.clusterStrength = Math.max(0, particle.clusterStrength); // Clamp at 0
+			}
+			// Calculate glow factor (0 to 1) based on strength
+			particle.glowFactor = particle.clusterStrength / MAX_STRENGTH; // Simple linear map
+			
+			// Reset flag for the current frame (will be set in applyAttraction if near)
+			particle.wasNear = false; 
+		}
+		// --- END Glow Cluster Decay & Factor Calculation ---
+
 		// UpdateGrid for spatial partitioning
 		this.updateGrid();
 		
@@ -415,6 +456,11 @@ export class ParticleSystem {
 		const connectionColor = settings.CONNECTION_COLOR;
 		const connectionWidth = settings.CONNECTION_WIDTH || 1;
 
+		// Use FIXED_CELL_SIZE for grid cell dimensions
+		const cellSize = FIXED_CELL_SIZE;
+		// Calculate how many cells to check based on interactionRadius
+		const checkRadiusCells = Math.ceil(interactionRadius / cellSize);
+
 		this.ctx.strokeStyle = connectionColor;
 		this.ctx.lineWidth = connectionWidth;
 
@@ -428,9 +474,9 @@ export class ParticleSystem {
 			const cellX = Number.parseInt(cellParts[0]);
 			const cellY = Number.parseInt(cellParts[1]);
 
-			// Check own cell and neighboring cells
-			for (let nx = cellX - 1; nx <= cellX + 1; nx++) {
-				for (let ny = cellY - 1; ny <= cellY + 1; ny++) {
+			// Check own cell and neighboring cells within the calculated radius
+			for (let nx = cellX - checkRadiusCells; nx <= cellX + checkRadiusCells; nx++) {
+				for (let ny = cellY - checkRadiusCells; ny <= cellY + checkRadiusCells; ny++) {
 					const neighborId = `${nx},${ny}`;
 					const neighborIndices = this.grid[neighborId];
 
@@ -514,6 +560,34 @@ export class ParticleSystem {
 
 		// Handle mouse effects
 		this.updateAndDrawMouseEffects(timestamp);
+
+		// --- START Glow Drawing Pass ---
+		this.ctx.save();
+		// Use additive blending for a nice glow effect
+		this.ctx.globalCompositeOperation = 'lighter'; 
+		const GLOW_COLOR_BASE = 'rgba(255, 255, 200, '; // Faint yellow base color
+
+		for (const particle of this.particles) {
+			if (particle.glowFactor > 0.3) {
+				const glowOpacity = particle.glowFactor * 0.15; // Max opacity (adjust as needed)
+				const glowRadius = particle.radius * (1 + particle.glowFactor * 2); // Size based on factor
+				
+				// Create radial gradient for soft glow
+				const gradient = this.ctx.createRadialGradient(
+					particle.x, particle.y, 0, 
+					particle.x, particle.y, glowRadius
+				);
+				gradient.addColorStop(0, `${GLOW_COLOR_BASE}${glowOpacity})`); // Center color
+				gradient.addColorStop(1, `${GLOW_COLOR_BASE}0)`); // Fade to transparent
+
+				this.ctx.fillStyle = gradient;
+				this.ctx.beginPath();
+				this.ctx.arc(particle.x, particle.y, glowRadius, 0, Math.PI * 2);
+				this.ctx.fill();
+			}
+		}
+		this.ctx.restore(); // Restore composite operation and other potential state changes
+		// --- END Glow Drawing Pass ---
 
 		// Batch particle drawing by color for efficiency
 		const particlesByColor = new Map();

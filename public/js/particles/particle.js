@@ -31,6 +31,12 @@ export class Particle {
         
         this.color = this.getRandomColor(settings);
         this.mass = Math.PI * this.radius * this.radius;
+
+        // --- Glow Cluster Properties --- 
+        this.clusterStrength = 0; // Accumulates when near other particles
+        this.glowFactor = 0;      // Derived from clusterStrength (0 to 1)
+        this.wasNear = false;     // Flag used for decay calculation
+        // --- End Glow Cluster Properties ---
     }
 
     getRandomColor(settings) {
