@@ -605,14 +605,19 @@ export class ParticleSystem {
 		// Limit number of effects to avoid slowdown
 		const MAX_EFFECTS = 20;
 		if (this.isMouseDown && this.mouseEffects.length < MAX_EFFECTS) {
+			// Ultra-smooth scaling - even tiny touches get proportional effects
+			const effectIntensity = Math.max(0.02, holdIntensity * 0.8); // Can go as low as 2% opacity
+			const effectRadius = settings.EXPLOSION_RADIUS * (0.1 + 0.9 * holdIntensity); // 10-100% of full radius
+			const effectDuration = 100 + 400 * holdIntensity; // 100-500ms duration
+			
 			// mouse coordinates are already in canvas space
 			this.mouseEffects.push({
 				x: this.mouseX,
 				y: this.mouseY,
-				radius: settings.EXPLOSION_RADIUS,
+				radius: effectRadius,
 				startTime: timestamp,
-				duration: 500,
-				intensity: holdIntensity,
+				duration: effectDuration,
+				intensity: effectIntensity,
 			});
 		}
 
@@ -667,7 +672,7 @@ export class ParticleSystem {
 				// Original ripple effect
 				const currentOpacity = Math.max(
 					0,
-					(0.1 + effect.intensity * 0.2) * (1 - progress),
+					effect.intensity * (1 - progress), // Direct scaling - no minimum
 				);
 				const currentRadius = Math.max(
 					1,
@@ -1124,15 +1129,28 @@ export class ParticleSystem {
 
 		// Calculate final duration
 		const duration = (performance.now() - this.holdStartTime) / 1000;
+		
+		// Calculate release intensity based on duration
+		const releaseIntensity = Math.log(duration + 1) / Math.log(10);
 
 		// Set release multiplier - exponential growth with higher cap
 		// Starts at 1x, doubles every 2 seconds, maxes at 50x
 		this.releaseMultiplier = Math.min(50, 2 ** (duration / 2));
 
-		// Create a big release effect
-		if (duration > 0.1) {
-			// Set end time for release effect (100ms duration)
-			this.releaseEndTime = performance.now() + 100;
+		// Create a release effect proportional to hold duration
+		if (duration > 0.01) { // Even tiny touches get a small effect
+			// Set end time for release effect (scales with duration)
+			this.releaseEndTime = performance.now() + Math.min(100, 50 + duration * 20);
+			
+			// Add a final release ripple that scales smoothly with duration
+			this.mouseEffects.push({
+				x: this.mouseX,
+				y: this.mouseY,
+				radius: 5 + releaseIntensity * 45, // Scales from 5px to 50px - tiny for quick taps
+				startTime: performance.now(),
+				duration: 150 + releaseIntensity * 550, // 150-700ms - brief for quick taps
+				intensity: releaseIntensity * 0.5, // Even lower intensity for subtlety
+			});
 		} else {
 			// Too short, reset immediately
 			this.releaseMultiplier = 1;
