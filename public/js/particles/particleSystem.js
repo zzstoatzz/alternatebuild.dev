@@ -27,6 +27,7 @@ export class ParticleSystem {
 		);
 		this.leaderboardElement = null;
 		this.releaseMultiplier = 1;
+		this.releaseEndTime = null;
 
 		// Make particle colors available
 		this.PARTICLE_COLORS = PARTICLE_COLORS;
@@ -124,7 +125,7 @@ export class ParticleSystem {
 				this.mouseY = e.clientY - rect.top;
 
 				// Start torch bearer timer
-				this.startTorchBearer(e.clientX, e.clientY);
+				this.startTorchBearer();
 			}
 		});
 
@@ -167,7 +168,7 @@ export class ParticleSystem {
 							e.preventDefault(); // Only prevent default when interacting with particles
 
 							// Start torch bearer timer
-							this.startTorchBearer(touch.clientX, touch.clientY);
+							this.startTorchBearer();
 						}
 					}
 				}
@@ -240,6 +241,12 @@ export class ParticleSystem {
 	}
 
 	applyMouseForce() {
+		// Check if release effect has expired
+		if (this.releaseEndTime && performance.now() > this.releaseEndTime) {
+			this.releaseMultiplier = 1;
+			this.releaseEndTime = null;
+		}
+
 		if (!this.isMouseDown && this.releaseMultiplier <= 1) return;
 
 		const settings = this.settingsManager.getAllSettings();
@@ -1107,6 +1114,9 @@ export class ParticleSystem {
 
 	startTorchBearer() {
 		this.holdStartTime = performance.now();
+		// Clear any lingering release effect
+		this.releaseMultiplier = 1;
+		this.releaseEndTime = null;
 	}
 
 	stopTorchBearer() {
@@ -1121,10 +1131,11 @@ export class ParticleSystem {
 
 		// Create a big release effect
 		if (duration > 0.1) {
-			// Add release effect that will be handled by applyMouseForce
-			setTimeout(() => {
-				this.releaseMultiplier = 1; // Reset after one frame
-			}, 100);
+			// Set end time for release effect (100ms duration)
+			this.releaseEndTime = performance.now() + 100;
+		} else {
+			// Too short, reset immediately
+			this.releaseMultiplier = 1;
 		}
 
 		// Check for new high score
