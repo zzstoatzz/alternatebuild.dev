@@ -44,7 +44,7 @@ const links = [
 
 export default function About() {
     return (
-        <main className="about-container content-container">
+        <main className="about-container content-container overflow-y-auto">
             <h1 className="about-title">About Me</h1>
             <div className="space-y-4 about-text">
                 <p>

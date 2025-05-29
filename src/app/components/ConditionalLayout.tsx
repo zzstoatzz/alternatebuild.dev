@@ -13,7 +13,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     
     return (
         <>
-            <main className="flex-grow container mx-auto px-4 py-8">
+            <main className="flex-grow container mx-auto px-4 py-8 overflow-y-auto">
                 {children}
             </main>
             <Footer />
