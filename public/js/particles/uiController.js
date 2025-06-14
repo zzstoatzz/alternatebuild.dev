@@ -140,8 +140,8 @@ export class UIController {
 				
 				.slider-input::-webkit-slider-thumb {
 					appearance: none !important;
-					width: 20px !important;
-					height: 20px !important;
+					width: 30px !important;
+					height: 30px !important;
 					border-radius: 50% !important;
 					background: #64ffda !important;
 					cursor: pointer !important;
@@ -150,8 +150,8 @@ export class UIController {
 				}
 				
 				.slider-input::-moz-range-thumb {
-					width: 20px !important;
-					height: 20px !important;
+					width: 30px !important;
+					height: 30px !important;
 					border-radius: 50% !important;
 					background: #64ffda !important;
 					cursor: pointer !important;
@@ -327,9 +327,9 @@ export class UIController {
 		
 		// Group controls by category with updated names and added ELASTICITY
 		const categories = {
-			'particles': ['PARTICLE_COUNT', 'AVERAGE_PARTICLE_SIZE', 'DRAG', 'ELASTICITY'],
+			'particles': ['PARTICLE_COUNT', 'GRAVITY', 'AVERAGE_PARTICLE_SIZE', 'DRAG', 'ELASTICITY'],
 			'connections': ['INTERACTION_RADIUS', 'CONNECTION_OPACITY', 'CONNECTION_WIDTH', 'CONNECTION_COLOR'],
-			'forces': ['EXPLOSION_RADIUS', 'EXPLOSION_FORCE', 'GRAVITY', 'ATTRACT', 'SMOOTHING_FACTOR']
+			'forces': ['EXPLOSION_RADIUS', 'EXPLOSION_FORCE', 'ATTRACT', 'SMOOTHING_FACTOR']
 		};
 		
 		for (const [category, keys] of Object.entries(categories)) {
