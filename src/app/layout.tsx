@@ -47,7 +47,7 @@ export default function RootLayout({
             <body className="bg-[#0B0B03]">
                 <BackgroundProvider>
                     <Background />
-                    <div className="relative z-10 min-h-screen flex flex-col overflow-x-hidden">
+                    <div className="relative z-20 min-h-screen flex flex-col overflow-x-hidden">
                         <BackgroundSwitcher />
                         <NavigationDrawer />
                         <ConditionalLayout>

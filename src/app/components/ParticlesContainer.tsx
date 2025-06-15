@@ -56,8 +56,8 @@ export function ParticlesContainer() {
             <canvas
                 id="particle-canvas"
                 ref={canvasRef}
-                className="fixed inset-0 w-full h-full z-10"
-                style={{ pointerEvents: 'auto' }}
+                className="fixed inset-0 w-full h-full z-0"
+                style={{ pointerEvents: 'none' }}
             />
             <Script
                 src="/js/particles/main.js"

@@ -7,8 +7,7 @@ function init(canvas) {
         return;
     }
 
-    // Ensure canvas can receive pointer events directly
-    canvas.style.pointerEvents = 'auto';
+    // Canvas uses pointer events 'none' to allow scrolling, events handled on document
     
     // Create particle system (handles its own settings internally)
     const particleSystem = new ParticleSystem(canvas);
