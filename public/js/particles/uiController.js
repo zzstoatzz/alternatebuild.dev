@@ -329,7 +329,7 @@ export class UIController {
 		const categories = {
 			'particles': ['PARTICLE_COUNT', 'GRAVITY', 'AVERAGE_PARTICLE_SIZE', 'DRAG', 'ELASTICITY'],
 			'connections': ['INTERACTION_RADIUS', 'CONNECTION_OPACITY', 'CONNECTION_WIDTH', 'CONNECTION_COLOR'],
-			'forces': ['EXPLOSION_RADIUS', 'EXPLOSION_FORCE', 'ATTRACT', 'SMOOTHING_FACTOR']
+			'forces': ['EXPLOSION_RADIUS', 'EXPLOSION_FORCE', 'ATTRACT', 'SMOOTHING_FACTOR', 'DISABLE_CHARGING_EFFECTS']
 		};
 		
 		for (const [category, keys] of Object.entries(categories)) {
@@ -349,6 +349,16 @@ export class UIController {
 							<div class="slider-row">
 								<input type="color" id="${key}" class="color-picker" value="${range.default}">
 								<span id="${key}_VALUE" class="value-display">${range.default}</span>
+							</div>
+						</div>
+					`;
+				} else if (key === 'DISABLE_CHARGING_EFFECTS') {
+					html += `
+						<div class="control-group">
+							<label for="${key}">${labelText}</label>
+							<div class="slider-row">
+								<input type="checkbox" id="${key}" ${range.default ? 'checked' : ''}>
+								<span class="value-display">basic mouse force only</span>
 							</div>
 						</div>
 					`;
@@ -440,6 +450,23 @@ export class UIController {
 			newColorPicker.addEventListener('change', handleColorChange);
 			newColorPicker.addEventListener('touchstart', (e) => {
 				e.stopPropagation(); // Prevent canvas interaction while using color picker
+			}, { passive: true });
+		}
+		
+		// Checkbox controls
+		const disableChargingCheckbox = document.getElementById("DISABLE_CHARGING_EFFECTS");
+		if (disableChargingCheckbox) {
+			const handleCheckboxChange = (e) => {
+				const value = e.target.checked;
+				this.onSettingChange("DISABLE_CHARGING_EFFECTS", value);
+			};
+			
+			const newCheckbox = disableChargingCheckbox.cloneNode(true);
+			disableChargingCheckbox.parentNode.replaceChild(newCheckbox, disableChargingCheckbox);
+			
+			newCheckbox.addEventListener('change', handleCheckboxChange);
+			newCheckbox.addEventListener('touchstart', (e) => {
+				e.stopPropagation();
 			}, { passive: true });
 		}
 		

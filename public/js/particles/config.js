@@ -15,6 +15,7 @@ export const RANGES = {
 	CONNECTION_COLOR: { default: "#64ffda" },
 	CONNECTION_WIDTH: { min: 0.1, max: 2, step: 0.1, default: 0.3 },
 	PARTICLE_COLOR: { default: "#64ffda" },
+	DISABLE_CHARGING_EFFECTS: { default: false },
 };
 
 // Generate default settings object from the RANGES
@@ -358,6 +359,14 @@ export const PARTICLE_CONTROLS_TEMPLATE = `
                     step="${RANGES.SMOOTHING_FACTOR.step}" 
                     value="${RANGES.SMOOTHING_FACTOR.default}">
                 <span id="SMOOTHING_FACTOR_VALUE" class="value-display">${RANGES.SMOOTHING_FACTOR.default}</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label for="DISABLE_CHARGING_EFFECTS">Disable Charging Effects</label>
+            <div class="control-row">
+                <input type="checkbox" id="DISABLE_CHARGING_EFFECTS" ${RANGES.DISABLE_CHARGING_EFFECTS.default ? 'checked' : ''}>
+                <span class="value-display">Basic mouse force only</span>
             </div>
         </div>
         

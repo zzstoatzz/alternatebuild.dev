@@ -250,12 +250,20 @@ export class ParticleSystem {
 		if (!this.isMouseDown && this.releaseMultiplier <= 1) return;
 
 		const settings = this.settingsManager.getAllSettings();
-		const radius =
-			settings.EXPLOSION_RADIUS *
-			(this.isMouseDown ? 1 : this.releaseMultiplier);
-		const force =
-			settings.EXPLOSION_FORCE *
-			(this.isMouseDown ? 1 : this.releaseMultiplier);
+		
+		// If charging effects are disabled, use basic force without multipliers
+		let radius, force;
+		if (settings.DISABLE_CHARGING_EFFECTS) {
+			radius = settings.EXPLOSION_RADIUS;
+			force = settings.EXPLOSION_FORCE;
+		} else {
+			radius =
+				settings.EXPLOSION_RADIUS *
+				(this.isMouseDown ? 1 : this.releaseMultiplier);
+			force =
+				settings.EXPLOSION_FORCE *
+				(this.isMouseDown ? 1 : this.releaseMultiplier);
+		}
 		const radiusSq = radius * radius;
 
 		// Use a reasonable cell size for mouse check, potentially larger than interaction radius
@@ -593,6 +601,11 @@ export class ParticleSystem {
 
 	updateAndDrawMouseEffects(timestamp) {
 		const settings = this.settingsManager.getAllSettings();
+
+		// If charging effects are disabled, skip all visual effects
+		if (settings.DISABLE_CHARGING_EFFECTS) {
+			return;
+		}
 
 		// Calculate hold intensity - logarithmic growth for visual continuity
 		let holdIntensity = 0;
@@ -1129,6 +1142,15 @@ export class ParticleSystem {
 
 		// Calculate final duration
 		const duration = (performance.now() - this.holdStartTime) / 1000;
+		
+		const settings = this.settingsManager.getAllSettings();
+		
+		// If charging effects are disabled, skip all charging/release effects
+		if (settings.DISABLE_CHARGING_EFFECTS) {
+			this.releaseMultiplier = 1;
+			this.holdStartTime = null;
+			return;
+		}
 		
 		// Calculate release intensity based on duration
 		const releaseIntensity = Math.log(duration + 1) / Math.log(10);
