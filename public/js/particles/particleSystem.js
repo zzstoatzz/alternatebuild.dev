@@ -257,9 +257,24 @@ export class ParticleSystem {
 			radius = settings.EXPLOSION_RADIUS;
 			force = settings.EXPLOSION_FORCE;
 		} else {
-			radius =
-				settings.EXPLOSION_RADIUS *
-				(this.isMouseDown ? 1 : this.releaseMultiplier);
+			// Calculate hold intensity for vortex scaling
+			let holdIntensity = 0;
+			if (this.isMouseDown && this.holdStartTime) {
+				const holdDuration = (performance.now() - this.holdStartTime) / 1000;
+				holdIntensity = Math.min(1, Math.log(holdDuration + 1) / Math.log(10));
+			}
+			
+			// Scale radius based on whether holding or releasing
+			if (this.isMouseDown) {
+				// While holding, expand radius based on charge level
+				// Use smoother easing for more gradual growth
+				const smoothedIntensity = holdIntensity * holdIntensity; // Square for slower initial growth
+				radius = settings.EXPLOSION_RADIUS * (1 + smoothedIntensity * 2); // Up to 3x radius
+			} else {
+				// On release, use the release multiplier
+				radius = settings.EXPLOSION_RADIUS * this.releaseMultiplier;
+			}
+			
 			force =
 				settings.EXPLOSION_FORCE *
 				(this.isMouseDown ? 1 : this.releaseMultiplier);
@@ -312,8 +327,29 @@ export class ParticleSystem {
 						const dirX = dx / distance;
 						const dirY = dy / distance;
 
-						particle.vx += dirX * strength;
-						particle.vy += dirY * strength;
+						// Radial force (original explosion/repulsion)
+						const radialForce = strength * (this.isMouseDown ? 0.3 : 1.0); // Reduce radial force when holding
+						particle.vx += dirX * radialForce;
+						particle.vy += dirY * radialForce;
+						
+						// Vortex/swirling force when mouse is held down
+						if (this.isMouseDown && this.holdStartTime) {
+							const holdDuration = (performance.now() - this.holdStartTime) / 1000;
+							// Vortex strength increases with hold duration
+							const vortexIntensity = Math.min(1, Math.log(holdDuration + 1) / Math.log(10));
+							// Speed multiplier increases linearly forever
+							const speedMultiplier = 1 + holdDuration * 0.5; // Increases by 50% per second
+							const vortexStrength = strength * vortexIntensity * 0.8 * speedMultiplier;
+							
+							// Calculate tangential direction (perpendicular to radial)
+							// For clockwise rotation: tangent = (-dy, dx)
+							const tangentX = -dirY;
+							const tangentY = dirX;
+							
+							// Apply vortex force
+							particle.vx += tangentX * vortexStrength;
+							particle.vy += tangentY * vortexStrength;
+						}
 					}
 
 					checkedParticles.add(i);
