@@ -327,28 +327,35 @@ export class ParticleSystem {
 						const dirX = dx / distance;
 						const dirY = dy / distance;
 
-						// Radial force (original explosion/repulsion)
-						const radialForce = strength * (this.isMouseDown ? 0.3 : 1.0); // Reduce radial force when holding
-						particle.vx += dirX * radialForce;
-						particle.vy += dirY * radialForce;
-						
-						// Vortex/swirling force when mouse is held down
-						if (this.isMouseDown && this.holdStartTime) {
-							const holdDuration = (performance.now() - this.holdStartTime) / 1000;
-							// Vortex strength increases with hold duration
-							const vortexIntensity = Math.min(1, Math.log(holdDuration + 1) / Math.log(10));
-							// Speed multiplier increases linearly forever
-							const speedMultiplier = 1 + holdDuration * 0.5; // Increases by 50% per second
-							const vortexStrength = strength * vortexIntensity * 0.8 * speedMultiplier;
+						// Check if charging effects are disabled
+						if (settings.DISABLE_CHARGING_EFFECTS) {
+							// Simple radial force only, no vortex
+							particle.vx += dirX * strength;
+							particle.vy += dirY * strength;
+						} else {
+							// Radial force (original explosion/repulsion)
+							const radialForce = strength * (this.isMouseDown ? 0.3 : 1.0); // Reduce radial force when holding
+							particle.vx += dirX * radialForce;
+							particle.vy += dirY * radialForce;
 							
-							// Calculate tangential direction (perpendicular to radial)
-							// For clockwise rotation: tangent = (-dy, dx)
-							const tangentX = -dirY;
-							const tangentY = dirX;
-							
-							// Apply vortex force
-							particle.vx += tangentX * vortexStrength;
-							particle.vy += tangentY * vortexStrength;
+							// Vortex/swirling force when mouse is held down
+							if (this.isMouseDown && this.holdStartTime) {
+								const holdDuration = (performance.now() - this.holdStartTime) / 1000;
+								// Vortex strength increases with hold duration
+								const vortexIntensity = Math.min(1, Math.log(holdDuration + 1) / Math.log(10));
+								// Speed multiplier increases linearly forever
+								const speedMultiplier = 1 + holdDuration * 0.5; // Increases by 50% per second
+								const vortexStrength = strength * vortexIntensity * 0.8 * speedMultiplier;
+								
+								// Calculate tangential direction (perpendicular to radial)
+								// For clockwise rotation: tangent = (-dy, dx)
+								const tangentX = -dirY;
+								const tangentY = dirX;
+								
+								// Apply vortex force
+								particle.vx += tangentX * vortexStrength;
+								particle.vy += tangentY * vortexStrength;
+							}
 						}
 					}
 
