@@ -1,3 +1,3 @@
-## [my website](https://alternatebuild.dev/)
+## [my website](https://zzstoatzz.io/)
 
 nextjs and typescript
