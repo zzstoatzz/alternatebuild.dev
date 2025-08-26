@@ -24,20 +24,8 @@ const links = [
     {
         title: "blog",
         description: "writing about programming and other things",
-        link: "https://blog.alternatebuild.dev",
+        link: "https://blog.zzstoatzz.io",
         source: "bearblog",
-    },
-    {
-        title: "mcp registry on atproto",
-        description: "a registry of mcp projects on atproto",
-        link: "https://mcproto.alternatebuild.dev",
-        source: "my website",
-    },
-    {
-        title: "bsky intro app",
-        description: "a simple app to introduce you to bsky primitives",
-        link: "https://bskydemo.alternatebuild.dev",
-        source: "my website",
     },
 
 ];

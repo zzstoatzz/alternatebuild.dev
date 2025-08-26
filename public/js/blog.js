@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 
 async function fetchBlogPosts() {
     try {
-        const response = await fetch('https://api.github.com/repos/zzstoatzz/alternatebuild.dev/contents/_posts');
+        const response = await fetch('https://api.github.com/repos/zzstoatzz/zzstoatzz.io/contents/_posts');
         if (!response.ok) throw new Error('Failed to fetch blog posts');
         const posts = await response.json();
         return posts.filter(file => file.name.endsWith('.md'));

@@ -16,7 +16,7 @@ export default function Contact() {
                             height={24}
                             className="contact-icon brightness-100"
                         />
-                        <a href="https://bsky.app/profile/alternatebuild.dev" target="_blank" rel="noopener noreferrer" className="contact-link">@alternatebuild.dev</a>
+                        <a href="https://bsky.app/profile/zzstoatzz.io" target="_blank" rel="noopener noreferrer" className="contact-link">@zzstoatzz.io</a>
                     </li>
                     <li className="contact-item">
                         <Image 

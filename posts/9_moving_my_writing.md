@@ -4,7 +4,7 @@ date: "2024-12-15"
 ---
 
 <div style="background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 5px; backdrop-filter: blur(5px); text-align: center;">
-  <strong>tldr:</strong> i'm moving my writing to <a href="https://blog.alternatebuild.dev" style="color: #64e3ff;">blog.alternatebuild.dev</a>
+  <strong>tldr:</strong> i'm moving my writing to <a href="https://blog.zzstoatzz.io" style="color: #64e3ff;">blog.zzstoatzz.io</a>
 </div>
 
 <br>

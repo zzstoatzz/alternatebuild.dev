@@ -6,7 +6,7 @@ date: "2024-11-24"
 <div class="note-box">
   <div class="note-header">👋 hi</div>
   <div class="note-content">
-    i'm on bsky as <a href="https://bsky.app/profile/alternatebuild.dev">n8@alternatebuild.dev</a>
+    i'm on bsky as <a href="https://bsky.app/profile/zzstoatzz.io">n8@zzstoatzz.io</a>
   </div>
 </div>
 
@@ -299,7 +299,7 @@ h2 {
 
 <br>
 
-I was like, ooh! I know how to do this! bc [i looooove annotated types](https://alternatebuild.dev/posts/6_how_to_use_pydantic_settings)
+I was like, ooh! I know how to do this! bc [i looooove annotated types](https://zzstoatzz.io/posts/6_how_to_use_pydantic_settings)
 
 <br>
 

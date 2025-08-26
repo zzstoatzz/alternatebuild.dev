@@ -39,7 +39,7 @@ export default function Footer() {
             icon: (props: React.SVGProps<SVGSVGElement>) => <GithubIconSimple {...props} />,
         },
         {
-            href: 'https://bsky.app/profile/alternatebuild.dev',
+            href: 'https://bsky.app/profile/zzstoatzz.io',
             label: 'Bluesky',
             icon: 'emoji', // Use a flag to indicate emoji usage
             emoji: '🦋'    // Store the emoji character
@@ -72,7 +72,7 @@ export default function Footer() {
                 <p className="text-xs text-gray-500 mb-2">&copy; {new Date().getFullYear()} zzstoatzz</p>
                 
                 <a 
-                    href="https://github.com/zzstoatzz/alternatebuild.dev"
+                    href="https://github.com/zzstoatzz/zzstoatzz.io"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-gray-500 hover:text-cyan-400 transition-colors duration-300"

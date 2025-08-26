@@ -143,7 +143,7 @@ because if they weren't at least the right type... we throw `ValidationError` im
 
 » python posts/auxiliary/python/pydantic_settings_example.py
 Traceback (most recent call last):
-  File "/Users/nate/github.com/zzstoatzz/alternatebuild.dev/posts/auxiliary/python/pydantic_settings_example.py", line 35, in <module>
+  File "/Users/nate/github.com/zzstoatzz/zzstoatzz.io/posts/auxiliary/python/pydantic_settings_example.py", line 35, in <module>
     print(Settings().to_env_vars())  # type: ignore
           ^^^^^^^^^^
 ...
